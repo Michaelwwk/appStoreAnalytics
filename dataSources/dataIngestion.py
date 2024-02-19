@@ -63,7 +63,7 @@ def dataIngestion():
     ## Read into DataFrame
     google = pd.read_csv("Google-Playstore-Dataset.csv", header = 0) # low_memory = False
 
-    print(google.columns())
+    print(google.columns)
 
     # Data Ingestion using 'google_play_scraper' API:
 

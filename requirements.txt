@@ -3,3 +3,8 @@ google-cloud-bigquery
 pandas-gbq
 datetime
 pytz
+google_play_scraper
+app_store_scraper
+findspark
+pyspark
+pyarrow

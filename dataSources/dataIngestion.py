@@ -128,7 +128,7 @@ def dataIngestion():
                         continue
             
             with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} reviews. Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
+                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
             
         except Exception as e:
             with open(log_file_path, "a") as log_file:

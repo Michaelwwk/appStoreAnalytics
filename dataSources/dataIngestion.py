@@ -27,6 +27,8 @@ def dataIngestion():
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
+    googleScraped_csv_path = f"{folder_path}/google_scraped.csv"
+    googleReview_csv_path = f"{folder_path}/google_review.csv"
     googleScraped_db_path = f"{project_id}.{rawDataset}.google_scraped"
     googleReview_db_path = f"{project_id}.{rawDataset}.google_review"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
@@ -134,6 +136,9 @@ def dataIngestion():
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} .. Error occurred: {e}\n")
 
+    google_main.to_csv(googleScraped_csv_path, header = True, index = False)
+    google_reviews.to_csv(googleReview_csv_path, header = True, index = False)
+
     # Create tables into Google BigQuery
     try:
         job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
@@ -148,8 +153,30 @@ def dataIngestion():
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string!!
-    google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
-    google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+    # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
+    # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+
+    googleScraped_job_config = bigquery.LoadJobConfig(
+    autodetect=False,
+    max_bad_records=5,
+    # skip_leading_rows=1,
+    source_format=bigquery.SourceFormat.CSV
+    )
+    google_scraped_config = client.dataset(rawDataset).table('google_scraped')
+    with open(googleScraped_csv_path, 'rb') as f:
+        googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
+    googleScraped_load_job.result()
+
+    googleReview_job_config = bigquery.LoadJobConfig(
+    autodetect=False,
+    max_bad_records=5,
+    # skip_leading_rows=1,
+    source_format=bigquery.SourceFormat.CSV
+    )
+    google_review_config = client.dataset(rawDataset).table('google_review')
+    with open(googleReview_csv_path, 'rb') as f:
+        googleReview_load_job = client.load_table_from_file(f, google_review_config, job_config=googleReview_job_config)
+    googleReview_load_job.result()
 
     # Create 'dateTime' table in DB
     job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
@@ -175,6 +202,8 @@ def dataIngestion():
     ## Remove files and folder
     try:
         os.remove(dateTime_csv_path)
+        os.remove(googleScraped_csv_path)
+        os.remove(googleReview_csv_path)
         os.remove(googleAPI_json_path)
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:

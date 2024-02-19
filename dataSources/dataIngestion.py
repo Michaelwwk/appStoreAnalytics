@@ -136,6 +136,7 @@ def dataIngestion():
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} .. Error occurred: {e}\n")
 
+    google_main = google_main.astype(str) # all columns will be string!!
     google_main.to_csv(googleScraped_csv_path, header = True, index = False)
     google_reviews.to_csv(googleReview_csv_path, header = True, index = False)
 
@@ -152,7 +153,7 @@ def dataIngestion():
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    google_main = google_main.astype(str) # all columns will be string!!
+    # google_main = google_main.astype(str) # all columns will be string!!
     # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
     # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
 

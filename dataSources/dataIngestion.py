@@ -89,7 +89,7 @@ def dataIngestion():
     except:
         pass
 
-    for appId in google['App Id'].unique():
+    for appId in google.iloc[:, 1]:
 
         appReviewCounts = 0
 

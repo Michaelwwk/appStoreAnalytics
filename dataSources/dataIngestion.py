@@ -61,7 +61,7 @@ def dataIngestion():
             with open(csvfile, "rb") as infile:
                 outfile.write(infile.read())
     ## Read into DataFrame
-    google = pd.read_csv("Google-Playstore-Dataset.csv", header = 0) # low_memory = False
+    google = pd.read_csv("Google-Playstore-Dataset.csv") # low_memory = False
 
     print(google.columns)
 

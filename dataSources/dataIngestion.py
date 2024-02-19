@@ -160,7 +160,7 @@ def dataIngestion():
     googleScraped_job_config = bigquery.LoadJobConfig(
     autodetect=False,
     max_bad_records=5,
-    # skip_leading_rows=1,
+    skip_leading_rows=1,
     source_format=bigquery.SourceFormat.CSV
     )
     google_scraped_config = client.dataset(rawDataset).table('google_scraped')
@@ -171,7 +171,7 @@ def dataIngestion():
     googleReview_job_config = bigquery.LoadJobConfig(
     autodetect=False,
     max_bad_records=5,
-    # skip_leading_rows=1,
+    skip_leading_rows=1,
     source_format=bigquery.SourceFormat.CSV
     )
     google_review_config = client.dataset(rawDataset).table('google_review')

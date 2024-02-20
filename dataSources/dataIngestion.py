@@ -155,8 +155,8 @@ def dataIngestion():
 
     # Push data into DB
     # google_main = google_main.astype(str) # all columns will be string!!
-    google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
-    google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+    # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
+    # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
 
     dtype = {col: 'STRING' for col in google_main.columns}
 

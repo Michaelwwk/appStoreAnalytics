@@ -5,12 +5,11 @@ import shutil
 import pandas as pd
 import json
 from google.cloud import bigquery
-import pandas_gbq
-# from pandas_gbq import read_gbq
 from datetime import datetime
 from pytz import timezone
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
+from commonFunctions import to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -37,26 +36,16 @@ def dataIngestion():
     reviewCountPerAppPerScore = 50
     country = 'us'
     language = 'en'
-    project_id =  googleAPI_dict["project_id"] # "big-data-analytics-412816"
+    project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    googleScraped_table_name = 'google_scraped'
-    googleReview_table_name = 'google_reviewsss'
+    googleScraped_table_name = 'google_scrapedTEST'
+    googleReview_table_name = 'google_reviewsTEST'
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
     dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
-
-    def to_gbq(df, client, destination_table_id):
-        df = df.copy()
-        job_config = bigquery.LoadJobConfig(write_disposition='WRITE_TRUNCATE')  # Specify write disposition
-        load_job = client.load_table_from_dataframe(
-            df,
-            destination_table_id,
-            job_config=job_config
-        )
-        return load_job
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
@@ -159,9 +148,6 @@ def dataIngestion():
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} .. Error occurred: {e}\n")
 
-    # google_main.to_csv(googleScraped_csv_path, header = True, index = False)
-    # google_reviews.to_csv(googleReview_csv_path, header = True, index = False)
-
     # Create tables into Google BigQuery
     try:
         job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
@@ -175,82 +161,13 @@ def dataIngestion():
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    google_main = google_main.astype(str) # all columns will be string!!
+    # google_main = google_main.astype(str) # all columns will be string
     load_job = to_gbq(google_main, client, f"{rawDataset}.{googleScraped_table_name}")
     load_job.result()
 
+    # google_reviews = google_reviews.astype(str) # all columns will be string
     load_job = to_gbq(google_reviews, client, f"{rawDataset}.{googleReview_table_name}")
     load_job.result()
-
-    # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
-    # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
-
-    # # Convert pandas DataFrame to Spark DataFrame
-    # spark_google_main = pandas_to_spark(google_main, sparkConnection)
-    # spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
-
-    # # Write Spark DataFrame to BigQuery
-    # write_spark_to_bigquery(spark_google_main, googleScraped_table_name, rawDataset, project_id)
-    # write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
-
-    # dtype = {col: 'STRING' for col in google_main.columns}
-
-    # pandas_gbq.to_gbq(google_main,
-    #               destination_table=googleScraped_db_path,
-    #               project_id=project_id,
-    #               if_exists='replace',
-    #               table_schema=dtype)
-    
-    # pandas_gbq.to_gbq(google_reviews,
-    #             destination_table=googleScraped_db_path,
-    #             project_id=project_id,
-    #             if_exists='replace',
-    #             table_schema=None)
-
-    # # Read CSV files into strings
-    # with open(googleScraped_csv_path, 'r') as f:
-    #     googleScraped_csv_content = f.read()
-
-    # with open(googleReview_csv_path, 'rb') as f:
-    #     googleReview_csv_content = f.read()
-
-    # # Load data into BigQuery tables
-    # google_scraped_config = client.dataset(rawDataset).table('google_scraped')
-    # googleReview_config = client.dataset(rawDataset).table('google_review')
-
-    # # Push data to BigQuery
-    # google_scraped_job = client.load_table_from_file(googleScraped_csv_content, google_scraped_config, job_config=googleScraped_db_path)
-    # googleReview_job = client.load_table_from_file(googleReview_csv_content, googleReview_config, job_config=googleReview_db_path)
-
-    # # Wait for job completion
-    # google_scraped_job.result()
-    # googleReview_job.result()
-
-    # googleScraped_job_config = bigquery.LoadJobConfig(
-    # autodetect=False,
-    # max_bad_records=5,
-    # # skip_leading_rows=1,
-    # source_format=bigquery.SourceFormat.CSV
-    # )
-    # google_scraped_config = client.dataset(rawDataset).table('google_scraped')
-    # with open(googleScraped_csv_path, 'rb') as f:
-    #     csv_data_bytes = f.read()
-    #     csv_data_string = csv_data_bytes.decode('utf-8')
-    #     csv_data_file = StringIO(csv_data_string)
-    #     csv_data_file.seek(0)
-    #     googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
-    # googleScraped_load_job.result()
-
-    # googleReview_job_config = bigquery.LoadJobConfig(
-    # autodetect=False,
-    # max_bad_records=5,
-    # # skip_leading_rows=1,
-    # source_format=bigquery.SourceFormat.CSV
-    # )
-    # google_review_config = client.dataset(rawDataset).table('google_review')
-    # with open(googleReview_csv_path, 'rb') as f:
-    #     googleReview_load_job = client.load_table_from_file(f, google_review_config, job_config=googleReview_job_config)
-    # googleReview_load_job.result()
 
     # Create 'dateTime' table in DB
     job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
@@ -276,8 +193,6 @@ def dataIngestion():
     ## Remove files and folder
     try:
         os.remove(dateTime_csv_path)
-        # os.remove(googleScraped_csv_path)
-        # os.remove(googleReview_csv_path)
         os.remove(googleAPI_json_path)
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:

@@ -34,7 +34,7 @@ def dataIngestion(sparkConnection):
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 50 # 999 = all samples!
+    googleAppsSample = 100 # 999 = all samples!
     reviewCountPerAppPerScore = 50
     country = 'us'
     language = 'en'

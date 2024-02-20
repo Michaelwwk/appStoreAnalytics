@@ -157,46 +157,46 @@ def dataIngestion():
     # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
     # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
 
-    # Read CSV files into strings
-    with open(googleScraped_csv_path, 'r') as f:
-        googleScraped_csv_content = f.read()
+    # # Read CSV files into strings
+    # with open(googleScraped_csv_path, 'r') as f:
+    #     googleScraped_csv_content = f.read()
 
-    with open(googleReview_csv_path, 'r') as f:
-        googleReview_csv_content = f.read()
-
-    # Load data into BigQuery tables
-    google_scraped_config = client.dataset(rawDataset).table('google_scraped')
-    googleReview_config = client.dataset(rawDataset).table('google_review')
-
-    # Push data to BigQuery
-    google_scraped_job = client.load_table_from_file(googleScraped_csv_content, google_scraped_config, job_config=googleScraped_db_path)
-    googleReview_job = client.load_table_from_file(googleReview_csv_content, googleReview_config, job_config=googleReview_db_path)
-
-    # Wait for job completion
-    google_scraped_job.result()
-    googleReview_job.result()
-
-    # googleScraped_job_config = bigquery.LoadJobConfig(
-    # autodetect=False,
-    # max_bad_records=5,
-    # skip_leading_rows=1,
-    # source_format=bigquery.SourceFormat.CSV
-    # )
-    # google_scraped_config = client.dataset(rawDataset).table('google_scraped')
-    # with open(googleScraped_csv_path, 'rb') as f:
-    #     googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
-    # googleScraped_load_job.result()
-
-    # googleReview_job_config = bigquery.LoadJobConfig(
-    # autodetect=False,
-    # max_bad_records=5,
-    # skip_leading_rows=1,
-    # source_format=bigquery.SourceFormat.CSV
-    # )
-    # google_review_config = client.dataset(rawDataset).table('google_review')
     # with open(googleReview_csv_path, 'rb') as f:
-    #     googleReview_load_job = client.load_table_from_file(f, google_review_config, job_config=googleReview_job_config)
-    # googleReview_load_job.result()
+    #     googleReview_csv_content = f.read()
+
+    # # Load data into BigQuery tables
+    # google_scraped_config = client.dataset(rawDataset).table('google_scraped')
+    # googleReview_config = client.dataset(rawDataset).table('google_review')
+
+    # # Push data to BigQuery
+    # google_scraped_job = client.load_table_from_file(googleScraped_csv_content, google_scraped_config, job_config=googleScraped_db_path)
+    # googleReview_job = client.load_table_from_file(googleReview_csv_content, googleReview_config, job_config=googleReview_db_path)
+
+    # # Wait for job completion
+    # google_scraped_job.result()
+    # googleReview_job.result()
+
+    googleScraped_job_config = bigquery.LoadJobConfig(
+    autodetect=False,
+    max_bad_records=5,
+    # skip_leading_rows=1,
+    source_format=bigquery.SourceFormat.CSV
+    )
+    google_scraped_config = client.dataset(rawDataset).table('google_scraped')
+    with open(googleScraped_csv_path, 'r') as f:
+        googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
+    googleScraped_load_job.result()
+
+    googleReview_job_config = bigquery.LoadJobConfig(
+    autodetect=False,
+    max_bad_records=5,
+    # skip_leading_rows=1,
+    source_format=bigquery.SourceFormat.CSV
+    )
+    google_review_config = client.dataset(rawDataset).table('google_review')
+    with open(googleReview_csv_path, 'rb') as f:
+        googleReview_load_job = client.load_table_from_file(f, google_review_config, job_config=googleReview_job_config)
+    googleReview_load_job.result()
 
     # Create 'dateTime' table in DB
     job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()

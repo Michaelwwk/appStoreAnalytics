@@ -11,6 +11,7 @@ import pandas_gbq
 from datetime import datetime
 from pytz import timezone
 import webbrowser
+import subprocess
 from google_play_scraper import app, reviews, Sort
 import warnings
 warnings.filterwarnings('ignore')
@@ -69,10 +70,12 @@ def dataIngestion():
     google = pd.read_csv("Google-Playstore-Dataset.csv") # low_memory = False
 
     # To create runnable browser
-    urL='https://www.google.com'
-    chrome_path="/usr/bin/google-chrome"
-    webbrowser.register('chrome', None, webbrowser.BackgroundBrowser(chrome_path))
-    webbrowser.get('chrome').open_new_tab(urL)
+    def run_chrome_headless(url):
+        chrome_path = "/usr/bin/google-chrome"  # Path to Google Chrome executable
+        cmd = [chrome_path, "--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", url]
+        subprocess.Popen(cmd)
+    url = "https://www.google.com"
+    run_chrome_headless(url)
 
     # Data Ingestion using 'google_play_scraper' API:
 

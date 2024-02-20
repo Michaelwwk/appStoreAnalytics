@@ -178,8 +178,10 @@ def dataIngestion(sparkConnection):
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string!!
-
     load_job = to_gbq(google_main, client, f"{rawDataset}.{googleScraped_table_name}")
+    load_job.result()
+
+    load_job = to_gbq(google_reviews, client, f"{rawDataset}.{googleReview_table_name}")
     load_job.result()
 
     # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')

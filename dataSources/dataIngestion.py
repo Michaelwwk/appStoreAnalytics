@@ -10,6 +10,7 @@ import pandas_gbq
 # from pandas_gbq import read_gbq
 from datetime import datetime
 from pytz import timezone
+import webbrowser
 from google_play_scraper import app, reviews, Sort
 import warnings
 warnings.filterwarnings('ignore')
@@ -39,6 +40,12 @@ def dataIngestion():
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path)
+
+    # To create runnable browser
+    urL='https://www.google.com'
+    chrome_path="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
+    webbrowser.register('chrome', None,webbrowser.BackgroundBrowser(chrome_path),1)
+    webbrowser.get('chrome').open_new_tab(urL)
 
     # Apple
     ## Clone the repository
@@ -154,23 +161,23 @@ def dataIngestion():
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    # google_main = google_main.astype(str) # all columns will be string!!
-    # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
-    # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+    google_main = google_main.astype(str) # all columns will be string!!
+    google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
+    google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
 
-    dtype = {col: 'STRING' for col in google_main.columns}
+    # dtype = {col: 'STRING' for col in google_main.columns}
 
-    pandas_gbq.to_gbq(google_main,
-                  destination_table=googleScraped_db_path,
-                  project_id=project_id,
-                  if_exists='replace',
-                  table_schema=dtype)
+    # pandas_gbq.to_gbq(google_main,
+    #               destination_table=googleScraped_db_path,
+    #               project_id=project_id,
+    #               if_exists='replace',
+    #               table_schema=dtype)
     
-    pandas_gbq.to_gbq(google_reviews,
-                destination_table=googleScraped_db_path,
-                project_id=project_id,
-                if_exists='replace',
-                table_schema=None)
+    # pandas_gbq.to_gbq(google_reviews,
+    #             destination_table=googleScraped_db_path,
+    #             project_id=project_id,
+    #             if_exists='replace',
+    #             table_schema=None)
 
     # # Read CSV files into strings
     # with open(googleScraped_csv_path, 'r') as f:

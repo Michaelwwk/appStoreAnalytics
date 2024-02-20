@@ -53,11 +53,11 @@ def dataIngestion(sparkConnection):
     def to_gbq(data, client, destination_table_id):
         if isinstance(data, pd.DataFrame):
             df = data.copy()  # Avoid modifying the original DataFrame
-            # table_ref = client.dataset(destination_table_id.split('.')[0]).table(destination_table_id.split('.')[-1])
+            job_config = bigquery.LoadJobConfig(write_disposition='WRITE_TRUNCATE')  # Specify write disposition
             load_job = client.load_table_from_dataframe(
                 df,
                 destination_table_id,
-                write_disposition='WRITE_TRUNCATE'  # Append data to existing table
+                job_config=job_config
             )
         else:
             raise ValueError("Unsupported data format")

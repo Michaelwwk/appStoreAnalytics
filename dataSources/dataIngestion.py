@@ -32,14 +32,14 @@ def dataIngestion():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 100 # 999 = all samples!
-    reviewCountPerAppPerScore = 50
+    googleAppsSample = 1000 # 999 = all samples!
+    reviewCountPerAppPerScore = 100
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    googleScraped_table_name = 'google_scrapedTEST'
-    googleReview_table_name = 'google_reviewsTEST'
+    googleScraped_table_name = 'google_scraped'
+    googleReview_table_name = 'google_reviews'
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
@@ -161,7 +161,7 @@ def dataIngestion():
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    # google_main = google_main.astype(str) # all columns will be string
+    google_main = google_main.astype(str) # all columns will be string
     load_job = to_gbq(google_main, client, f"{rawDataset}.{googleScraped_table_name}")
     load_job.result()
 

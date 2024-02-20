@@ -32,8 +32,8 @@ def dataIngestion():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 1000 # 999 = all samples!
-    reviewCountPerAppPerScore = 100
+    googleAppsSample = 999 # 999 = all samples!
+    reviewCountPerAppPerScore = 1000
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]

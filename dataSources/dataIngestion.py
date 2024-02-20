@@ -37,7 +37,7 @@ def dataIngestion(sparkConnection):
     reviewCountPerAppPerScore = 50
     country = 'us'
     language = 'en'
-    project_id =  "big-data-analytics-412816" # googleAPI_dict["project_id"]
+    project_id =  googleAPI_dict["project_id"] # "big-data-analytics-412816"
     rawDataset = "practice_project"
     googleScraped_table_name = 'google_scraped'
     googleReview_table_name = 'google_review'
@@ -50,7 +50,7 @@ def dataIngestion(sparkConnection):
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path)
+    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project_id)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Apple

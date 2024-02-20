@@ -51,16 +51,13 @@ def dataIngestion(sparkConnection):
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     def to_gbq(data, client, destination_table_id):
-        if isinstance(data, pd.DataFrame):
-            df = data.copy()  # Avoid modifying the original DataFrame
-            job_config = bigquery.LoadJobConfig(write_disposition='WRITE_TRUNCATE')  # Specify write disposition
-            load_job = client.load_table_from_dataframe(
-                df,
-                destination_table_id,
-                job_config=job_config
-            )
-        else:
-            raise ValueError("Unsupported data format")
+        df = data.copy()  # Avoid modifying the original DataFrame
+        job_config = bigquery.LoadJobConfig(write_disposition='WRITE_TRUNCATE')  # Specify write disposition
+        load_job = client.load_table_from_dataframe(
+            df,
+            destination_table_id,
+            job_config=job_config
+        )
         return load_job
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)

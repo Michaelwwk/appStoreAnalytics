@@ -14,17 +14,17 @@ from pyspark.sql.types import *
 import warnings
 warnings.filterwarnings('ignore')
 
-# Function to convert pandas DataFrame to Spark DataFrame
-def pandas_to_spark(df, spark):
-    return spark.createDataFrame(df)
+# # Function to convert pandas DataFrame to Spark DataFrame
+# def pandas_to_spark(df, spark):
+#     return spark.createDataFrame(df)
 
-# Function to write Spark DataFrame to BigQuery
-def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
-    spark_df.write.format('bigquery') \
-        .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-        .save()
+# # Function to write Spark DataFrame to BigQuery
+# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
+#     spark_df.write.format('bigquery') \
+#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
+#         .save()
 
-def dataIngestion(sparkConnection):
+def dataIngestion():
     
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -40,18 +40,16 @@ def dataIngestion(sparkConnection):
     project_id =  googleAPI_dict["project_id"] # "big-data-analytics-412816"
     rawDataset = "practice_project"
     googleScraped_table_name = 'google_scraped'
-    googleReview_table_name = 'google_review'
-    # googleScraped_csv_path = f"{folder_path}/google_scraped.csv"
-    # googleReview_csv_path = f"{folder_path}/google_review.csv"
-    googleScraped_db_path = f"{project_id}.{rawDataset}.google_scraped"
-    googleReview_db_path = f"{project_id}.{rawDataset}.google_review"
+    googleReview_table_name = 'google_reviewsss'
+    googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
+    googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
     dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
-    def to_gbq(data, client, destination_table_id):
-        df = data.copy()  # Avoid modifying the original DataFrame
+    def to_gbq(df, client, destination_table_id):
+        df = df.copy()
         job_config = bigquery.LoadJobConfig(write_disposition='WRITE_TRUNCATE')  # Specify write disposition
         load_job = client.load_table_from_dataframe(
             df,

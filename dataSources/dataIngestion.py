@@ -188,6 +188,7 @@ def dataIngestion():
         csv_data_bytes = f.read()
         csv_data_string = csv_data_bytes.decode('utf-8')
         csv_data_file = StringIO(csv_data_string)
+        csv_data_file.seek(0)
         googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
     googleScraped_load_job.result()
 

@@ -16,6 +16,12 @@ from google_play_scraper import app, reviews, Sort
 import warnings
 warnings.filterwarnings('ignore')
 
+# To create runnable browser
+def run_chrome_headless(url):
+    chrome_path = "/usr/bin/google-chrome"  # Path to Google Chrome executable
+    cmd = [chrome_path, "--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", url]
+    subprocess.Popen(cmd)
+
 def dataIngestion():
     
     folder_path = os.getcwd().replace("\\", "/")
@@ -41,6 +47,9 @@ def dataIngestion():
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path)
+
+    url = "https://www.google.com"
+    run_chrome_headless(url)
 
     # Apple
     ## Clone the repository
@@ -68,14 +77,6 @@ def dataIngestion():
                 outfile.write(infile.read())
     ## Read into DataFrame
     google = pd.read_csv("Google-Playstore-Dataset.csv") # low_memory = False
-
-    # To create runnable browser
-    def run_chrome_headless(url):
-        chrome_path = "/usr/bin/google-chrome"  # Path to Google Chrome executable
-        cmd = [chrome_path, "--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", url]
-        subprocess.Popen(cmd)
-    url = "https://www.google.com"
-    run_chrome_headless(url)
 
     # Data Ingestion using 'google_play_scraper' API:
 

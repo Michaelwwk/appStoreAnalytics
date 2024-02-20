@@ -37,7 +37,7 @@ def dataIngestion(sparkConnection):
     reviewCountPerAppPerScore = 50
     country = 'us'
     language = 'en'
-    project_id =  googleAPI_dict["project_id"]
+    project_id =  "big-data-analytics-412816" # googleAPI_dict["project_id"]
     rawDataset = "practice_project"
     googleScraped_table_name = 'google_scraped'
     googleReview_table_name = 'google_review'

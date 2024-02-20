@@ -4,7 +4,6 @@ import glob
 import shutil
 import pandas as pd
 import json
-from io import StringIO
 from google.cloud import bigquery
 import pandas_gbq
 # from pandas_gbq import read_gbq
@@ -40,8 +39,10 @@ def dataIngestion(sparkConnection):
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    googleScraped_csv_path = f"{folder_path}/google_scraped.csv"
-    googleReview_csv_path = f"{folder_path}/google_review.csv"
+    googleScraped_table_name = 'google_scraped'
+    googleReview_table_name = 'google_review'
+    # googleScraped_csv_path = f"{folder_path}/google_scraped.csv"
+    # googleReview_csv_path = f"{folder_path}/google_review.csv"
     googleScraped_db_path = f"{project_id}.{rawDataset}.google_scraped"
     googleReview_db_path = f"{project_id}.{rawDataset}.google_review"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
@@ -50,6 +51,7 @@ def dataIngestion(sparkConnection):
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Apple
     ## Clone the repository
@@ -174,8 +176,8 @@ def dataIngestion(sparkConnection):
     spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
 
     # Write Spark DataFrame to BigQuery
-    write_spark_to_bigquery(spark_google_main, 'google_scraped', rawDataset, project_id)
-    write_spark_to_bigquery(spark_google_reviews, 'google_review', rawDataset, project_id)
+    write_spark_to_bigquery(spark_google_main, googleScraped_table_name, rawDataset, project_id)
+    write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
 
     # dtype = {col: 'STRING' for col in google_main.columns}
 

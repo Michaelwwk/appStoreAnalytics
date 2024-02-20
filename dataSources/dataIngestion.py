@@ -183,11 +183,11 @@ def dataIngestion():
 
     # Convert pandas DataFrame to Spark DataFrame
     spark_google_main = pandas_to_spark(google_main, sparkConnection)
-    spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
+    # spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
 
     # Write Spark DataFrame to BigQuery
     write_spark_to_bigquery(spark_google_main, googleScraped_table_name, rawDataset, project_id)
-    write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
+    # write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
 
     # dtype = {col: 'STRING' for col in google_main.columns}
 

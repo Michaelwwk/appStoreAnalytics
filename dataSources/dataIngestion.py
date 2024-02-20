@@ -10,19 +10,22 @@ import pandas_gbq
 # from pandas_gbq import read_gbq
 from datetime import datetime
 from pytz import timezone
-import webbrowser
-import subprocess
 from google_play_scraper import app, reviews, Sort
+from pyspark.sql.types import *
 import warnings
 warnings.filterwarnings('ignore')
 
-# To create runnable browser
-def run_chrome_headless(url):
-    chrome_path = "/usr/bin/google-chrome"  # Path to Google Chrome executable
-    cmd = [chrome_path, "--headless", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage", url]
-    subprocess.Popen(cmd)
+# Function to convert pandas DataFrame to Spark DataFrame
+def pandas_to_spark(df, spark):
+    return spark.createDataFrame(df)
 
-def dataIngestion():
+# Function to write Spark DataFrame to BigQuery
+def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
+    spark_df.write.format('bigquery') \
+        .option('table', f'{project_id}.{dataset_name}.{table_name}') \
+        .save(mode='overwrite')
+
+def dataIngestion(sparkConnection):
     
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -47,9 +50,6 @@ def dataIngestion():
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path)
-
-    url = "https://www.google.com"
-    run_chrome_headless(url)
 
     # Apple
     ## Clone the repository
@@ -149,8 +149,8 @@ def dataIngestion():
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} .. Error occurred: {e}\n")
 
-    google_main.to_csv(googleScraped_csv_path, header = True, index = False)
-    google_reviews.to_csv(googleReview_csv_path, header = True, index = False)
+    # google_main.to_csv(googleScraped_csv_path, header = True, index = False)
+    # google_reviews.to_csv(googleReview_csv_path, header = True, index = False)
 
     # Create tables into Google BigQuery
     try:
@@ -166,8 +166,16 @@ def dataIngestion():
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string!!
-    google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
-    google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+    # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
+    # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+
+    # Convert pandas DataFrame to Spark DataFrame
+    spark_google_main = pandas_to_spark(google_main, sparkConnection)
+    spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
+
+    # Write Spark DataFrame to BigQuery
+    write_spark_to_bigquery(spark_google_main, 'google_scraped', rawDataset, project_id)
+    write_spark_to_bigquery(spark_google_reviews, 'google_review', rawDataset, project_id)
 
     # dtype = {col: 'STRING' for col in google_main.columns}
 
@@ -252,8 +260,8 @@ def dataIngestion():
     ## Remove files and folder
     try:
         os.remove(dateTime_csv_path)
-        os.remove(googleScraped_csv_path)
-        os.remove(googleReview_csv_path)
+        # os.remove(googleScraped_csv_path)
+        # os.remove(googleReview_csv_path)
         os.remove(googleAPI_json_path)
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:

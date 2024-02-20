@@ -14,6 +14,8 @@ from pyspark.sql.types import *
 import warnings
 warnings.filterwarnings('ignore')
 
+from pyspark.sql import SparkSession
+
 # Function to convert pandas DataFrame to Spark DataFrame
 def pandas_to_spark(df, spark):
     return spark.createDataFrame(df)
@@ -24,7 +26,7 @@ def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
         .save()
 
-def dataIngestion(sparkConnection):
+def dataIngestion():
     
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -49,6 +51,14 @@ def dataIngestion(sparkConnection):
     dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
+
+    sparkConnection = SparkSession.builder \
+        .appName("YourAppName") \
+        .config("spark.jars.packages", "com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.23.2") \
+        .config("spark.hadoop.google.cloud.auth.service.account.enable", "true") \
+        .config("spark.hadoop.google.cloud.auth.service.account.json.keyfile", googleAPI_json_path) \
+        .config("spark.hadoop.fs.gs.project.id", project_id) \
+        .getOrCreate()
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
@@ -268,3 +278,5 @@ def dataIngestion(sparkConnection):
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass
+
+    sparkConnection.stop()

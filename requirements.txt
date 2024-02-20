@@ -8,6 +8,4 @@ app_store_scraper
 findspark
 pyspark
 pyarrow
-
-apt
 gcs-connector

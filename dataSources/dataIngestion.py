@@ -50,6 +50,19 @@ def dataIngestion(sparkConnection):
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
+    def to_gbq(data, client, destination_table_id):
+        if isinstance(data, pd.DataFrame):
+            df = data.copy()  # Avoid modifying the original DataFrame
+            # table_ref = client.dataset(destination_table_id.split('.')[0]).table(destination_table_id.split('.')[-1])
+            load_job = client.load_table_from_dataframe(
+                df,
+                destination_table_id,
+                write_disposition='WRITE_TRUNCATE'  # Append data to existing table
+            )
+        else:
+            raise ValueError("Unsupported data format")
+        return load_job
+
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
@@ -168,16 +181,20 @@ def dataIngestion(sparkConnection):
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string!!
+
+    load_job = to_gbq(google_main, client, f"{rawDataset}.{googleScraped_table_name}")
+    load_job.result()
+
     # google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
     # google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
 
-    # Convert pandas DataFrame to Spark DataFrame
-    spark_google_main = pandas_to_spark(google_main, sparkConnection)
-    spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
+    # # Convert pandas DataFrame to Spark DataFrame
+    # spark_google_main = pandas_to_spark(google_main, sparkConnection)
+    # spark_google_reviews = pandas_to_spark(google_reviews, sparkConnection)
 
-    # Write Spark DataFrame to BigQuery
-    write_spark_to_bigquery(spark_google_main, googleScraped_table_name, rawDataset, project_id)
-    write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
+    # # Write Spark DataFrame to BigQuery
+    # write_spark_to_bigquery(spark_google_main, googleScraped_table_name, rawDataset, project_id)
+    # write_spark_to_bigquery(spark_google_reviews, googleReview_table_name, rawDataset, project_id)
 
     # dtype = {col: 'STRING' for col in google_main.columns}
 

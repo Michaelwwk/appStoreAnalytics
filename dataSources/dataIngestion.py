@@ -41,12 +41,6 @@ def dataIngestion():
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path)
 
-    # To create runnable browser
-    urL='https://www.google.com'
-    chrome_path="/usr/bin/google-chrome"
-    webbrowser.register('chrome', None, webbrowser.BackgroundBrowser(chrome_path))
-    webbrowser.get('chrome').open_new_tab(urL)
-
     # Apple
     ## Clone the repository
     subprocess.run(["git", "clone", "https://github.com/gauthamp10/apple-appstore-apps.git"])
@@ -73,6 +67,12 @@ def dataIngestion():
                 outfile.write(infile.read())
     ## Read into DataFrame
     google = pd.read_csv("Google-Playstore-Dataset.csv") # low_memory = False
+
+    # To create runnable browser
+    urL='https://www.google.com'
+    chrome_path="/usr/bin/google-chrome"
+    webbrowser.register('chrome', None, webbrowser.BackgroundBrowser(chrome_path))
+    webbrowser.get('chrome').open_new_tab(urL)
 
     # Data Ingestion using 'google_play_scraper' API:
 

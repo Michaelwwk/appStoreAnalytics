@@ -23,7 +23,7 @@ def pandas_to_spark(df, spark):
 def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
     spark_df.write.format('bigquery') \
         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-        .save(mode='overwrite')
+        .save()
 
 def dataIngestion(sparkConnection):
     

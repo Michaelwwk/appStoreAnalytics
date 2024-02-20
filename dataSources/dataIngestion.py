@@ -4,6 +4,7 @@ import glob
 import shutil
 import pandas as pd
 import json
+from io import StringIO
 from google.cloud import bigquery
 from pandas_gbq import read_gbq
 from datetime import datetime
@@ -183,7 +184,10 @@ def dataIngestion():
     source_format=bigquery.SourceFormat.CSV
     )
     google_scraped_config = client.dataset(rawDataset).table('google_scraped')
-    with open(googleScraped_csv_path, 'r') as f:
+    with open(googleScraped_csv_path, 'rb') as f:
+        csv_data_bytes = f.read()
+        csv_data_string = csv_data_bytes.decode('utf-8')
+        csv_data_file = StringIO(csv_data_string)
         googleScraped_load_job = client.load_table_from_file(f, google_scraped_config, job_config=googleScraped_job_config)
     googleScraped_load_job.result()
 

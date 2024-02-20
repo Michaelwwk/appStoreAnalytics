@@ -6,7 +6,8 @@ import pandas as pd
 import json
 from io import StringIO
 from google.cloud import bigquery
-from pandas_gbq import read_gbq
+import pandas_gbq
+# from pandas_gbq import read_gbq
 from datetime import datetime
 from pytz import timezone
 from google_play_scraper import app, reviews, Sort
@@ -153,9 +154,23 @@ def dataIngestion():
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    google_main = google_main.astype(str) # all columns will be string!!
+    # google_main = google_main.astype(str) # all columns will be string!!
     google_main.to_gbq(destination_table=googleScraped_db_path, project_id=project_id, if_exists='replace')
     google_reviews.to_gbq(destination_table=googleReview_db_path, project_id=project_id, if_exists='replace')
+
+    dtype = {col: 'STRING' for col in google_main.columns}
+
+    pandas_gbq.to_gbq(google_main,
+                  destination_table=googleScraped_db_path,
+                  project_id=project_id,
+                  if_exists='replace',
+                  table_schema=dtype)
+    
+    pandas_gbq.to_gbq(google_reviews,
+                destination_table=googleScraped_db_path,
+                project_id=project_id,
+                if_exists='replace',
+                table_schema=None)
 
     # # Read CSV files into strings
     # with open(googleScraped_csv_path, 'r') as f:

@@ -35,6 +35,7 @@ def dataIngestion():
     # Hard-coded variables
     googleAppsSample = 999 # 999 = all samples!
     reviewCountPerAppPerScore = 100
+    saveReviews = True
     country = 'us'
     language = 'en'
     requests_per_second = None # None = turn off throttling!
@@ -148,33 +149,32 @@ def dataIngestion():
 
             for feature in mainFeaturesToDrop:
                 app_results.pop(feature, None)
-            
             row = [value for value in app_results.values()]
             google_main.loc[len(google_main)] = row
 
-            for score in range(1,6):
+            if saveReviews == True:
 
-                review, continuation_token = reviewsWithThrottle(
-                    appId,
-                    lang=language,
-                    country=country,
-                    sort=Sort.NEWEST,
-                    count=reviewCountPerAppPerScore,
-                    filter_score_with=score,
-                    delay_between_requests = delay_between_requests
-                )
+                for score in range(1,6):
+                    review, continuation_token = reviewsWithThrottle(
+                        appId,
+                        lang=language,
+                        country=country,
+                        sort=Sort.NEWEST,
+                        count=reviewCountPerAppPerScore,
+                        filter_score_with=score,
+                        delay_between_requests = delay_between_requests
+                    )
 
-                for count in reviewCountRange:
-
-                    try:
-                        for feature in reviewFeaturesToDrop:
-                            review[count].pop(feature, None)
-                        row = [value for value in review[count].values()]
-                        row.append(appId)
-                        google_reviews.loc[len(google_reviews)] = row
-                        appReviewCounts += 1
-                    except IndexError:
-                        continue
+                    for count in reviewCountRange:
+                        try:
+                            for feature in reviewFeaturesToDrop:
+                                review[count].pop(feature, None)
+                            row = [value for value in review[count].values()]
+                            row.append(appId)
+                            google_reviews.loc[len(google_reviews)] = row
+                            appReviewCounts += 1
+                        except IndexError:
+                            continue
             
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")

@@ -206,7 +206,7 @@ def dataIngestion():
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName)
     load_job.result()
 
-    # Create 'dateTime' table in DB
+    # Create 'dateTime' table and push info into DB
     job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
     client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
     current_time = datetime.now(timezone('Asia/Shanghai'))

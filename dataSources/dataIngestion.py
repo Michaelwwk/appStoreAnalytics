@@ -34,7 +34,7 @@ def dataIngestion():
 
     # Hard-coded variables
     googleAppsSample = 999 # 999 = all samples!
-    reviewCountPerAppPerScore = 100
+    reviewCountPerAppPerScore = 50
     saveReviews = False
     country = 'us'
     language = 'en'

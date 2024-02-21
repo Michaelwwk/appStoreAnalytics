@@ -178,13 +178,11 @@ def dataIngestion():
             
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
-                print(f'Google: {len(google_main)}/{appsChecked} app(s) & {len(google_reviews)} review(s) saved. {round(appsChecked/len(google)*100,1)}% completed.')
+            print(f'Google: {len(google_main)}/{appsChecked} app(s) & {len(google_reviews)} review(s) saved. {appsChecked/len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
-            error_message = str(e)
-            if error_message != 'App not found(404).':
-                print(error_message)
+            print(e)
             
     # Create tables into Google BigQuery
     try:

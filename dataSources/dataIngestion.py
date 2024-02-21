@@ -1,4 +1,5 @@
 import os
+import time
 import subprocess
 import glob
 import shutil
@@ -7,6 +8,7 @@ import json
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
+from urllib.error import HTTPError
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from commonFunctions import to_gbq
@@ -36,11 +38,14 @@ def dataIngestion():
     reviewCountPerAppPerScore = 1000
     country = 'us'
     language = 'en'
+    requests_per_second = 10 # None = turn off throttling!
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
     googleScraped_table_name = 'google_scraped'
     googleReview_table_name = 'google_reviews'
+    googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
+    googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
     dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
     dateTime_csv_path = f"{folder_path}/dateTime.csv"
@@ -100,17 +105,46 @@ def dataIngestion():
         os.remove(log_file_path)
     except:
         pass
+    
+    if requests_per_second != None:
+        delay_between_requests = 1 / requests_per_second
+    else:
+        delay_between_requests = None
+
+    def appWithThrottle(appId, lang = 'en', country = 'us', delay_between_requests = None):
+        output = app(
+                    appId,
+                    lang=lang, # defaults to 'en'
+                    country=country # defaults to 'us'
+                    )
+        if delay_between_requests != None:
+            time.sleep(delay_between_requests)
+        return output
+    
+    def reviewsWithThrottle(appId, lang = 'en', country = 'us', sort = Sort, count = 100, filter_score_with = None, delay_between_requests = None):
+        output = reviews(
+                        appId,
+                        lang=lang, # defaults to 'en'
+                        country=country, # defaults to 'us'
+                        sort=Sort.NEWEST, # defaults to Sort.NEWEST
+                        count=reviewCountPerAppPerScore, # defaults to 100
+                        filter_score_with=score # defaults to None(means all score)
+                        )
+        if delay_between_requests != None:
+            time.sleep(delay_between_requests)
+        return output
 
     for appId in google.iloc[:, 1]:
 
         appReviewCounts = 0
 
         try:
-            app_results = app(
-            appId,
-            lang=language, # defaults to 'en'
-            country=country # defaults to 'us'
-            )
+            app_results = appWithThrottle(
+                                    appId,
+                                    lang=language,
+                                    country=country,
+                                    delay_between_requests = delay_between_requests
+                                    )
 
             for feature in mainFeaturesToDrop:
                 app_results.pop(feature, None)
@@ -120,13 +154,14 @@ def dataIngestion():
 
             for score in range(1,6):
 
-                review, continuation_token = reviews(
+                review, continuation_token = reviewsWithThrottle(
                     appId,
-                    lang=language, # defaults to 'en'
-                    country=country, # defaults to 'us'
-                    sort=Sort.NEWEST, # defaults to Sort.NEWEST
-                    count=reviewCountPerAppPerScore, # defaults to 100
-                    filter_score_with=score # defaults to None(means all score)
+                    lang=language,
+                    country=country,
+                    sort=Sort.NEWEST,
+                    count=reviewCountPerAppPerScore,
+                    filter_score_with=score,
+                    delay_between_requests = delay_between_requests
                 )
 
                 for count in reviewCountRange:
@@ -134,7 +169,7 @@ def dataIngestion():
                     try:
                         for feature in reviewFeaturesToDrop:
                             review[count].pop(feature, None)
-                        row = [value for value in review[count].values()]
+                        row = [value for value in review[count].values()] # TODO test on pokemon!
                         row.append(appId)
                         google_reviews.loc[len(google_reviews)] = row
                         appReviewCounts += 1
@@ -147,7 +182,9 @@ def dataIngestion():
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} .. Error occurred: {e}\n")
-
+            if not isinstance(e, HTTPError):
+                print(e)
+            
     # Create tables into Google BigQuery
     try:
         job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
@@ -162,11 +199,11 @@ def dataIngestion():
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string
-    load_job = to_gbq(google_main, client, f"{rawDataset}.{googleScraped_table_name}")
+    load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
     load_job.result()
 
     # google_reviews = google_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(google_reviews, client, f"{rawDataset}.{googleReview_table_name}")
+    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName)
     load_job.result()
 
     # Create 'dateTime' table in DB

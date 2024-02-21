@@ -169,7 +169,7 @@ def dataIngestion():
                     try:
                         for feature in reviewFeaturesToDrop:
                             review[count].pop(feature, None)
-                        row = [value for value in review[count].values()] # TODO test on pokemon!
+                        row = [value for value in review[count].values()]
                         row.append(appId)
                         google_reviews.loc[len(google_reviews)] = row
                         appReviewCounts += 1
@@ -181,7 +181,7 @@ def dataIngestion():
             
         except Exception as e:
             with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} .. Error occurred: {e}\n")
+                log_file.write(f"{appId} -> Error occurred: {e}\n")
             if not isinstance(e, HTTPError):
                 print(e)
             

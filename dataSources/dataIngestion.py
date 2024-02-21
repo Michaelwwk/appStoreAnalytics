@@ -35,7 +35,7 @@ def dataIngestion():
 
     # Hard-coded variables
     googleAppsSample = 999 # 999 = all samples!
-    reviewCountPerAppPerScore = 1000
+    reviewCountPerAppPerScore = 50
     country = 'us'
     language = 'en'
     requests_per_second = 10 # None = turn off throttling!

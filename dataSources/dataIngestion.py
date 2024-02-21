@@ -5,7 +5,6 @@ import glob
 import shutil
 import pandas as pd
 import json
-import urllib.error
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
@@ -183,8 +182,9 @@ def dataIngestion():
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
-            if not(isinstance(e, urllib.error.HTTPError) and e.code == 404):
-                print(e)
+            error_message = str(e)
+            if error_message != 'App not found(404).':
+                print(error_message)
             
     # Create tables into Google BigQuery
     try:

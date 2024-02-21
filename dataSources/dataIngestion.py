@@ -5,10 +5,10 @@ import glob
 import shutil
 import pandas as pd
 import json
+import urllib.error
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
-from urllib.error import HTTPError
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from commonFunctions import to_gbq
@@ -134,8 +134,9 @@ def dataIngestion():
             time.sleep(delay_between_requests)
         return output
 
+    appsChecked = 0
     for appId in google.iloc[:, 1]:
-
+        appsChecked += 1
         appReviewCounts = 0
 
         try:
@@ -178,11 +179,11 @@ def dataIngestion():
             
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
-            
+                print(f'Google: {len(google_main)}/{appsChecked} app(s) & {len(google_reviews)} review(s) saved. {round(appsChecked/len(google)*100,1)}% completed.')
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
-            if not isinstance(e, HTTPError):
+            if not(isinstance(e, urllib.error.HTTPError) and e.code == 404):
                 print(e)
             
     # Create tables into Google BigQuery

@@ -189,11 +189,13 @@ def dataIngestionApple():
                                     delay_between_requests = delay_between_requests
                                     )
             # row = list(app_results.values())
-            row = [str(value) for value in app_results.values()]
-            row.append(str(appId))
-            if row:
+            # row = [str(value) for value in app_results.values()]
+            # row.append(str(appId))
+            app_results['appId'] = appId
+            if any(value for value in app_results.values()):
                 mainCount += 1
-            load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_main), client, appleScraped_db_dataSetTableName)
+            # load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_main), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+            load_job = to_gbq(pd.DataFrame(app_results), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
             load_job.result()
             
             if saveReviews == True:
@@ -214,7 +216,7 @@ def dataIngestionApple():
                         row.update(zip(review[count].keys(), row_values))
                         if row:
                             reviewCount += 1
-                        load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_reviews), client, appleReview_db_dataSetTableName)
+                        load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_reviews), client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')
                         load_job.result()
                         appReviewCounts += 1
                     except IndexError:

@@ -72,12 +72,22 @@ def dataIngestionApple():
     ## Read into DataFrame
     apple = pd.read_json("appleAppData.json")
 
-    # Data Ingestion using 'app_store_scraper' API:
+    # Create tables into Google BigQuery
+    try:
+        job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
+    except:
+        pass
+    client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
+    try:
+        job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
+    except:
+        pass
+    client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
-    apple_main = pd.DataFrame(columns = ['name', 'description', 'applicationCategory', 'datePublished',
-                                          'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price', 'priceCurrency', 'star_ratings', 'appId'])
+    apple_main = ['name', 'description', 'applicationCategory', 'datePublished',
+                 'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price', 'priceCurrency', 'star_ratings', 'appId']
     
-    apple_reviews = pd.DataFrame(columns = ['appId', 'developerResponse', 'date', 'review', 'rating', 'isEdited', 'title', 'userName'])
+    apple_reviews = ['appId', 'developerResponse', 'date', 'review', 'rating', 'isEdited', 'title', 'userName']
 
     reviewCountRange = range(0,appleReviewCountPerApp)
 
@@ -93,7 +103,6 @@ def dataIngestionApple():
         delay_between_requests = 1 / requests_per_second
     else:
         delay_between_requests = None
-
 
     # Data Ingestion using BeautifulSoup
 
@@ -147,6 +156,8 @@ def dataIngestionApple():
         return info.reviews
         
     appsChecked = 0
+    mainCount = 0
+    reviewCount = 0
     for url in apple.iloc[:, 2]:
 
         # Extract the portion after the last "/"
@@ -177,9 +188,12 @@ def dataIngestionApple():
                                     country=country,
                                     delay_between_requests = delay_between_requests
                                     )
-            row = [value for value in app_results.values()]
-            row.append(appId)
-            apple_main.loc[len(apple_main)] = row
+            row = [value.astype(str) for value in app_results.values()]
+            row.append(appId.astype(str))
+            if row:
+                mainCount += 1
+            load_job = to_gbq(pd.DataFrame(data = row, columns = apple_main), client, appleScraped_db_dataSetTableName)
+            load_job.result()
             
             if saveReviews == True:
                 review = reviewsWithThrottle(
@@ -197,43 +211,22 @@ def dataIngestionApple():
                         row = {'appId': appId}
                         row['developerResponse'] = developer_response
                         row.update(zip(review[count].keys(), row_values))
-                        apple_reviews.loc[len(apple_reviews)] = row
+                        if row:
+                            reviewCount += 1
+                        load_job = to_gbq(pd.DataFrame(data = row, columns = apple_reviews), client, appleReview_db_dataSetTableName)
+                        load_job.result()
                         appReviewCounts += 1
                     except IndexError:
                         continue
 
             with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(mainCount)} app(s) & {len(reviewCount)} review(s) saved.\n")
+            print(f'Apple: {len(mainCount)}/{appsChecked} app(s) & {len(reviewCount)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Apple: {e}")
-
-    # Drop duplicates
-    apple_main.drop_duplicates(subset = ['appId'], inplace = True)
-
-    # Create tables into Google BigQuery
-    try:
-        job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
-    except:
-        pass
-    client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
-    try:
-        job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
-    except:
-        pass
-    client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
-
-    # Push data into DB
-    apple_main = apple_main.astype(str) # all columns will be string
-    load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName)
-    load_job.result()
-
-    # apple_reviews = apple_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName)
-    load_job.result()
 
     # # Create 'dateTime' table and push info into DB
     # job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()

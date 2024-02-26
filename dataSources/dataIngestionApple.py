@@ -43,7 +43,7 @@ def dataIngestionApple():
     appleAppsSample = 999 # 999 = all samples!
     saveReviews = False
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
-    requests_per_second = 1 # None = turn off throttling!
+    requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]

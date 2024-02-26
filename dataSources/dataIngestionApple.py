@@ -42,7 +42,7 @@ def dataIngestionApple():
     # Hard-coded variables
     appleAppsSample = 10 # 999 = all samples!
     appleReviewCountPerApp = 100 # in batches of 20!
-    saveReviews = False
+    saveReviews = True
     country = 'us'
     language = 'en'
     requests_per_second = 1 # None = turn off throttling!

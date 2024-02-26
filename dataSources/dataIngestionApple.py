@@ -40,8 +40,8 @@ def dataIngestionApple():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 10 # 999 = all samples!
-    appleReviewCountPerApp = 100 # in batches of 20!
+    appleAppsSample = 100 # 999 = all samples!
+    appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
     saveReviews = True
     country = 'us'
     language = 'en'
@@ -203,14 +203,14 @@ def dataIngestionApple():
                         appReviewCounts += 1
                     except IndexError:
                         continue
+            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
         except Exception as e:
+            print(f"Apple: {e}")
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
-            print(f"Apple: {e}")
-
+                
     # Drop duplicates
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
 

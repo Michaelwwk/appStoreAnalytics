@@ -197,7 +197,7 @@ def dataIngestionApple():
             if any(value for value in app_results.values()):
                 mainCount += 1
             # load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_main), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
-            load_job = to_gbq(pd.DataFrame(app_results), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+            load_job = to_gbq(pd.DataFrame([app_results]), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
             load_job.result()
             
             if saveReviews == True:

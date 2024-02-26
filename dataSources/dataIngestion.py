@@ -34,11 +34,11 @@ def dataIngestion():
 
     # Hard-coded variables
     googleAppsSample = 999 # 999 = all samples!
-    reviewCountPerAppPerScore = 100
     saveReviews = False
+    reviewCountPerAppPerScore = 100
+    requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
-    requests_per_second = None # None = turn off throttling!
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
     googleScraped_table_name = 'google_scraped'

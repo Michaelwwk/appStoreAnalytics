@@ -18,6 +18,8 @@ from pyspark.sql.types import *
 from commonFunctions import to_gbq
 import warnings
 warnings.filterwarnings('ignore')
+import logging
+logging.basicConfig(level=logging.ERROR)
 
 # # Function to convert pandas DataFrame to Spark DataFrame
 # def pandas_to_spark(df, spark):
@@ -38,7 +40,7 @@ def dataIngestionApple():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 100 # 999 = all samples!
+    appleAppsSample = 10 # 999 = all samples!
     appleReviewCountPerApp = 100 # in batches of 20!
     saveReviews = False
     country = 'us'

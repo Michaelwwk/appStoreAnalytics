@@ -42,7 +42,7 @@ def dataIngestionApple():
     # Hard-coded variables
     appleAppsSample = 100 # 999 = all samples!
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
-    saveReviews = True
+    saveReviews = False
     country = 'us'
     language = 'en'
     requests_per_second = 1 # None = turn off throttling!
@@ -180,8 +180,6 @@ def dataIngestionApple():
             row = [value for value in app_results.values()]
             row.append(appId)
             apple_main.loc[len(apple_main)] = row
-
-            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
             
             if saveReviews == True:
                 review = reviewsWithThrottle(
@@ -203,10 +201,11 @@ def dataIngestionApple():
                         appReviewCounts += 1
                     except IndexError:
                         continue
-                    
+
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-        
+            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+
         except Exception as e:
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")

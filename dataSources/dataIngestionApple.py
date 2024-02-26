@@ -192,6 +192,8 @@ def dataIngestionApple():
             # row = [str(value) for value in app_results.values()]
             # row.append(str(appId))
             app_results['appId'] = appId
+            for key, value in app_results.items():
+                app_results[key] = str(value)
             if any(value for value in app_results.values()):
                 mainCount += 1
             # load_job = to_gbq(pd.DataFrame(data = [row], columns = apple_main), client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')

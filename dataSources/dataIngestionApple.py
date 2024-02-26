@@ -73,15 +73,15 @@ def dataIngestionApple():
     apple = pd.read_json("appleAppData.json")
 
     # Create tables into Google BigQuery
-    try:
-        job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
-    except:
-        pass
+    # try:
+    #     job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
+    # except:
+    #     pass
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
-    try:
-        job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
-    except:
-        pass
+    # try:
+    #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
+    # except:
+    #     pass
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     apple_main = ['name', 'description', 'applicationCategory', 'datePublished',

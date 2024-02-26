@@ -1,4 +1,5 @@
 pandas
+numpy
 google-cloud-bigquery
 pandas-gbq
 datetime
@@ -8,3 +9,6 @@ app_store_scraper
 findspark
 pyspark
 pyarrow
+requests
+re
+BeautifulSoup

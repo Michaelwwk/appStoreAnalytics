@@ -181,15 +181,15 @@ def dataIngestionApple():
             row.append(appId)
             apple_main.loc[len(apple_main)] = row
 
-            if saveReviews == True:
-
+            if saveReviews != True:
+                print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & 0 review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+            else:
                 review = reviewsWithThrottle(
                     app_id = appId,
                     country = country,
                     reviewCount = appleReviewCountPerApp,
                     delay_between_requests = delay_between_requests
                 )
-
                 for count in reviewCountRange:
                     try:
                         developer_response = review[count].get('developerResponse')
@@ -201,16 +201,16 @@ def dataIngestionApple():
                         row.update(zip(review[count].keys(), row_values))
                         apple_reviews.loc[len(apple_reviews)] = row
                         appReviewCounts += 1
+                        print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
                     except IndexError:
                         continue
-            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
         except Exception as e:
-            print(f"Apple: {e}")
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Error occurred: {e}\n")
-                
+            print(f"Apple: {e}")
+
     # Drop duplicates
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
 

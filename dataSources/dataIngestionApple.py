@@ -48,8 +48,8 @@ def dataIngestionApple():
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    appleScraped_table_name = 'apple_scraped'
-    appleReview_table_name = 'apple_reviews'
+    appleScraped_table_name = 'apple_scraped_TEST'
+    appleReview_table_name = 'apple_reviews_TEST'
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"

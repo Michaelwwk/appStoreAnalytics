@@ -10,5 +10,4 @@ findspark
 pyspark
 pyarrow
 requests
-re
 BeautifulSoup

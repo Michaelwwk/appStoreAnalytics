@@ -41,7 +41,7 @@ def dataIngestionApple():
 
     # Hard-coded variables
     appleAppsSample = 999 # 999 = all samples!
-    saveReviews = False
+    saveReviews = True
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
     requests_per_second = None # None = turn off throttling!
     country = 'us'
@@ -188,8 +188,9 @@ def dataIngestionApple():
                                     country=country,
                                     delay_between_requests = delay_between_requests
                                     )
-            row = [value.astype(str) for value in app_results.values()]
-            row.append(appId.astype(str))
+            row = list(app_results.values())
+            # row = [str(value) for value in app_results.values()]
+            row.append(str(appId))
             if row:
                 mainCount += 1
             load_job = to_gbq(pd.DataFrame(data = row, columns = apple_main), client, appleScraped_db_dataSetTableName)

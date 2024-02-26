@@ -41,7 +41,7 @@ def dataIngestionApple():
 
     # Hard-coded variables
     appleAppsSample = 999 # 999 = all samples!
-    saveReviews = True
+    saveReviews = False
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
     requests_per_second = None # None = turn off throttling!
     country = 'us'
@@ -188,8 +188,8 @@ def dataIngestionApple():
                                     country=country,
                                     delay_between_requests = delay_between_requests
                                     )
-            row = list(app_results.values())
-            # row = [str(value) for value in app_results.values()]
+            # row = list(app_results.values())
+            row = [str(value) for value in app_results.values()]
             row.append(str(appId))
             if row:
                 mainCount += 1

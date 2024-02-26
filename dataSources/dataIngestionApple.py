@@ -38,10 +38,9 @@ def dataIngestionApple():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 10 # 999 = all samples!
+    appleAppsSample = 100 # 999 = all samples!
     appleReviewCountPerApp = 100 # in batches of 20!
-    reviewCountPerAppPerScore = 100
-    saveReviews = True
+    saveReviews = False
     country = 'us'
     language = 'en'
     requests_per_second = 1 # None = turn off throttling!
@@ -78,7 +77,7 @@ def dataIngestionApple():
     
     apple_reviews = pd.DataFrame(columns = ['appId', 'developerResponse', 'date', 'review', 'rating', 'isEdited', 'title', 'userName'])
 
-    reviewCountRange = range(0,reviewCountPerAppPerScore)
+    reviewCountRange = range(0,appleReviewCountPerApp)
 
     if appleAppsSample != 999:
         apple = apple.sample(appleAppsSample)

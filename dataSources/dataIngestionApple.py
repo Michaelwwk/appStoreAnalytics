@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 # from google_play_scraper import app, reviews, Sort
 from app_store_scraper import AppStore
 from pyspark.sql.types import *
-from commonFunctions import to_gbq
+from commonFunctions import to_gbq, split_df
 import warnings
 warnings.filterwarnings('ignore')
 import logging
@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.ERROR)
 #         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
 #         .save()
 
-def dataIngestionApple():
+def dataIngestionApple(noOfSlices = 1, subDf = 1):
     
     # folder_path = os.getcwd().replace("\\", "/")
     # Set folder path
@@ -154,6 +154,7 @@ def dataIngestionApple():
         return info.reviews
         
     appsChecked = 0
+    apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
     for url in apple.iloc[:, 2]:
 
         # Extract the portion after the last "/"

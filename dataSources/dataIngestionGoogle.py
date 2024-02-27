@@ -10,7 +10,7 @@ from google.cloud import bigquery
 # from pytz import timezone
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
-from commonFunctions import to_gbq
+from commonFunctions import to_gbq, split_df
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 #         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
 #         .save()
 
-def dataIngestionGoogle():
+def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -138,6 +138,7 @@ def dataIngestionGoogle():
         return output
 
     appsChecked = 0
+    google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
     for appId in google.iloc[:, 1]:
         appsChecked += 1
         appReviewCounts = 0

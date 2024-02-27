@@ -202,10 +202,11 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                         appReviewCounts += 1
                     except IndexError:
                         continue
-
+            
+            matchedAppleMain = len(apple_main[apple_main['name'] != 'App Store'])
             # with open(log_file_path, "a") as log_file:
                 # log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(apple_main[apple_main['name'] != 'App Store'])}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+            print(f'Apple: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
             # with open(log_file_path, "a") as log_file:

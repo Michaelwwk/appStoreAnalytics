@@ -260,6 +260,6 @@ def dataIngestionApple():
     try:
         # os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
+        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

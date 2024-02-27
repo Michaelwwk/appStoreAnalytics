@@ -8,8 +8,8 @@ from dataSources.dateTime import dateTime
 # Start Spark session
 spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
 
-dataIngestionApple(noOfSlices = 1, subDf = 1)
-dataIngestionGoogle(noOfSlices = 1, subDf = 1)
+dataIngestionApple(noOfSlices = 2, subDf = 1)
+dataIngestionGoogle(noOfSlices = 2, subDf = 1)
 dataWrangling()
 finalizedMLModels()
 dateTime()

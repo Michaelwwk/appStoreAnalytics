@@ -46,8 +46,8 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    googleScraped_table_name = 'google_scraped_test3' # TODO CHANGE PATH
-    googleReview_table_name = 'google_reviews_test3' # TODO CHANGE PATH
+    googleScraped_table_name = 'google_scraped_test4' # TODO CHANGE PATH
+    googleReview_table_name = 'google_reviews_test4' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"

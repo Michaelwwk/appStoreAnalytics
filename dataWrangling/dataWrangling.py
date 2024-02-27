@@ -1,11 +1,11 @@
-import pandas as pd
-import os
-import json
-from main import spark
-from commonFunctions import to_gbq_parquet
-from google.cloud import bigquery
-
 def dataWrangling():
+
+    import pandas as pd
+    import os
+    import json
+    from main import spark
+    from commonFunctions import to_gbq_parquet
+    from google.cloud import bigquery
 
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -31,6 +31,8 @@ def dataWrangling():
     # # Read the CSV file into a Spark DataFrame
     # df_spark = spark.read.csv("your_file.csv", header=True, inferSchema=True)
 
+    # Need to review syntaxes for below portion!!
+    """
     # Read data from BigQuery into a Spark DataFrame
     df_spark = spark.read.format("bigquery") \
         .option("table", "project_id.dataset.table_name") \
@@ -59,3 +61,4 @@ def dataWrangling():
 
     # Push Parquet to GBQ
     to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
+    """

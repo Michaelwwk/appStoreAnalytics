@@ -1,6 +1,7 @@
+from pyspark.sql import SparkSession
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
-from pyspark.sql import SparkSession
+from dataWrangling.dataWrangling import dataWrangling
 from dataSources.dateTime import dateTime
 
 # Start Spark session
@@ -9,8 +10,7 @@ spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config
 
 dataIngestionApple()
 dataIngestionGoogle()
-from dataWrangling.dataWrangling import dataWrangling
-# dataWrangling()
+dataWrangling()
 # finalizedMLModels()
 dateTime()
 

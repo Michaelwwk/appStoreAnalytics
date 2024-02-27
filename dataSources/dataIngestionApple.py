@@ -73,6 +73,10 @@ def dataIngestionApple():
     ## Read into DataFrame
     apple = pd.read_json("appleAppData.json")
 
+    # reset folder path
+    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+
     # Data Ingestion using 'app_store_scraper' API:
 
     apple_main = pd.DataFrame(columns = ['name', 'description', 'applicationCategory', 'datePublished',

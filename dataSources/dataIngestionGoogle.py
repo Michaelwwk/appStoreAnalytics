@@ -213,5 +213,3 @@ def dataIngestionGoogle():
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass
-
-    print(folder_path)

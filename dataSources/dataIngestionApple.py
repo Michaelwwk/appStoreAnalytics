@@ -40,10 +40,10 @@ def dataIngestionApple():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 30 # 999 = all samples!
-    saveReviews = True
-    appleReviewCountPerApp = 1 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
-    requests_per_second = 1 # None = turn off throttling!
+    appleAppsSample = 50 # 999 = all samples!
+    saveReviews = False
+    appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
+    requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]

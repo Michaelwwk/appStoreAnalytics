@@ -33,9 +33,9 @@ def dataIngestionGoogle():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 999 # 999 = all samples!
-    saveReviews = False
-    reviewCountPerAppPerScore = 100
+    googleAppsSample = 50 # 999 = all samples!
+    saveReviews = True
+    reviewCountPerApp = 40
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
@@ -96,7 +96,7 @@ def dataIngestionGoogle():
     mainFeaturesToDrop = ['url', 'comments', 'video', 'videoImage', 'screenshots', 'headerImage', 'icon', 'privacyPolicy', 'developerWebsite', 'developerEmail']
     reviewFeaturesToDrop = ['userImage']
 
-    reviewCountRange = range(0,reviewCountPerAppPerScore)
+    reviewCountRange = range(0,reviewCountPerApp)
 
     if googleAppsSample != 999:
         google = google.sample(googleAppsSample)
@@ -121,13 +121,13 @@ def dataIngestionGoogle():
             time.sleep(delay_between_requests)
         return output
     
-    def reviewsWithThrottle(appId, lang = 'en', country = 'us', sort = Sort, count = 100, filter_score_with = None, delay_between_requests = None):
+    def reviewsWithThrottle(appId, lang = 'en', country = 'us', count = 100, score = None, delay_between_requests = None):
         output = reviews(
                         appId,
                         lang=lang, # defaults to 'en'
                         country=country, # defaults to 'us'
                         sort=Sort.NEWEST, # defaults to Sort.NEWEST
-                        count=reviewCountPerAppPerScore, # defaults to 100
+                        count=count, # defaults to 100
                         filter_score_with=score # defaults to None(means all score)
                         )
         if delay_between_requests != None:
@@ -154,27 +154,26 @@ def dataIngestionGoogle():
 
             if saveReviews == True:
 
-                for score in range(1,6):
-                    review, continuation_token = reviewsWithThrottle(
-                        appId,
-                        lang=language,
-                        country=country,
-                        sort=Sort.NEWEST,
-                        count=reviewCountPerAppPerScore,
-                        filter_score_with=score,
-                        delay_between_requests = delay_between_requests
-                    )
+                # for score in range(1,6):
+                review, continuation_token = reviewsWithThrottle(
+                    appId,
+                    lang=language,
+                    country=country,
+                    count=reviewCountPerApp,
+                    filter_score_with=None,
+                    delay_between_requests = delay_between_requests
+                )
 
-                    for count in reviewCountRange:
-                        try:
-                            for feature in reviewFeaturesToDrop:
-                                review[count].pop(feature, None)
-                            row = [value for value in review[count].values()]
-                            row.append(appId)
-                            google_reviews.loc[len(google_reviews)] = row
-                            appReviewCounts += 1
-                        except IndexError:
-                            continue
+                for count in reviewCountRange:
+                    try:
+                        for feature in reviewFeaturesToDrop:
+                            review[count].pop(feature, None)
+                        row = [value for value in review[count].values()]
+                        row.append(appId)
+                        google_reviews.loc[len(google_reviews)] = row
+                        appReviewCounts += 1
+                    except IndexError:
+                        continue
             
             with open(log_file_path, "a") as log_file:
                 log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
@@ -190,11 +189,11 @@ def dataIngestionGoogle():
     except:
         pass
     client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
-    try:
-        job = client.query(f"DELETE FROM {googleReview_db_path} WHERE TRUE").result()
-    except:
-        pass
-    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
+    # try:
+    #     job = client.query(f"DELETE FROM {googleReview_db_path} WHERE TRUE").result()
+    # except:
+    #     pass
+    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True, )
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string
@@ -202,7 +201,7 @@ def dataIngestionGoogle():
     load_job.result()
 
     # google_reviews = google_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName)
+    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 
     ## Remove files and folder

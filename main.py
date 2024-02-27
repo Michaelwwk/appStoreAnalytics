@@ -9,6 +9,8 @@ spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config
 
 dataIngestionApple()
 dataIngestionGoogle()
+# dataWrangling()
+# finalizedMLModels()
 dateTime()
 
 # Stop Spark session

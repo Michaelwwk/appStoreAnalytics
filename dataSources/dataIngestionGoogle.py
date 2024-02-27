@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 
 def dataIngestionGoogle():
     
-    # reset folder path
+    # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
     folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"

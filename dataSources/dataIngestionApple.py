@@ -33,7 +33,10 @@ logging.basicConfig(level=logging.ERROR)
 
 def dataIngestionApple():
     
-    folder_path = os.getcwd().replace("\\", "/")
+    # folder_path = os.getcwd().replace("\\", "/")
+    # Set folder path
+    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
 
@@ -73,9 +76,9 @@ def dataIngestionApple():
     ## Read into DataFrame
     apple = pd.read_json("appleAppData.json")
 
-    # reset folder path
-    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    # Reset folder path
+    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
 
     # Data Ingestion using 'app_store_scraper' API:
 
@@ -264,6 +267,6 @@ def dataIngestionApple():
     try:
         # os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
+        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

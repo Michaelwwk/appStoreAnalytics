@@ -1,7 +1,7 @@
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataSources.dateTime import dateTime
-from dataWrangling.dataWrangling import dataWrangling
+from dataWrangling.dataWranglingScript import dataWrangling
 from pyspark.sql import SparkSession
 
 # Start Spark session

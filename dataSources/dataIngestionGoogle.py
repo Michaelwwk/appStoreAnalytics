@@ -160,7 +160,7 @@ def dataIngestionGoogle():
                     lang=language,
                     country=country,
                     count=reviewCountPerApp,
-                    filter_score_with=None,
+                    score=None,
                     delay_between_requests = delay_between_requests
                 )
 

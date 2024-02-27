@@ -24,15 +24,17 @@ def finalizedMLModels():
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    # Read data from BigQuery into a Pandas DataFrame
-    df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)
-    df = df.head(50)
+    print(f"models: {spark}")
 
-    # Save the DataFrame as a CSV file
-    df.to_csv(f"{folder_path}/test.csv", index=False)
+    # # Read data from BigQuery into a Pandas DataFrame
+    # df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)
+    # df = df.head(50)
 
-    # Read the CSV file into a Spark DataFrame
-    df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
+    # # Save the DataFrame as a CSV file
+    # df.to_csv(f"{folder_path}/test.csv", index=False)
+
+    # # Read the CSV file into a Spark DataFrame
+    # df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
 
     # Need to review syntaxes for below portion!!
     """

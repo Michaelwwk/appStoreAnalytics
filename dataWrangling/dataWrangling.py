@@ -10,16 +10,16 @@ def dataWrangling():
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
     folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    googleAPI_json_path = f"{folder_path}/googleAPI.json"
     # Extract Google API from GitHub Secret Variable
     googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
+    with open(googleAPI_json_path, "w") as f:
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
     processDataset = "practice_project" # TODO TO CHANGE FOLDER NAME
     processedGoogleScraped_table_name = 'processedGoogle_scraped_test3' # TODO CHANGE PATH
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
     googleScraped_db_dataSetTableName = f"{processDataset}.{processedGoogleScraped_table_name}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
@@ -29,10 +29,10 @@ def dataWrangling():
     df = df.head(50)
 
     # Save the DataFrame as a CSV file
-    df.to_csv("test.csv", index=False)
+    df.to_csv(f"{folder_path}/test.csv", index=False)
 
     # Read the CSV file into a Spark DataFrame
-    df_spark = spark.read.csv("test.csv", header=True, inferSchema=True)
+    df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
 
     # Need to review syntaxes for below portion!!
     """

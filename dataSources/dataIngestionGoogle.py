@@ -47,8 +47,6 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    # googleScraped_table_name = 'google_scraped_test4' # TODO CHANGE PATH
-    # googleReview_table_name = 'google_reviews_test4' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
@@ -58,16 +56,6 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-    # # Apple
-    # ## Clone the repository
-    # subprocess.run(["git", "clone", "https://github.com/gauthamp10/apple-appstore-apps.git"])
-    # ## Change directory to the dataset folder
-    # os.chdir("apple-appstore-apps/dataset")
-    # ## Extract the tar.lzma file
-    # subprocess.run(["tar", "-xvf", "appleAppData.json.tar.lzma"])
-    # ## Read into DataFrame
-    # apple = pd.read_json("appleAppData.json")
 
     # Google
     ## Clone the repository
@@ -189,15 +177,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
             print(f"Google: {e}")
             
     # Create tables into Google BigQuery
-    # try:
-    #     job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
-    # try:
-    #     job = client.query(f"DELETE FROM {googleReview_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB

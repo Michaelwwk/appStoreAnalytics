@@ -55,14 +55,10 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    # appleScraped_table_name = 'apple_scraped_test4' # TODO CHANGE PATH
-    # appleReview_table_name = 'apple_reviews_test4' # TODO CHANGE PATH
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
-    # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
-    # dateTime_csv_path = f"{folder_path}/dateTime.csv"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
@@ -76,10 +72,6 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     subprocess.run(["tar", "-xvf", "appleAppData.json.tar.lzma"])
     ## Read into DataFrame
     apple = pd.read_json("appleAppData.json")
-
-    # Reset folder path
-    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
 
     # Data Ingestion using 'app_store_scraper' API:
 
@@ -213,7 +205,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
 
             # with open(log_file_path, "a") as log_file:
                 # log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(apple_main[apple_main.name != 'App Store'])}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+            print(f'Apple: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(apple_main[apple_main['name'] != 'App Store'])}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
             # with open(log_file_path, "a") as log_file:
@@ -224,15 +216,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
 
     # Create tables into Google BigQuery
-    # try:
-    #     job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
-    # try:
-    #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
@@ -243,27 +227,6 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     apple_reviews = apple_reviews.astype(str) # all columns will be string
     load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
-
-    # # Create 'dateTime' table and push info into DB
-    # job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
-    # client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
-    # current_time = datetime.now(timezone('Asia/Shanghai'))
-    # timestamp_string = current_time.isoformat()
-    # dt = datetime.strptime(timestamp_string, '%Y-%m-%dT%H:%M:%S.%f%z')
-    # date_time_str = dt.strftime('%d-%m-%Y %H:%M:%S')
-    # time_zone = dt.strftime('%z')
-    # output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
-    # dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
-    # dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
-    # dateTime_job_config = bigquery.LoadJobConfig(
-    #     autodetect=True,
-    #     skip_leading_rows=1,
-    #     source_format=bigquery.SourceFormat.CSV,
-    # )
-    # dateTime_config = client.dataset(rawDataset).table('dateTime')
-    # with open(dateTime_csv_path, 'rb') as f:
-    #     dateTime_load_job = client.load_table_from_file(f, dateTime_config, job_config=dateTime_job_config)
-    # dateTime_load_job.result()
 
     ## Remove files and folder
     try:

@@ -1,4 +1,4 @@
-def dataWrangling():
+def finalizedMLModels():
 
     import pandas as pd
     import os
@@ -24,15 +24,14 @@ def dataWrangling():
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    # Read data from BigQuery into a Pandas DataFrame
-    df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)
-    df = df.head(50)
+    # # Read data from BigQuery into a Pandas DataFrame
+    # df = pd.read_gbq("SELECT * FROM your_table", project_id="your_project_id")
 
-    # Save the DataFrame as a CSV file
-    df.to_csv("test.csv", index=False)
+    # # Save the DataFrame as a CSV file
+    # df.to_csv("your_file.csv", index=False)
 
-    # Read the CSV file into a Spark DataFrame
-    df_spark = spark.read.csv("test.csv", header=True, inferSchema=True)
+    # # Read the CSV file into a Spark DataFrame
+    # df_spark = spark.read.csv("your_file.csv", header=True, inferSchema=True)
 
     # Need to review syntaxes for below portion!!
     """

@@ -40,16 +40,16 @@ def dataIngestionApple():
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 30 # 999 = all samples!
-    saveReviews = True
-    appleReviewCountPerApp = 1 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
-    requests_per_second = 1 # None = turn off throttling!
+    appleAppsSample = 50 # 999 = all samples!
+    saveReviews = False
+    appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
+    requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    appleScraped_table_name = 'apple_scraped'
-    appleReview_table_name = 'apple_reviews'
+    appleScraped_table_name = 'apple_scraped_test3' # TODO CHANGE PATH
+    appleReview_table_name = 'apple_reviews_test3' # TODO CHANGE PATH
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
@@ -220,10 +220,10 @@ def dataIngestionApple():
     except:
         pass
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
-    try:
-        job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
-    except:
-        pass
+    # try:
+    #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
+    # except:
+    #     pass
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
@@ -232,7 +232,7 @@ def dataIngestionApple():
     load_job.result()
 
     # apple_reviews = apple_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName)
+    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 
     # # Create 'dateTime' table and push info into DB
@@ -260,6 +260,6 @@ def dataIngestionApple():
     try:
         # os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
+        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

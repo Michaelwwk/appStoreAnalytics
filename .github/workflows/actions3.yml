@@ -2,7 +2,7 @@ name: dataWrangling-ML-dateTime
 
 on:
   schedule:
-    - cron: '0 20 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
+    - cron: '0 03 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
   workflow_dispatch: # Create a button to trigger the workflow manually
 
 jobs:
@@ -34,6 +34,9 @@ jobs:
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
         run: python main3.py
+
+      - name: git pull
+        run: git pull origin main
           
       - name: commit files
         run: |

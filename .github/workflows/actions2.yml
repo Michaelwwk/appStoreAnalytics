@@ -34,6 +34,9 @@ jobs:
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
         run: python main2.py
+
+      - name: git pull
+        run: git pull origin main
           
       - name: commit files
         run: |

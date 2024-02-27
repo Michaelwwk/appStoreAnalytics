@@ -94,7 +94,6 @@ def dataIngestionApple():
     else:
         delay_between_requests = None
 
-
     # Data Ingestion using BeautifulSoup
 
     def appWithThrottle(appId, country = 'us', delay_between_requests = None):

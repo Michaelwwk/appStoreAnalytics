@@ -193,7 +193,7 @@ def dataIngestionGoogle():
     #     job = client.query(f"DELETE FROM {googleReview_db_path} WHERE TRUE").result()
     # except:
     #     pass
-    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True, )
+    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
     google_main = google_main.astype(str) # all columns will be string
@@ -207,6 +207,6 @@ def dataIngestionGoogle():
     ## Remove files and folder
     try:
         os.remove(googleAPI_json_path)
-        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
+        shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

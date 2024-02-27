@@ -34,9 +34,12 @@ logging.basicConfig(level=logging.ERROR)
 def dataIngestionApple():
     
     folder_path = os.getcwd().replace("\\", "/")
+    googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
+
     # Extract Google API from GitHub Secret Variable
     googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
+    with open(googleAPI_json_path, "w") as f:
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
@@ -56,8 +59,6 @@ def dataIngestionApple():
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
     # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
     # dateTime_csv_path = f"{folder_path}/dateTime.csv"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path

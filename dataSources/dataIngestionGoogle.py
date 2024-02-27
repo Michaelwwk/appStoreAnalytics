@@ -29,9 +29,12 @@ def dataIngestionGoogle():
     # reset folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
     folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
+
     # Extract Google API from GitHub Secret Variable
     googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
+    with open(googleAPI_json_path, "w") as f:
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
@@ -51,8 +54,6 @@ def dataIngestionGoogle():
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
     # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
     # dateTime_csv_path = f"{folder_path}/dateTime.csv"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path

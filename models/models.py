@@ -3,7 +3,7 @@ def finalizedMLModels():
     import pandas as pd
     import os
     import json
-    from main import spark
+    from main3 import spark
     from commonFunctions import to_gbq_parquet
     from google.cloud import bigquery
 

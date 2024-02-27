@@ -34,7 +34,6 @@ jobs:
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
         run: python main1.py
-        working-directory: GitHub Actions
           
       - name: commit files
         run: |

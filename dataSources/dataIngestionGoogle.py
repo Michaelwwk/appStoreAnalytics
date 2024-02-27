@@ -26,7 +26,8 @@ warnings.filterwarnings('ignore')
 
 def dataIngestionGoogle():
     
-    folder_path = os.getcwd().replace("\\", "/")
+    # folder_path = os.getcwd().replace("\\", "/")
+    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
     googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
     with open("googleAPI.json", "w") as f:
@@ -51,6 +52,9 @@ def dataIngestionGoogle():
     # dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
+
+    print(folder_path)
+    print(log_file_path)
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path

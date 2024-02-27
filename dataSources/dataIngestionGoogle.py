@@ -6,8 +6,8 @@ import shutil
 import pandas as pd
 import json
 from google.cloud import bigquery
-from datetime import datetime
-from pytz import timezone
+# from datetime import datetime
+# from pytz import timezone
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from commonFunctions import to_gbq
@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 #         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
 #         .save()
 
-def dataIngestion():
+def dataIngestionGoogle():
     
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -47,23 +47,23 @@ def dataIngestion():
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
-    dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
-    dateTime_csv_path = f"{folder_path}/dateTime.csv"
+    # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
+    # dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
     log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-    # Apple
-    ## Clone the repository
-    subprocess.run(["git", "clone", "https://github.com/gauthamp10/apple-appstore-apps.git"])
-    ## Change directory to the dataset folder
-    os.chdir("apple-appstore-apps/dataset")
-    ## Extract the tar.lzma file
-    subprocess.run(["tar", "-xvf", "appleAppData.json.tar.lzma"])
-    ## Read into DataFrame
-    apple = pd.read_json("appleAppData.json")
+    # # Apple
+    # ## Clone the repository
+    # subprocess.run(["git", "clone", "https://github.com/gauthamp10/apple-appstore-apps.git"])
+    # ## Change directory to the dataset folder
+    # os.chdir("apple-appstore-apps/dataset")
+    # ## Extract the tar.lzma file
+    # subprocess.run(["tar", "-xvf", "appleAppData.json.tar.lzma"])
+    # ## Read into DataFrame
+    # apple = pd.read_json("appleAppData.json")
 
     # Google
     ## Clone the repository
@@ -205,31 +205,9 @@ def dataIngestion():
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName)
     load_job.result()
 
-    # Create 'dateTime' table and push info into DB
-    job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
-    client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
-    current_time = datetime.now(timezone('Asia/Shanghai'))
-    timestamp_string = current_time.isoformat()
-    dt = datetime.strptime(timestamp_string, '%Y-%m-%dT%H:%M:%S.%f%z')
-    date_time_str = dt.strftime('%d-%m-%Y %H:%M:%S')
-    time_zone = dt.strftime('%z')
-    output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
-    dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
-    dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
-    dateTime_job_config = bigquery.LoadJobConfig(
-        autodetect=True,
-        skip_leading_rows=1,
-        source_format=bigquery.SourceFormat.CSV,
-    )
-    dateTime_config = client.dataset(rawDataset).table('dateTime')
-    with open(dateTime_csv_path, 'rb') as f:
-        dateTime_load_job = client.load_table_from_file(f, dateTime_config, job_config=dateTime_job_config)
-    dateTime_load_job.result()
-
     ## Remove files and folder
     try:
-        os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
+        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

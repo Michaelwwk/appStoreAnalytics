@@ -1,5 +1,6 @@
-from dataSources.dataIngestion import dataIngestion
 from dataSources.dataIngestionApple import dataIngestionApple
+from dataSources.dataIngestionGoogle import dataIngestionGoogle
+from dataSources.dateTime import dateTime
 from pyspark.sql import SparkSession
 
 # Start Spark session
@@ -7,7 +8,8 @@ spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config
 # spark = SparkSession.builder.appName("appStoreAnalytics").config("spark.jars.packages", "com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.23.2").getOrCreate()
 
 dataIngestionApple()
-# dataIngestion() # Google
+dataIngestionGoogle()
+dateTime()
 
 # Stop Spark session
 spark.stop()

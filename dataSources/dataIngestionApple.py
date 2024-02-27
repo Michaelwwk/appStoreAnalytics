@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 from app_store_scraper import AppStore
 from pyspark.sql.types import *
 from commonFunctions import to_gbq, split_df
-from deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
+from dataSources.deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
 import warnings
 warnings.filterwarnings('ignore')
 import logging
@@ -228,7 +228,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     #     job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
     # except:
     #     pass
-    # client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
+    client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
     # try:
     #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
     # except:

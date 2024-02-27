@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 from app_store_scraper import AppStore
 from pyspark.sql.types import *
 from commonFunctions import to_gbq, split_df
+from deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
 import warnings
 warnings.filterwarnings('ignore')
 import logging
@@ -54,8 +55,8 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "practice_project"
-    appleScraped_table_name = 'apple_scraped_test4' # TODO CHANGE PATH
-    appleReview_table_name = 'apple_reviews_test4' # TODO CHANGE PATH
+    # appleScraped_table_name = 'apple_scraped_test4' # TODO CHANGE PATH
+    # appleReview_table_name = 'apple_reviews_test4' # TODO CHANGE PATH
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
@@ -223,11 +224,11 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
 
     # Create tables into Google BigQuery
-    try:
-        job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
-    except:
-        pass
-    client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
+    # try:
+    #     job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
+    # except:
+    #     pass
+    # client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
     # try:
     #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
     # except:

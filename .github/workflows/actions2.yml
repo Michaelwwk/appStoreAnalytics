@@ -34,9 +34,6 @@ jobs:
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
         run: python main2.py
-
-      - name: git pull
-        run: git pull origin main
           
       - name: commit files
         run: |
@@ -44,6 +41,9 @@ jobs:
           git config --local user.name "GitHub Action"
           git add -A
           git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
+
+      - name: git pull
+        run: git pull origin main
 
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0

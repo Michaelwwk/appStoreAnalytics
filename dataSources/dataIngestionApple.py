@@ -211,13 +211,13 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                     except IndexError:
                         continue
 
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
+            # with open(log_file_path, "a") as log_file:
+                # log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
             print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Error occurred: {e}\n")
+            # with open(log_file_path, "a") as log_file:
+                # log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Apple: {e}")
 
     # Drop duplicates

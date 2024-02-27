@@ -205,7 +205,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
     load_job.result()
 
-    # google_reviews = google_reviews.astype(str) # all columns will be string
+    google_reviews = google_reviews.astype(str) # all columns will be string
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 

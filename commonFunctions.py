@@ -23,27 +23,32 @@ def to_gbq_parquet(parquet_file_path, client, dataSet_tableName, mergeType='WRIT
     return load_job
 
 def split_df(df, noOfSlices = 1, subDf = 1):
-    # Assuming df is your DataFrame
-    num_parts = noOfSlices
 
-    # Calculate the number of rows in each part
-    num_rows = len(df)
-    rows_per_part = num_rows // num_parts
+    if noOfSlices != 0:
+        # Assuming df is your DataFrame
+        num_parts = noOfSlices
 
-    # Initialize a list to store the sub DataFrames
-    sub_dfs = []
+        # Calculate the number of rows in each part
+        num_rows = len(df)
+        rows_per_part = num_rows // num_parts
 
-    # Split the DataFrame into parts
-    for i in range(num_parts):
-        start_idx = i * rows_per_part
-        end_idx = start_idx + rows_per_part
-        if i == num_parts - 1:  # For the last part, include the remaining rows
-            end_idx = num_rows
-        sub_df = df.iloc[start_idx:end_idx]
-        sub_dfs.append(sub_df)
+        # Initialize a list to store the sub DataFrames
+        sub_dfs = []
 
-    # Select sub DataFrame
-    indexOfSubDf = subDf - 1
-    small_df = sub_dfs[indexOfSubDf]
+        # Split the DataFrame into parts
+        for i in range(num_parts):
+            start_idx = i * rows_per_part
+            end_idx = start_idx + rows_per_part
+            if i == num_parts - 1:  # For the last part, include the remaining rows
+                end_idx = num_rows
+            sub_df = df.iloc[start_idx:end_idx]
+            sub_dfs.append(sub_df)
+
+        # Select sub DataFrame
+        indexOfSubDf = subDf - 1
+        small_df = sub_dfs[indexOfSubDf]
+        
+    else:
+        small_df = df[df.App_Id == '-999']
 
     return small_df

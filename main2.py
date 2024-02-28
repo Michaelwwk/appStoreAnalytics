@@ -1,5 +1,5 @@
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 
-dataIngestionApple(noOfSlices = 0)
-dataIngestionGoogle(noOfSlices = 1, subDf = 1)
+dataIngestionApple(noOfSlices = 12, subDf = 2)
+dataIngestionGoogle(noOfSlices = 0)

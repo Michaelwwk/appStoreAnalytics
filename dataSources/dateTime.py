@@ -19,8 +19,9 @@ def dateTime():
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
     dateTimeDataset = "dateTimeData"
-    dateTime_db_path = f"{project_id}.{dateTimeDataset}.dateTime"
     dateTime_db_dataSetTableName = f"{dateTimeDataset}.dateTime"
+    dateTime_db_path = f"{project_id}.{dateTime_db_dataSetTableName}"
+   
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
@@ -28,7 +29,7 @@ def dateTime():
     # Extract date & time
     current_time = datetime.now(timezone('Asia/Shanghai'))
     date_time_str = current_time.strftime('%d-%m-%Y %H:%M:%S')
-    dateTime_df = pd.DataFrame(data=[date_time_str], columns=['dateTime'])
+    dateTime_df = pd.DataFrame(data=[date_time_str], columns=['dateAndTime'])
     dateTime_df['dateTime'] = pd.to_datetime(dateTime_df['dateTime'], format='%d-%m-%Y %H:%M:%S')
     
     # Create 'dateTime' table

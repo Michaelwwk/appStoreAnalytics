@@ -20,7 +20,7 @@ def dateTime():
     project_id =  googleAPI_dict["project_id"]
     dateTimeDataset = "dateTimeData"
     dateTime_db_path = f"{project_id}.{dateTimeDataset}.dateTime"
-    dateTime_db_dataSetTableName = f"{dateTimeDataset}.dateTimeTEST"
+    dateTime_db_dataSetTableName = f"{dateTimeDataset}.dateTime"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
@@ -39,7 +39,7 @@ def dateTime():
     client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
 
     # Push data into DB table
-    # dateTime_df = dateTime_df.astype(str)
+    dateTime_df = dateTime_df.astype(str)
     load_job = to_gbq(dateTime_df, client, dateTime_db_dataSetTableName)
     load_job.result()
 

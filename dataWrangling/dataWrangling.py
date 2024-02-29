@@ -30,11 +30,7 @@ def dataWrangling():
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     sparkDf = read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
-    
-    try:
-        print(sparkDf.show())
-    except:
-        print("fail at doing sparkDf.show()!!!!")
+    print(sparkDf.show())
 
     # Need to review syntaxes for below portion!!
     """

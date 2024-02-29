@@ -96,8 +96,6 @@ def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
     )
     job.result()
 
-    print("success in loading table to bucket!!")
-
     # Download the file
     client = storage.Client()
     bucket = client.bucket(bucket_name)
@@ -105,9 +103,6 @@ def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
 
     # Download the file to the specified local path
     blob.download_to_filename(local_file_path)
-
-    print("success in dl to local!!")
-    print(f"{local_file_path}")
 
     # Read CSV file into PySpark DataFrame
     sparkDf = spark.read.format('csv') \

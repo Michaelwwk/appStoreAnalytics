@@ -6,10 +6,7 @@ from google.cloud import bigquery, storage
 from pyspark.sql import SparkSession
 
 # TODO Follow this template when scripting!!
-def dataWrangling():
-
-    # Start Spark session
-    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+def dataWrangling(spark):
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -26,7 +23,7 @@ def dataWrangling():
     cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
-
+    
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     sparkDf = read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
@@ -58,6 +55,3 @@ def dataWrangling():
         os.remove(googleAPI_json_path)
     except:
         pass
-
-    # Stop Spark session
-    spark.stop()

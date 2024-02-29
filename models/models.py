@@ -2,14 +2,10 @@ import pandas as pd
 import os
 import json
 from commonFunctions import to_gbq_parquet, read_gbq_spark
-from google.cloud import bigquery, storage
-from pyspark.sql import SparkSession
+from google.cloud import bigquery
 
 # TODO Follow this template when scripting!!
-def finalizedMLModels():
-
-    # Start Spark session
-    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+def finalizedMLModels(spark):
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -26,7 +22,7 @@ def finalizedMLModels():
     modelDataset = "modelData" # TODO TO CHANGE FOLDER NAME
     modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{cleanDataset}.{modelGoogleScraped_table_name}"
-
+    
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     sparkDf = read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
@@ -58,6 +54,3 @@ def finalizedMLModels():
         os.remove(googleAPI_json_path)
     except:
         pass
-
-    # Stop Spark session
-    spark.stop()

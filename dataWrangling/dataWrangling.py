@@ -3,7 +3,7 @@ def dataWrangling():
     import pandas as pd
     import os
     import json
-    from main3 import spark
+    from main21 import spark
     from commonFunctions import to_gbq_parquet
     from google.cloud import bigquery
 

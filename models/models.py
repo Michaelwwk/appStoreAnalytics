@@ -5,7 +5,7 @@ from commonFunctions import to_gbq_parquet, read_gbq_spark
 from google.cloud import bigquery, storage
 from pyspark.sql import SparkSession
 
-# TODO Template to follow when scripting!!
+# TODO Follow this template when scripting!!
 def finalizedMLModels():
 
     # Start Spark session

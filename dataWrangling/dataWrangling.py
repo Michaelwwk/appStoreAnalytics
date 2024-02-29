@@ -6,6 +6,7 @@ def dataWrangling():
     from main21 import spark
     from commonFunctions import to_gbq_parquet
     from google.cloud import bigquery
+    from pyspark.sql import SparkFrames
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -26,6 +27,26 @@ def dataWrangling():
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     print(f"dataWrangling: {spark}")
+
+    #################
+
+    # Replace placeholders with your project ID, dataset ID, and table ID
+    project_id = "big-data-analytics-415801"
+    dataset_id = "rawData"
+    table_id = "googleMain"
+
+    # Construct the full table reference path
+    table_path = f"bigquery://{project_id}.{dataset_id}.{table_id}"
+
+    # Use SparkFrames to directly read the table
+    df = SparkFrames.get(table_path)
+
+    # (Optional) Explore the DataFrame
+    df.show(5)
+    df.printSchema()
+    print(df)
+
+    #################
 
     # # Read data from BigQuery into a Pandas DataFrame
     # df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)

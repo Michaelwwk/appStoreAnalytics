@@ -39,7 +39,9 @@ def dataWrangling():
     table_path = f"bigquery://{project_id}.{dataset_id}.{table_id}"
 
     # Use SparkFrames to directly read the table
-    df = SparkFrames.get(table_path)
+    df = spark.read.format("bigquery") \
+    .option("table", table_path) \
+    .load()
 
     # (Optional) Explore the DataFrame
     df.show(5)

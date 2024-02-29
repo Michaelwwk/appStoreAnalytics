@@ -30,8 +30,9 @@ def dateTime():
     timestamp_string = current_time.isoformat()
     dt = datetime.strptime(timestamp_string, '%Y-%m-%dT%H:%M:%S.%f%z')
     date_time_str = dt.strftime('%d-%m-%Y %H:%M:%S')
-    time_zone = dt.strftime('%z')
-    output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
+    # time_zone = dt.strftime('%z')
+    # output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
+    output = f"{date_time_str}"
     dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
     
     # Create 'dateTime' table

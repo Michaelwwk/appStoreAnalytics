@@ -1,3 +1,4 @@
+import pandas as pd
 from google.cloud import bigquery
 
 def to_gbq(pandasDf, client, dataSet_tableName, mergeType ='WRITE_APPEND'):
@@ -49,6 +50,6 @@ def split_df(df, noOfSlices = 1, subDf = 1):
         small_df = sub_dfs[indexOfSubDf]
         
     else:
-        small_df = df[df.App_Id == '-999']
+        small_df = pd.DataFrame(columns = df.columns)
 
     return small_df

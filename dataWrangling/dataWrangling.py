@@ -5,7 +5,7 @@ def dataWrangling():
     import json
     from main21 import spark
     from commonFunctions import to_gbq_parquet
-    from google.cloud import bigquery
+    from google.cloud import bigquery, storage
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -33,12 +33,14 @@ def dataWrangling():
     project_id = "big-data-analytics-415801"
     dataset_id = "rawData"
     table_id = "googleMain"
+    bucket_name = "nusebac_data_storage"
+    file_name = f"{table_id}.csv"
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
     # Export BigQuery table to GCS
-    destination_uri = f'gs://nusebac_data_storage/{table_id}.csv'
+    destination_uri = f'gs://{bucket_name}/{file_name}'
     job_config = bigquery.ExtractJobConfig()
     job = client.extract_table(
     table_ref,
@@ -50,14 +52,24 @@ def dataWrangling():
 
     print(job.result())
 
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    # Download the file
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+
+    # Specify the local path to save the file (optional, default is current directory)
+    googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    local_file_path = f"{folder_path}/dataSources/{file_name}"
+
+    # Download the file to the specified local path
+    blob.download_to_filename(local_file_path)
+
     # Read CSV file into PySpark DataFrame
-    df = spark.read.csv(destination_uri, header=True)
+    df = spark.read.csv(local_file_path, header=True)
 
     # Show DataFrame schema and first few rows
-    df.printSchema()
-    df.show()
-
-    print(df)
+    print(df.show())
 
     #################
 

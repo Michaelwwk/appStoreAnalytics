@@ -1,6 +1,7 @@
 pandas
 numpy
 google-cloud-bigquery
+pip install google-cloud-storage
 pandas-gbq
 datetime
 pytz

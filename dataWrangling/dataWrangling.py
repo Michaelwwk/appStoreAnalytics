@@ -6,7 +6,6 @@ def dataWrangling():
     from main21 import spark
     from commonFunctions import to_gbq_parquet
     from google.cloud import bigquery
-    from pyspark.sql import SparkFrames
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")

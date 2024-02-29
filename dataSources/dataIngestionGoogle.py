@@ -39,7 +39,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 400000 # 999 = all samples!
+    googleAppsSample = 100 # 999 = all samples!
     saveReviews = True
     reviewCountPerApp = 40
     requests_per_second = None # None = turn off throttling!

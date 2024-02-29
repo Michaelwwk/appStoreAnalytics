@@ -31,8 +31,10 @@ def dataWrangling():
 
     # Replace placeholders with your project ID, dataset ID, and table ID
     project_id = "big-data-analytics-415801"
-    dataset_id = "rawData"
-    table_id = "googleMain"
+    # dataset_id = "rawData"
+    # table_id = "googleMain"
+    dataset_id = "dateTimeData"
+    table_id = "dateTime"
     bucket_name = "nusebac_data_storage"
     file_name = f"{table_id}.csv"
 

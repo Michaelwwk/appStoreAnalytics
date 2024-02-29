@@ -1,10 +1,11 @@
 import pandas as pd
 import os
 import json
-from commonFunctions import to_gbq_parquet
-from google.cloud import bigquery
+from commonFunctions import to_gbq_parquet, read_gbq_spark
+from google.cloud import bigquery, storage
 from pyspark.sql import SparkSession
 
+# TODO Template to follow when scripting!!
 def finalizedMLModels():
 
     # Start Spark session
@@ -22,37 +23,17 @@ def finalizedMLModels():
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
     cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
-    modelDataset = "modelData"
+    modelDataset = "modelData" # TODO TO CHANGE FOLDER NAME
     modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{cleanDataset}.{modelGoogleScraped_table_name}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    print(f"models: {spark}")
-
-    # # Read data from BigQuery into a Pandas DataFrame
-    # df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)
-    # df = df.head(50)
-
-    # # Save the DataFrame as a CSV file
-    # df.to_csv(f"{folder_path}/test.csv", index=False)
-
-    # # Read the CSV file into a Spark DataFrame
-    # df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
+    sparkDf = read_gbq_spark(client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
+    sparkDf.show()
 
     # Need to review syntaxes for below portion!!
     """
-    # Read data from BigQuery into a Spark DataFrame
-    df_spark = spark.read.format("bigquery") \
-        .option("table", "project_id.dataset.table_name") \
-        .load() # TODO TO CHANGE FOLDER NAME
-
-    # Show the DataFrame schema
-    df_spark.printSchema()
-
-    # Show the first few rows of the DataFrame
-    df_spark.show()
-
     # Convert Spark DF to Parquet format
     ## Define the path where you want to save the Parquet file
     parquet_path = "path/to/save/your/parquet/file" # TODO CHANGE PATH
@@ -71,6 +52,12 @@ def finalizedMLModels():
     # Push Parquet to GBQ
     to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
     """
+
+    ## Remove files and folder
+    try:
+        os.remove(googleAPI_json_path)
+    except:
+        pass
 
     # Stop Spark session
     spark.stop()

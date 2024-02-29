@@ -1,11 +1,11 @@
 import pandas as pd
 import os
 import json
-# from main21 import spark
 from commonFunctions import to_gbq_parquet, read_gbq_spark
 from google.cloud import bigquery, storage
 from pyspark.sql import SparkSession
 
+# TODO Template to follow when scripting!!
 def dataWrangling():
 
     # Start Spark session
@@ -29,9 +29,7 @@ def dataWrangling():
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    print(f"dataWrangling: {spark}")
-
-    sparkDf = read_gbq_spark('dateTimeData', 'dateTime')
+    sparkDf = read_gbq_spark(client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
     sparkDf.show()
 
     # Need to review syntaxes for below portion!!
@@ -54,6 +52,12 @@ def dataWrangling():
     # Push Parquet to GBQ
     to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
     """
+
+    ## Remove files and folder
+    try:
+        os.remove(googleAPI_json_path)
+    except:
+        pass
 
     # Stop Spark session
     spark.stop()

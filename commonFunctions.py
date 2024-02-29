@@ -57,7 +57,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def read_gbq_spark(GBQfolder, GBQtable):
+def read_gbq_spark(client, googleAPI_json_path, GBQfolder, GBQtable):
 
     # Start Spark session
     spark = SparkSession.builder.master("local").appName("readFromGBQTableToSparkDF").config('spark.ui.port', '4050').getOrCreate()
@@ -71,6 +71,20 @@ def read_gbq_spark(GBQfolder, GBQtable):
     # Construct the full table reference path
     table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
+    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+
+    # Specify the local path to save the file (optional, default is current directory)
+    # googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    local_file_path = f"{folder_path}/dataSources/{file_name}"
+
+    # googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
+    # with open(googleAPI_json_path, "w") as f:
+    #     json.dump(googleAPI_dict, f)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+
+    # client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+
     # Export BigQuery table to GCS
     destination_uri = f'gs://{bucket_name}/{file_name}'
     job_config = bigquery.ExtractJobConfig()
@@ -81,18 +95,6 @@ def read_gbq_spark(GBQfolder, GBQtable):
     job_config=job_config
     )
     job.result()
-
-    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-
-    # Specify the local path to save the file (optional, default is current directory)
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    local_file_path = f"{folder_path}/dataSources/{file_name}"
-
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open(googleAPI_json_path, "w") as f:
-        json.dump(googleAPI_dict, f)
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Download the file
     client = storage.Client()
@@ -109,7 +111,6 @@ def read_gbq_spark(GBQfolder, GBQtable):
                         .load(local_file_path)
 
     try:
-        os.remove(googleAPI_json_path)
         os.remove(local_file_path)
     except:
         pass

@@ -66,10 +66,14 @@ def dataWrangling():
     blob.download_to_filename(local_file_path)
 
     # Read CSV file into PySpark DataFrame
-    df = spark.read.csv(local_file_path, header=True)
+    df_csv = spark.read.format('csv') \
+                        .option("inferSchema","true") \
+                        .option("header","true") \
+                        .load(local_file_path)
 
     # Show DataFrame schema and first few rows
-    print(df.first()[1])
+    print(df_csv.first()[1])
+    print(df_csv.show())
 
     #################
 

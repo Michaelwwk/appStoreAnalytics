@@ -4,7 +4,8 @@ from models.models import finalizedMLModels
 from dataSources.dateTime import dateTime
 
 # Start Spark session
-spark = SparkSession.builder.appName("appStoreAnalytics").getOrCreate()
+# spark = SparkSession.builder.appName("appStoreAnalytics").getOrCreate()
+spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
 
 dataWrangling()
 finalizedMLModels()

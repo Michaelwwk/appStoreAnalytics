@@ -69,7 +69,7 @@ def dataWrangling():
     df = spark.read.csv(local_file_path, header=True)
 
     # Show DataFrame schema and first few rows
-    print(df.show())
+    print(df.first()[1])
 
     #################
 

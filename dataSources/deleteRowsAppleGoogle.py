@@ -2,10 +2,10 @@ import json
 import os
 from google.cloud import bigquery
 
-appleScraped_table_name = 'apple_scraped_test10' # TODO CHANGE PATH
-googleScraped_table_name = 'google_scraped_test9' # TODO CHANGE PATH
-appleReview_table_name = 'apple_reviews_test10' # TODO CHANGE PATH
-googleReview_table_name = 'google_reviews_test9' # TODO CHANGE PATH
+appleScraped_table_name = 'apple_scraped_test11' # TODO CHANGE PATH
+googleScraped_table_name = 'google_scraped_test11' # TODO CHANGE PATH
+appleReview_table_name = 'apple_reviews_test11' # TODO CHANGE PATH
+googleReview_table_name = 'google_reviews_test11' # TODO CHANGE PATH
 
 def deleteRowsAppleGoogle():
 

@@ -47,7 +47,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 1200 # 999 = all samples!
+    appleAppsSample = 400000 # 999 = all samples!
     saveReviews = False
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
     requests_per_second = None # None = turn off throttling!
@@ -213,7 +213,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                 # log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Apple: {e}")
 
-    # Drop duplicates
+    # Drop duplicates & remove empty rows
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
     apple_main = apple_main[apple_main['name'] != 'App Store']
 

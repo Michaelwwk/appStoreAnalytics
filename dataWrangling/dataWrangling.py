@@ -38,10 +38,10 @@ def dataWrangling():
     # df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
 
     # Need to review syntaxes for below portion!!
-    
+    """
     # Read data from BigQuery into a Spark DataFrame
     df_spark = spark.read.format("bigquery") \
-        .option("table", "big-data-analytics-415801.rawData.googleMain") \
+        .option("table", "project_id.dataset.table_name") \
         .load() # TODO TO CHANGE FOLDER NAME
 
     # Show the DataFrame schema
@@ -52,7 +52,7 @@ def dataWrangling():
 
     # Convert Spark DF to Parquet format
     ## Define the path where you want to save the Parquet file
-    parquet_path = f"{folder_path}/test_parquet" # TODO CHANGE PATH
+    parquet_path = "path/to/save/your/parquet/file" # TODO CHANGE PATH
 
     ## Write the DataFrame to Parquet format
     df_spark.write.parquet(parquet_path)
@@ -67,3 +67,4 @@ def dataWrangling():
 
     # Push Parquet to GBQ
     to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
+    """

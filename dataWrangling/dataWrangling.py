@@ -1,11 +1,15 @@
+import pandas as pd
+import os
+import json
+# from main21 import spark
+from commonFunctions import to_gbq_parquet
+from google.cloud import bigquery, storage
+from pyspark.sql import SparkSession
+
 def dataWrangling():
 
-    import pandas as pd
-    import os
-    import json
-    from main21 import spark
-    from commonFunctions import to_gbq_parquet
-    from google.cloud import bigquery, storage
+    # Start Spark session
+    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
 
     # Set folder path
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
@@ -68,13 +72,10 @@ def dataWrangling():
     blob.download_to_filename(local_file_path)
 
     # Read CSV file into PySpark DataFrame
-    try:
-        df_csv = spark.read.format('csv') \
-                            .option("inferSchema","true") \
-                            .option("header","true") \
-                            .load(local_file_path)
-    except:
-        pass
+    df_csv = spark.read.format('csv') \
+                        .option("inferSchema","true") \
+                        .option("header","true") \
+                        .load(local_file_path)
 
     # Show DataFrame schema and first few rows
     print(df_csv.show())
@@ -127,3 +128,6 @@ def dataWrangling():
     # Push Parquet to GBQ
     to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
     """
+
+    # Stop Spark session
+    spark.stop()

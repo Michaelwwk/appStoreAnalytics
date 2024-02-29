@@ -2,29 +2,7 @@ import pandas as pd
 import os
 import json
 from google.cloud import bigquery, storage
-from pyspark.sql import SparkSession
-
-def to_gbq(pandasDf, client, dataSet_tableName, mergeType ='WRITE_APPEND'):
-    df = pandasDf.copy()
-    job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
-    load_job = client.load_table_from_dataframe(
-        df,
-        dataSet_tableName,
-        job_config=job_config
-    )
-    return load_job
-
-def to_gbq_parquet(parquet_file_path, client, dataSet_tableName, mergeType='WRITE_TRUNCATE'):
-    job_config = bigquery.LoadJobConfig(
-        source_format=bigquery.SourceFormat.PARQUET,
-        write_disposition=mergeType,
-    )
-    load_job = client.load_table_from_uri(
-        parquet_file_path,
-        dataSet_tableName,
-        job_config=job_config
-    )
-    return load_job
+# from pyspark.sql import SparkSession
 
 def split_df(df, noOfSlices = 1, subDf = 1):
 
@@ -57,10 +35,32 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def read_gbq_spark(client, googleAPI_json_path, GBQfolder, GBQtable):
+def to_gbq(pandasDf, client, dataSet_tableName, mergeType ='WRITE_APPEND'):
+    df = pandasDf.copy()
+    job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
+    load_job = client.load_table_from_dataframe(
+        df,
+        dataSet_tableName,
+        job_config=job_config
+    )
+    return load_job
 
-    # Start Spark session
-    spark = SparkSession.builder.master("local").appName("readFromGBQTableToSparkDF").config('spark.ui.port', '4050').getOrCreate()
+def to_gbq_parquet(parquet_file_path, client, dataSet_tableName, mergeType='WRITE_TRUNCATE'):
+    job_config = bigquery.LoadJobConfig(
+        source_format=bigquery.SourceFormat.PARQUET,
+        write_disposition=mergeType,
+    )
+    load_job = client.load_table_from_uri(
+        parquet_file_path,
+        dataSet_tableName,
+        job_config=job_config
+    )
+    return load_job
+
+def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
+
+    # # Start Spark session
+    # spark = SparkSession.builder.master("local").appName("readFromGBQTableToSparkDF").config('spark.ui.port', '4050').getOrCreate()
 
     project_id = "big-data-analytics-415801"
     bucket_name = "nusebac_data_storage"
@@ -116,6 +116,6 @@ def read_gbq_spark(client, googleAPI_json_path, GBQfolder, GBQtable):
         pass
 
     # Stop Spark session
-    spark.stop()
+    # spark.stop()
 
     return sparkDf

@@ -18,9 +18,10 @@ def dataWrangling():
 
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
-    processDataset = "practice_project" # TODO TO CHANGE FOLDER NAME
-    processedGoogleScraped_table_name = 'processedGoogle_scraped_test3' # TODO CHANGE PATH
-    googleScraped_db_dataSetTableName = f"{processDataset}.{processedGoogleScraped_table_name}"
+    rawDataset = "rawData" # TODO TO CHANGE FOLDER NAME
+    cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
+    cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
+    googleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 

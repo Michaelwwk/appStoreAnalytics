@@ -2,10 +2,10 @@ import json
 import os
 from google.cloud import bigquery
 
-appleScraped_table_name = 'apple_scraped_test11' # TODO CHANGE PATH
-googleScraped_table_name = 'google_scraped_test11' # TODO CHANGE PATH
-appleReview_table_name = 'apple_reviews_test11' # TODO CHANGE PATH
-googleReview_table_name = 'google_reviews_test11' # TODO CHANGE PATH
+appleScraped_table_name = 'appleMain' # TODO CHANGE PATH
+googleScraped_table_name = 'googleMain' # TODO CHANGE PATH
+appleReview_table_name = 'appleReview' # TODO CHANGE PATH
+googleReview_table_name = 'googleReview' # TODO CHANGE PATH
 
 def deleteRowsAppleGoogle():
 
@@ -21,7 +21,7 @@ def deleteRowsAppleGoogle():
 
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
-    rawDataset = "practice_project"
+    rawDataset = "rawData"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
 

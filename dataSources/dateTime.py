@@ -24,8 +24,8 @@ def dateTime():
 
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
-    rawDataset = "practice_project"
-    dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
+    dateTimeDataset = "dateTimeData"
+    dateTime_db_path = f"{project_id}.{dateTimeDataset}.dateTime"
     dateTime_csv_path = f"{folder_path}/dateTime.csv"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
@@ -47,7 +47,7 @@ def dateTime():
         skip_leading_rows=1,
         source_format=bigquery.SourceFormat.CSV,
     )
-    dateTime_config = client.dataset(rawDataset).table('dateTime')
+    dateTime_config = client.dataset(dateTimeDataset).table('dateTime')
     with open(dateTime_csv_path, 'rb') as f:
         dateTime_load_job = client.load_table_from_file(f, dateTime_config, job_config=dateTime_job_config)
     dateTime_load_job.result()

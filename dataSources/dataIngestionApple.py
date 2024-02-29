@@ -54,7 +54,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     country = 'us'
     language = 'en'
     project_id =  googleAPI_dict["project_id"]
-    rawDataset = "practice_project"
+    rawDataset = "rawData"
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"

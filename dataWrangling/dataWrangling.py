@@ -2,8 +2,7 @@ import pandas as pd
 import os
 import json
 from commonFunctions import to_gbq_parquet, read_gbq_spark
-from google.cloud import bigquery, storage
-from pyspark.sql import SparkSession
+from google.cloud import bigquery
 
 # TODO Follow this template when scripting!!
 def dataWrangling(spark):
@@ -23,7 +22,7 @@ def dataWrangling(spark):
     cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
     googleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
-    
+
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     sparkDf = read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')

@@ -35,16 +35,28 @@ def dataWrangling():
     table_id = "googleMain"
 
     # Construct the full table reference path
-    table_path = f"bigquery://{project_id}.{dataset_id}.{table_id}"
+    table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
-    # Use SparkFrames to directly read the table
-    df = spark.read.format("bigquery") \
-    .option("table", table_path) \
-    .load()
+    # Export BigQuery table to GCS
+    destination_uri = f'gs://nusebac_data_storage/{table_id}.csv'
+    job_config = bigquery.ExtractJobConfig()
+    job = client.extract_table(
+    table_ref,
+    destination_uri,
+    location="US",
+    job_config=job_config
+    )
+    job.result()  # Wait for job to complete
 
-    # (Optional) Explore the DataFrame
-    df.show(5)
+    print(job.result())
+
+    # Read CSV file into PySpark DataFrame
+    df = spark.read.csv(destination_uri, header=True)
+
+    # Show DataFrame schema and first few rows
     df.printSchema()
+    df.show()
+
     print(df)
 
     #################

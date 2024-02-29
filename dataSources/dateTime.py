@@ -44,7 +44,7 @@ def dateTime():
     dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
     dateTime_job_config = bigquery.LoadJobConfig(
         autodetect=True,
-        skip_leading_rows=1,
+        #skip_leading_rows=1,
         source_format=bigquery.SourceFormat.CSV,
     )
     dateTime_config = client.dataset(dateTimeDataset).table('dateTime')

@@ -1,15 +1,9 @@
 import os
-import time
-import subprocess
-import glob
-import shutil
 import pandas as pd
 import json
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
-from google_play_scraper import app, reviews, Sort
-from pyspark.sql.types import *
 from commonFunctions import to_gbq
 import warnings
 warnings.filterwarnings('ignore')
@@ -26,14 +20,12 @@ def dateTime():
     project_id =  googleAPI_dict["project_id"]
     dateTimeDataset = "dateTimeData"
     dateTime_db_path = f"{project_id}.{dateTimeDataset}.dateTime"
-    dateTime_csv_path = f"{folder_path}/dateTime.csv"
+    dateTime_db_dataSetTableName = f"{dateTimeDataset}.dateTime"
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    # Create 'dateTime' table and push info into DB
-    job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
-    client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
+    # Extract date time
     current_time = datetime.now(timezone('Asia/Shanghai'))
     timestamp_string = current_time.isoformat()
     dt = datetime.strptime(timestamp_string, '%Y-%m-%dT%H:%M:%S.%f%z')
@@ -41,21 +33,21 @@ def dateTime():
     time_zone = dt.strftime('%z')
     output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
     dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
-    dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
-    dateTime_job_config = bigquery.LoadJobConfig(
-        autodetect=True,
-        #skip_leading_rows=1,
-        source_format=bigquery.SourceFormat.CSV,
-    )
-    dateTime_config = client.dataset(dateTimeDataset).table('dateTime')
-    with open(dateTime_csv_path, 'rb') as f:
-        dateTime_load_job = client.load_table_from_file(f, dateTime_config, job_config=dateTime_job_config)
-    dateTime_load_job.result()
+    
+    # Create 'dateTime' table
+    try:
+        job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
+    except:
+        pass
+    client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
+
+    # Push data into DB table
+    dateTime_df = dateTime_df.astype(str)
+    load_job = to_gbq(dateTime_df, client, dateTime_db_dataSetTableName)
+    load_job.result()
 
     ## Remove files and folder
     try:
-        os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
-        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:
         pass

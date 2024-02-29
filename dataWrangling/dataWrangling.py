@@ -74,7 +74,6 @@ def dataWrangling():
                         .load(local_file_path)
 
     # Show DataFrame schema and first few rows
-    print(df_csv.first()[1])
     print(df_csv.show())
 
     #################

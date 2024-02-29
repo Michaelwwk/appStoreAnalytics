@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import json
 # from main21 import spark
-from commonFunctions import to_gbq_parquet
+from commonFunctions import to_gbq_parquet, read_gbq_spark
 from google.cloud import bigquery, storage
 from pyspark.sql import SparkSession
 
@@ -31,85 +31,11 @@ def dataWrangling():
 
     print(f"dataWrangling: {spark}")
 
-    #################
-
-    # Replace placeholders with your project ID, dataset ID, and table ID
-    project_id = "big-data-analytics-415801"
-    # dataset_id = "rawData"
-    # table_id = "googleMain"
-    dataset_id = "dateTimeData"
-    table_id = "dateTime"
-    bucket_name = "nusebac_data_storage"
-    file_name = f"{table_id}.csv"
-
-    # Construct the full table reference path
-    table_ref = f"{project_id}.{dataset_id}.{table_id}"
-
-    # Export BigQuery table to GCS
-    destination_uri = f'gs://{bucket_name}/{file_name}'
-    job_config = bigquery.ExtractJobConfig()
-    job = client.extract_table(
-    table_ref,
-    destination_uri,
-    location="US",
-    job_config=job_config
-    )
-    job.result()  # Wait for job to complete
-
-    print(job.result())
-
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-    # Download the file
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_name)
-
-    # Specify the local path to save the file (optional, default is current directory)
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    local_file_path = f"{folder_path}/dataSources/{file_name}"
-
-    # Download the file to the specified local path
-    blob.download_to_filename(local_file_path)
-
-    # Read CSV file into PySpark DataFrame
-    df_csv = spark.read.format('csv') \
-                        .option("inferSchema","true") \
-                        .option("header","true") \
-                        .load(local_file_path)
-
-    # Show DataFrame schema and first few rows
-    print(df_csv.show())
-
-    try:
-        os.remove(local_file_path)
-    except:
-        pass
-
-    #################
-
-    # # Read data from BigQuery into a Pandas DataFrame
-    # df = pd.read_gbq("SELECT * FROM google_scraped_test3", project_id=project_id)
-    # df = df.head(50)
-
-    # # Save the DataFrame as a CSV file
-    # df.to_csv(f"{folder_path}/test.csv", index=False)
-
-    # # Read the CSV file into a Spark DataFrame
-    # df_spark = spark.read.csv(f"{folder_path}/test.csv", header=True, inferSchema=True)
+    sparkDf = read_gbq_spark('dateTimeData', 'dateTime')
+    sparkDf.show()
 
     # Need to review syntaxes for below portion!!
     """
-    # Read data from BigQuery into a Spark DataFrame
-    df_spark = spark.read.format("bigquery") \
-        .option("table", "project_id.dataset.table_name") \
-        .load() # TODO TO CHANGE FOLDER NAME
-
-    # Show the DataFrame schema
-    df_spark.printSchema()
-
-    # Show the first few rows of the DataFrame
-    df_spark.show()
-
     # Convert Spark DF to Parquet format
     ## Define the path where you want to save the Parquet file
     parquet_path = "path/to/save/your/parquet/file" # TODO CHANGE PATH

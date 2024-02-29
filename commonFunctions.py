@@ -110,10 +110,10 @@ def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
                         .option("header","true") \
                         .load(local_file_path)
 
-    try:
-        os.remove(local_file_path)
-    except:
-        pass
+    # try:
+    #     os.remove(local_file_path)
+    # except:
+    #     pass
 
     # Stop Spark session
     # spark.stop()

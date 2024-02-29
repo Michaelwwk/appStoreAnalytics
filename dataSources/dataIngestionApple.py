@@ -215,6 +215,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
 
     # Drop duplicates
     apple_main.drop_duplicates(subset = ['appId'], inplace = True)
+    apple_main = apple_main[apple_main['name'] != 'App Store']
 
     # Create tables into Google BigQuery
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)

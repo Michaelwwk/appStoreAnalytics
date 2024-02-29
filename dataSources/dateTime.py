@@ -40,7 +40,7 @@ def dateTime():
     dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
     dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
     dateTime_job_config = bigquery.LoadJobConfig(
-        autodetect=True,
+        autodetect=False,
         skip_leading_rows=1,
         source_format=bigquery.SourceFormat.CSV,
     )

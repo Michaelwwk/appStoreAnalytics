@@ -147,9 +147,8 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
         return info.reviews
         
     appsChecked = 0
-    apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
-    for url in apple.iloc[:, 2]:
 
+    def extract_app_id(url):
         # Extract the portion after the last "/"
         last_slash_index = url.rfind("/")
         if last_slash_index != -1:
@@ -163,11 +162,17 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
 
             # Extract the app ID from the matched string
             if match:
-                appId = match.group(1)
+                return match.group(1)
             else:
-                print("App ID not found.")
+                return None
         else:
-            print("No '/' found in the URL.")
+            return None
+
+    apple['AppStore_Url'] = apple['AppStore_Url'].apply(extract_app_id)
+    apple.drop_duplicates(subset = 'AppStore_Url', keep = 'first', inplace = True)
+    apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
+
+    for appId in apple.iloc[:, 2]:
 
         appsChecked += 1
         appReviewCounts = 0
@@ -213,8 +218,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                 # log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Apple: {e}")
 
-    # Drop duplicates & remove empty rows
-    apple_main.drop_duplicates(subset = ['appId'], inplace = True)
+    # Remove empty rows
     apple_main = apple_main[apple_main['name'] != 'App Store']
 
     # Create tables into Google BigQuery

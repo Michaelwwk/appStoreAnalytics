@@ -87,7 +87,6 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
         local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
 
         dataframe.write.parquet(local_file_path)
-        # dataframe.to_parquet(local_file_path)
         df = pd.read_parquet(local_file_path)
 
         # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement

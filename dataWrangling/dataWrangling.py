@@ -31,8 +31,7 @@ def dataWrangling(spark):
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(cleanGgoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, client, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True,
-           dataset_id = cleanDataset, table_name = cleanGoogleScraped_table_name)
+    to_gbq(sparkDf, client, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
 
     """
     # Convert Spark DF to Parquet format

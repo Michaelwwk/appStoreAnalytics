@@ -78,31 +78,16 @@ def read_gbq(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
 
     return sparkDf
 
-def to_gbq(dataframe, client, dataSet_tableName = None, mergeType ='WRITE_APPEND', sparkdf = False, dataset_id = None, table_name = None) : # 'WRITE_TRUNCATE' if want to replace values!
+def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False): # 'WRITE_TRUNCATE' if want to replace values!
 
     if sparkdf == True:
 
         folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
         folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-        local_file_path = f"{folder_path}/{table_name}.parquet"
+        local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
 
         dataframe.write.parquet(local_file_path)
         df = pd.read_parquet(local_file_path)
-
-        # Construct the destination table reference
-        table_ref = client.dataset(dataset_id).table(table_name)
-
-        # Job configuration options
-        job_config = bigquery.LoadJobConfig()
-        job_config.source_format = bigquery.SourceFormat.PARQUET
-        job_config.autodetect = True  # Automatically infer schema
-
-        # Load the Parquet file into the specified BigQuery table
-        with open(local_file_path, "rb") as source_file:
-            job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
-
-        # Wait for the job to complete
-        return job.result()
 
         # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
 
@@ -118,14 +103,13 @@ def to_gbq(dataframe, client, dataSet_tableName = None, mergeType ='WRITE_APPEND
         # )
 
     else:
-
         df = dataframe.copy()
 
-        job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
-        load_job = client.load_table_from_dataframe(
-            df,
-            dataSet_tableName,
-            job_config=job_config
-        )
+    job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
+    load_job = client.load_table_from_dataframe(
+        df,
+        dataSet_tableName,
+        job_config=job_config
+    )
 
-        return load_job
+    return load_job

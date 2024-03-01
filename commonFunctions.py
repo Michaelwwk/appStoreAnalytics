@@ -34,34 +34,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def to_gbq(pandasDf, client, dataSet_tableName, mergeType ='WRITE_APPEND'):
-
-    df = pandasDf.copy()
-    job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
-    load_job = client.load_table_from_dataframe(
-        df,
-        dataSet_tableName,
-        job_config=job_config
-    )
-
-    return load_job
-
-def to_gbq_parquet(parquet_file_path, client, dataSet_tableName, mergeType='WRITE_TRUNCATE'):
-
-    job_config = bigquery.LoadJobConfig(
-        source_format=bigquery.SourceFormat.PARQUET,
-        write_disposition=mergeType,
-    )
-
-    load_job = client.load_table_from_uri(
-        parquet_file_path,
-        dataSet_tableName,
-        job_config=job_config
-    )
-    
-    return load_job
-
-def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
+def read_gbq(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
 
     project_id = "big-data-analytics-415801"
     bucket_name = "nusebac_data_storage"
@@ -104,3 +77,33 @@ def read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
                         .load(local_file_path)
 
     return sparkDf
+
+def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False): # 'WRITE_TRUNCATE' if want to replace values!
+
+    if sparkdf == True:
+        df = dataframe.toPandas()
+
+        # # if using parquet method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
+
+        # job_config = bigquery.LoadJobConfig(
+        # source_format=bigquery.SourceFormat.PARQUET,
+        # write_disposition=mergeType,
+        # )
+
+        # load_job = client.load_table_from_uri(
+        #     parquet_file_path,
+        #     dataSet_tableName,
+        #     job_config=job_config
+        # )
+
+    else:
+        df = dataframe.copy()
+
+    job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
+    load_job = client.load_table_from_dataframe(
+        df,
+        dataSet_tableName,
+        job_config=job_config
+    )
+
+    return load_job

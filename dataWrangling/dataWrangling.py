@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import json
-from commonFunctions import to_gbq_parquet, read_gbq_spark
+from commonFunctions import read_gbq, to_gbq
 from google.cloud import bigquery
 
 # TODO Follow this template when scripting!!
@@ -20,19 +20,23 @@ def dataWrangling(spark):
     project_id =  googleAPI_dict["project_id"]
     rawDataset = "rawData" # TODO TO CHANGE FOLDER NAME
     cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
+    GoogleScraped_table_name = 'googleMain' # TODO CHANGE PATH
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
-    googleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
+    cleanGoogleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
+    cleanGgoogleScraped_db_path = f"{project_id}.{cleanGoogleScraped_db_dataSetTableName}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    sparkDf = read_gbq_spark(spark, client, googleAPI_json_path, GBQfolder = 'dateTimeData', GBQtable = 'dateTime')
+    sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQfolder = rawDataset, GBQtable = GoogleScraped_table_name)
     print(sparkDf.show())
 
-    # Need to review syntaxes for below portion!!
+    client.create_table(bigquery.Table(cleanGgoogleScraped_db_path), exists_ok = True)
+    to_gbq(sparkDf, client, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
+
     """
     # Convert Spark DF to Parquet format
     ## Define the path where you want to save the Parquet file
-    parquet_path = "path/to/save/your/parquet/file" # TODO CHANGE PATH
+    parquet_path = "path/to/save/your/parquet/file"
 
     ## Write the DataFrame to Parquet format
     df_spark.write.parquet(parquet_path)
@@ -46,8 +50,10 @@ def dataWrangling(spark):
     # )
 
     # Push Parquet to GBQ
-    to_gbq_parquet(parquet_path, client, googleScraped_db_dataSetTableName)
+    to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
     """
+
+    # TODO # for googleReview table, need to sort by date asc then take last row (subset columns without developers' replies)!
 
     ## Remove files and folder
     try:

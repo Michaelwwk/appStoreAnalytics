@@ -81,9 +81,15 @@ def read_gbq(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
 def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False): # 'WRITE_TRUNCATE' if want to replace values!
 
     if sparkdf == True:
-        df = dataframe.toPandas()
 
-        # # if using parquet method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
+        folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+        folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+        local_file_path = f"{folder_path}/{dataframe}.parquet"
+
+        dataframe.write.parquet(local_file_path)
+        df = pd.read_parquet(local_file_path)
+
+        # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
 
         # job_config = bigquery.LoadJobConfig(
         # source_format=bigquery.SourceFormat.PARQUET,

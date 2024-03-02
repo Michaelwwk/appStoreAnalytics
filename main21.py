@@ -8,7 +8,7 @@ spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config
 
 dataWrangling(spark)
 finalizedMLModels(spark)
-dateTime()
+dateTime(spark)
 
 # Stop Spark session
 spark.stop()

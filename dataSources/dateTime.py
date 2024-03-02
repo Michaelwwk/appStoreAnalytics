@@ -4,11 +4,11 @@ import json
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
-from commonFunctions import to_gbq
+from commonFunctions import from_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
-def dateTime():
+def dateTime(spark):
 
     folder_path = os.getcwd().replace("\\", "/")
     # Extract Google API from GitHub Secret Variable
@@ -19,17 +19,19 @@ def dateTime():
     # Hard-coded variables
     project_id =  googleAPI_dict["project_id"]
     dateTimeDataset = "dateTimeData"
-    dateTime_db_dataSetTableName = f"{dateTimeDataset}.dateTime"
+    dateTime_table_name = "dateTime"
+    dateTime_db_dataSetTableName = f"{dateTimeDataset}.{dateTime_table_name}"
     dateTime_db_path = f"{project_id}.{dateTime_db_dataSetTableName}"
-   
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+    sparkDf = from_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
+    rowNo_int = sparkDf.count()
 
     # Extract date & time
     current_time = datetime.now(timezone('Asia/Shanghai'))
     date_time_str = current_time.strftime('%d-%m-%Y %H:%M:%S')
-    dateTime_df = pd.DataFrame(data=[date_time_str], columns=['dateAndTime'])
+    dateTime_df = pd.DataFrame(data=[rowNo_int, date_time_str], columns=['sortingKey', 'dateAndTime'])
     # dateTime_df['dateTime'] = pd.to_datetime(dateTime_df['dateTime'], format='%d-%m-%Y %H:%M:%S')
     dateTime_df = dateTime_df.astype(str)
     

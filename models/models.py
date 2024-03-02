@@ -27,7 +27,7 @@ def finalizedMLModels(spark):
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
-    sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQfolder = cleanDataset, GBQtable = cleanGoogleScraped_table_name)
+    sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = cleanDataset, GBQtable = cleanGoogleScraped_table_name)
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)

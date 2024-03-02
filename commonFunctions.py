@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import json
+import shutil
 from google.cloud import bigquery, storage
 
 def split_df(df, noOfSlices = 1, subDf = 1):
@@ -34,16 +35,14 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def read_gbq(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
+def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable):
 
     project_id = "big-data-analytics-415801"
     bucket_name = "nusebac_data_storage"
-    dataset_id = GBQfolder
-    table_id = GBQtable
-    file_name = f"{table_id}.csv"
+    file_name = f"{GBQtable}.csv"
 
     # Construct the full table reference path
-    table_ref = f"{project_id}.{dataset_id}.{table_id}"
+    table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
 
     folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
     folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
@@ -70,11 +69,13 @@ def read_gbq(spark, client, googleAPI_json_path, GBQfolder, GBQtable):
     # Download the file to the specified local path
     blob.download_to_filename(local_file_path)
 
-    # Read CSV file into PySpark DataFrame
-    sparkDf = spark.read.format('csv') \
-                        .option("inferSchema","true") \
-                        .option("header","true") \
-                        .load(local_file_path)
+    # Read CSV file into PySpark DataFrame    
+    sparkDf = spark.read.format("csv") \
+                        .option("inferSchema", "true") \
+                        .option("header", "true") \
+                        .option("multiline", "true") \
+                        .option("escape", "\"") \
+                        .csv(local_file_path)
 
     return sparkDf
 
@@ -86,8 +87,13 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
         folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
         local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
 
-        dataframe.write.parquet(local_file_path)
+        dataframe.write.parquet(local_file_path, mode="overwrite")
         df = pd.read_parquet(local_file_path)
+
+        try:
+            shutil.rmtree(local_file_path)
+        except:
+            pass
 
         # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
 

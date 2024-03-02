@@ -6,8 +6,6 @@ import shutil
 import pandas as pd
 import json
 from google.cloud import bigquery
-# from datetime import datetime
-# from pytz import timezone
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from commonFunctions import to_gbq, split_df
@@ -39,7 +37,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    googleAppsSample = 400000 # 999 = all samples!
+    googleAppsSample = 4000 # 999 = all samples!
     saveReviews = True
     reviewCountPerApp = 40
     requests_per_second = None # None = turn off throttling!
@@ -51,11 +49,8 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
-    # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
-    # dateTime_csv_path = f"{folder_path}/dateTime.csv"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Google
     ## Clone the repository

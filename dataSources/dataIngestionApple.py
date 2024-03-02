@@ -1,18 +1,14 @@
 import os
 import time
 import subprocess
-import glob
 import shutil
 import pandas as pd
 import numpy as np
 import json
 import re
 from google.cloud import bigquery
-from datetime import datetime
-from pytz import timezone
 import requests
 from bs4 import BeautifulSoup
-# from google_play_scraper import app, reviews, Sort
 from app_store_scraper import AppStore
 from pyspark.sql.types import *
 from commonFunctions import to_gbq, split_df
@@ -47,7 +43,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
         json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
-    appleAppsSample = 400000 # 999 = all samples!
+    appleAppsSample = 4000 # 999 = all samples!
     saveReviews = False
     appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
     requests_per_second = None # None = turn off throttling!
@@ -61,7 +57,6 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Apple
     ## Clone the repository
@@ -236,7 +231,6 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
 
     ## Remove files and folder
     try:
-        # os.remove(dateTime_csv_path)
         os.remove(googleAPI_json_path)
         shutil.rmtree(f"{folder_path}apple-appstore-apps")
     except:

@@ -67,7 +67,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
             with open(csvfile, "rb") as infile:
                 outfile.write(infile.read())
     ## Read into DataFrame
-    google = pd.read_csv("Google-Playstore-Dataset.csv", header=True) # low_memory = False
+    google = pd.read_csv("Google-Playstore-Dataset.csv", , header = 0) # low_memory = False
 
     # Data Ingestion using 'google_play_scraper' API:
 

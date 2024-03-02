@@ -25,14 +25,20 @@ def dateTime(spark):
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    # sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
-    # rowNo_int = sparkDf.count()+1
-    rowNo_int = 1
+    
+    try:
+        sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
+        rowNo_int = sparkDf.count()+1
+    except:
+        rowNo_int = 1
 
     # Extract date & time
     current_time = datetime.now(timezone('Asia/Shanghai'))
     date_time_str = current_time.strftime('%d-%m-%Y %H:%M:%S')
-    dateTime_df = pd.DataFrame(data=[rowNo_int, date_time_str], columns=['sortingKey', 'dateAndTime'])
+    dateTime_dict = {}
+    dateTime_dict['sortingKey'] = rowNo_int
+    dateTime_dict['dateAndTime'] = date_time_str
+    dateTime_df = pd.DataFrame(dateTime_dict, index=[0])
     
     # Create 'dateTime' table
     # try:

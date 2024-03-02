@@ -23,14 +23,14 @@ def dataWrangling(spark):
     GoogleScraped_table_name = 'googleMain' # TODO CHANGE PATH
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
     cleanGoogleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
-    cleanGgoogleScraped_db_path = f"{project_id}.{cleanGoogleScraped_db_dataSetTableName}"
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanGoogleScraped_db_dataSetTableName}"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = rawDataset, GBQtable = GoogleScraped_table_name)
     print(sparkDf.show())
 
-    client.create_table(bigquery.Table(cleanGgoogleScraped_db_path), exists_ok = True)
+    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, client, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
 
     """

@@ -39,5 +39,11 @@ for table_name in table_names:
     client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
     to_gbq(sparkDf, client, trainTest_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
 
+## Remove files and folder
+try:
+    os.remove(googleAPI_json_path)
+except:
+    pass
+
 # Stop Spark session
 spark.stop()

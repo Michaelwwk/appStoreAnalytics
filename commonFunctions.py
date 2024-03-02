@@ -38,7 +38,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable):
 
     project_id = "big-data-analytics-415801"
-    bucket_name = "nusebac_data_storage"
+    bucket_name = "nusebac_storage"
     file_name = f"{GBQtable}.csv"
 
     # Construct the full table reference path

@@ -185,11 +185,9 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    google_main = google_main.astype(str) # all columns will be string
     load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
     load_job.result()
 
-    google_reviews = google_reviews.astype(str) # all columns will be string
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 

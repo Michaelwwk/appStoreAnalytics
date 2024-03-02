@@ -221,11 +221,9 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    apple_main = apple_main.astype(str) # all columns will be string
     load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName)
     load_job.result()
 
-    apple_reviews = apple_reviews.astype(str) # all columns will be string
     load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 

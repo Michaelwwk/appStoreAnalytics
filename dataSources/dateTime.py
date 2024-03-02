@@ -32,8 +32,6 @@ def dateTime(spark):
     current_time = datetime.now(timezone('Asia/Shanghai'))
     date_time_str = current_time.strftime('%d-%m-%Y %H:%M:%S')
     dateTime_df = pd.DataFrame(data=[rowNo_int, date_time_str], columns=['sortingKey', 'dateAndTime'])
-    # dateTime_df['dateTime'] = pd.to_datetime(dateTime_df['dateTime'], format='%d-%m-%Y %H:%M:%S')
-    dateTime_df = dateTime_df.astype(str)
     
     # Create 'dateTime' table
     # try:
@@ -43,7 +41,6 @@ def dateTime(spark):
     client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
 
     # Push data into DB table
-    dateTime_df = dateTime_df.astype(str)
     load_job = to_gbq(dateTime_df, client, dateTime_db_dataSetTableName)
     load_job.result()
 

@@ -111,6 +111,7 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
     else:
         df = dataframe.copy()
 
+    df = df.astype(str) # all columns will be string
     job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
     load_job = client.load_table_from_dataframe(
         df,

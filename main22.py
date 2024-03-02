@@ -20,7 +20,7 @@ with open(googleAPI_json_path, "w") as f:
 project_id =  googleAPI_dict["project_id"]
 rawDataset = "rawData"
 trainTestDataset = "trainTestData"
-AppleScraped_table_name = 'appleleMain'
+AppleScraped_table_name = 'appleMain'
 AppleReview_table_name = 'appleReview'
 GoogleScraped_table_name = 'googleMain'
 GoogleReview_table_name = 'googleReview'

@@ -12,3 +12,4 @@ pyspark
 pyarrow
 requests
 beautifulsoup4
+tqdm

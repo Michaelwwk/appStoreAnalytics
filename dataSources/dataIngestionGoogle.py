@@ -39,7 +39,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     # Hard-coded variables
     googleAppsSample = 350000 # 999 = all samples!
     saveReviews = True
-    reviewCountPerApp = 40
+    reviewCountPerApp = 20 # 40
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'

@@ -11,7 +11,6 @@ import requests
 from google.cloud import bigquery
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-from app_store_scraper import AppStore
 from pyspark.sql.types import *
 from commonFunctions import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
@@ -94,7 +93,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     else:
         delay_between_requests = None
 
-    # Data Ingestion using BeautifulSoup
+    # Data Ingestion using web scraping
 
     def appWithThrottle(appId, country = 'us', delay_between_requests = None):
 

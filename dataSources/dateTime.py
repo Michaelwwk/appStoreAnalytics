@@ -4,7 +4,7 @@ import json
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
-from commonFunctions import from_gbq, to_gbq
+from commonFunctions import read_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -25,7 +25,7 @@ def dateTime(spark):
     googleAPI_json_path = f"{folder_path}/googleAPI.json"
 
     client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    sparkDf = from_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
+    sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
     rowNo_int = sparkDf.count()
 
     # Extract date & time

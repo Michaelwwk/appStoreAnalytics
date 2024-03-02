@@ -77,10 +77,6 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     google.columns = column_names
     google = google[~((google['App Name'] == 'App Name') & (google['App Id'] == 'App Id'))]
 
-    print(google.columns)
-    print(google.shape)
-    print(google.head())
-
     # Data Ingestion using 'google_play_scraper' API:
 
     google_main = pd.DataFrame(columns = ['title', 'description', 'descriptionHTML',
@@ -134,7 +130,7 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
         return output
 
     appsChecked = 0
-    google.drop_duplicates(subset = ['App_Id'], keep = 'first', inplace = True)
+    google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
     for appId in google.iloc[:, 1]:
         appsChecked += 1

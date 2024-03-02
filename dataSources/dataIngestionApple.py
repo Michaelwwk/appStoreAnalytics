@@ -144,15 +144,15 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                                 headers = {'User-Agent': random.choice(user_agents)},
                                 )
         
-        if response.status_code != 200:
-            print(f"GET request failed. Response: {response.status_code} {response.reason}")
+        # if response.status_code != 200:
+        #     print(f"GET request failed. Response: {response.status_code} {response.reason}")
 
         tags = response.text.splitlines()
         for tag in tags:
             if re.match(r"<meta.+web-experience-app/config/environment", tag):
                 token = re.search(r"token%22%3A%22(.+?)%22", tag).group(1)
         
-        print(f"Bearer {token}")
+        # print(f"Bearer {token}")
         return token
         
     def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1'):
@@ -325,6 +325,10 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
 
     # Remove empty rows
     apple_main = apple_main[apple_main['name'] != 'App Store']
+
+    # Rename columns
+    apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',
+                            'developerResponseId', 'developerResponseBody', 'developerResponseModified']
 
     # Create tables into Google BigQuery
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)

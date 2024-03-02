@@ -67,7 +67,14 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
             with open(csvfile, "rb") as infile:
                 outfile.write(infile.read())
     ## Read into DataFrame
-    google = pd.read_csv("Google-Playstore-Dataset.csv", header = 0, low_memory = False) # low_memory = False
+    google = pd.read_csv("Google-Playstore-Dataset.csv", header = None) # low_memory = False
+    # column_names = ['App Name', 'App Id', 'Category', 'Rating', 'Rating Count', 'Installs',
+    #                 'Minimum Installs', 'Maximum Installs', 'Free', 'Price', 'Currency',
+    #                 'Size', 'Minimum Android', 'Developer Id', 'Developer Website',
+    #                 'Developer Email', 'Released', 'Last Updated', 'Content Rating',
+    #                 'Privacy Policy', 'Ad Supported', 'In App Purchases', 'Editors Choice',
+    #                 'Scraped Time']
+    # google.columns = column_names
 
     # Data Ingestion using 'google_play_scraper' API:
 
@@ -124,6 +131,8 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     appsChecked = 0
 
     print(google.columns)
+    print(google.shape)
+    print(google.head())
 
     google.drop_duplicates(subset = ['App_Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)

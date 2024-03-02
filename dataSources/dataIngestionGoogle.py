@@ -68,13 +68,14 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
                 outfile.write(infile.read())
     ## Read into DataFrame
     google = pd.read_csv("Google-Playstore-Dataset.csv", header = None) # low_memory = False
-    # column_names = ['App Name', 'App Id', 'Category', 'Rating', 'Rating Count', 'Installs',
-    #                 'Minimum Installs', 'Maximum Installs', 'Free', 'Price', 'Currency',
-    #                 'Size', 'Minimum Android', 'Developer Id', 'Developer Website',
-    #                 'Developer Email', 'Released', 'Last Updated', 'Content Rating',
-    #                 'Privacy Policy', 'Ad Supported', 'In App Purchases', 'Editors Choice',
-    #                 'Scraped Time']
-    # google.columns = column_names
+    column_names = ['App Name', 'App Id', 'Category', 'Rating', 'Rating Count', 'Installs',
+                    'Minimum Installs', 'Maximum Installs', 'Free', 'Price', 'Currency',
+                    'Size', 'Minimum Android', 'Developer Id', 'Developer Website',
+                    'Developer Email', 'Released', 'Last Updated', 'Content Rating',
+                    'Privacy Policy', 'Ad Supported', 'In App Purchases', 'Editors Choice',
+                    'Scraped Time']
+    google.columns = column_names
+    google = google[~((google['App Name'] == 'App Name') & (google['App Id'] == 'App Id'))]
 
     print(google.columns)
     print(google.shape)

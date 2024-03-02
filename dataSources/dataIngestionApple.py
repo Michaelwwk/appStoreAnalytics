@@ -297,13 +297,8 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
             
             if saveReviews == True:
 
-                # Get token
                 token = get_token(country, 'anything', appId, user_agents)
-
-                # Call the function
                 reviews, offset, status_code = fetch_reviews(country, 'anything', appId, user_agents, token)
-
-                # Preview as a DataFrame
                 df = pd.json_normalize(reviews)
 
                 appReviewCounts = len(df)

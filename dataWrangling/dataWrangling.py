@@ -53,7 +53,7 @@ def dataWrangling(spark):
     to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
     """
 
-    # TODO # for googleReview table, need to sort by date asc then take last row (subset columns without developers' replies)!
+    # TODO for both Apple & Google Reviews table, need to sort by appId & date asc then keep last row (drop duplicates, subset columns without developers' replies)!
 
     ## Remove files and folder
     try:

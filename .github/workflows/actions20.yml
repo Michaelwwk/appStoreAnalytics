@@ -1,4 +1,4 @@
-name: Google Data Ingestion 20
+name: Google Data Ingestion 10
 
 on:
   schedule:

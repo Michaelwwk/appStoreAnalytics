@@ -122,7 +122,10 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
         return output
 
     appsChecked = 0
-    google.drop_duplicates(subset = 'App_Id', keep = 'first', inplace = True)
+
+    print(google.columns)
+
+    google.drop_duplicates(subset = ['App_Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
     for appId in google.iloc[:, 1]:
         appsChecked += 1

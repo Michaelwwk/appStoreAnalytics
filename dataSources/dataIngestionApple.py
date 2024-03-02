@@ -164,7 +164,7 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
             return None
 
     apple['AppStore_Url'] = apple['AppStore_Url'].apply(extract_app_id)
-    apple.drop_duplicates(subset = 'AppStore_Url', keep = 'first', inplace = True)
+    apple.drop_duplicates(subset = ['AppStore_Url'], keep = 'first', inplace = True)
     apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
 
     for appId in apple.iloc[:, 2]:

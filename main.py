@@ -112,7 +112,7 @@ main_dict[TrainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest =
 ### Run above functions conditionally depending on which YAML file is calling it ###
 
 for action_inputNo in range(1, maxNoOfYMLActionNo+1):
-    if sys.argv[1] == str(action_inputNo):
+    if sys.argv[1] == action_inputNo:
         main_dict[action_inputNo]
     else:
         print("Invalid YAML file specified.")

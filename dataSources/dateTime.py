@@ -40,9 +40,3 @@ def dateTime(spark, project_id, client, googleAPI_json_path):
     # Push data into DB table
     load_job = to_gbq(dateTime_df, client, dateTime_db_dataSetTableName)
     load_job.result()
-
-    ## Remove files and folder
-    try:
-        os.remove(googleAPI_json_path)
-    except:
-        pass

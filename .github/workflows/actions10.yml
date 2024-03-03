@@ -33,7 +33,7 @@ jobs:
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
-        run: python main10.py
+        run: python main.py 10
           
       - name: commit files
         run: |

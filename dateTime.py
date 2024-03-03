@@ -1,6 +1,4 @@
-import os
 import pandas as pd
-import json
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone

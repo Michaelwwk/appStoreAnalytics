@@ -15,14 +15,14 @@ def additional_functionality():
     # dataIngestionGoogle(noOfSlices = 0)
 
 # Check which YAML file is calling the script
-if sys.argv[1] == '1':
-    # Execute main functionality for action1.yml
-    main_functionality()
-elif sys.argv[1] == 'actions2.yml':
-    # Execute additional functionality for action2.yml
-    additional_functionality()
-else:
-    print("Invalid YAML file specified.")
+# if sys.argv[0] == 'actions1.yml':
+#     # Execute main functionality for action1.yml
+#     main_functionality()
+# elif sys.argv[0] == 'actions2.yml':
+#     # Execute additional functionality for action2.yml
+#     additional_functionality()
+# else:
+#     print("Invalid YAML file specified.")
     
 print(sys.argv[0])
 print(sys.argv)

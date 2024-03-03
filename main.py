@@ -32,15 +32,21 @@ def dataIngestionFunction(appleSlices, currentAppleSubDf, googleSlices, currentG
 
 main_Dict = {}
 
-for action_no in range(1,appleMaxSlice+googleMaxSlice+1): # full range of YAML action no.s for data ingestion
+# Define a function to wrap dataIngestionFunction with pre-defined arguments
+def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows=False):
+    return lambda: dataIngestionFunction(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows)
+
+main_dict = {}
+
+for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of YAML action no.s for data ingestion
     if action_no == 1:
-        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,0,1,deleteRows=True)
+        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1, delete_rows=True)
         currentAppleSubDf += 1
-    elif action_no in range(2,appleMaxSlice+1): # range of YAML action no.s for Apple ONLY
-        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,0,1)
+    elif action_no in range(2, appleMaxSlice + 1): # range of YAML action no.s for Apple ONLY
+        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1)
         currentAppleSubDf += 1
-    elif action_no in range(appleMaxSlice+1,appleMaxSlice+googleMaxSlice+1): # range of YAML action no.s for Google ONLY
-        main_Dict[action_no] = dataIngestionFunction(0,1,googleMaxSlice,currentGoogleSubDf)
+    elif action_no in range(appleMaxSlice + 1, appleMaxSlice + googleMaxSlice + 1): # range of YAML action no.s for Google ONLY
+        main_dict[action_no] = create_data_ingestion_function(0, 1, googleMaxSlice, currentGoogleSubDf)
         currentGoogleSubDf += 1
 
 ### wrangling, ML, DateTime, TrainTest ###

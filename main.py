@@ -34,13 +34,13 @@ main_Dict = {}
 
 for action_no in range(1,appleMaxSlice+googleMaxSlice+1): # full range of YAML action no.s for data ingestion
     if action_no == 1:
-        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,0,0,deleteRows=True)
+        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,1,0,deleteRows=True)
         currentAppleSubDf += 1
     elif action_no in range(2,appleMaxSlice+1): # range of YAML action no.s for Apple ONLY
-        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,0,0)
+        main_Dict[action_no] = dataIngestionFunction(appleMaxSlice,currentAppleSubDf,1,0)
         currentAppleSubDf += 1
     elif action_no in range(appleMaxSlice+1,appleMaxSlice+googleMaxSlice+1): # range of YAML action no.s for Google ONLY
-        main_Dict[action_no] = dataIngestionFunction(0,0,googleMaxSlice,currentGoogleSubDf)
+        main_Dict[action_no] = dataIngestionFunction(1,0,googleMaxSlice,currentGoogleSubDf)
         currentGoogleSubDf += 1
 
 ### wrangling, ML, DateTime, TrainTest ###

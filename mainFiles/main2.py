@@ -1,7 +1,5 @@
-from dataSources.deleteRowsAppleGoogle import deleteRowsAppleGoogle
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 
-deleteRowsAppleGoogle()
-dataIngestionApple(noOfSlices = 10, subDf = 1)
+dataIngestionApple(noOfSlices = 10, subDf = 2)
 dataIngestionGoogle(noOfSlices = 0)

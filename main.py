@@ -112,8 +112,10 @@ main_dict[TrainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest =
 ### Run above functions conditionally depending on which YAML file is calling it ###
 
 print(sys.argv[1])
+print(type(sys.argv[1]))
 print(main_dict.keys())
-print(main_dict.values())
+for key in main_dict:
+    print(f"The key {key} has type {type(key)}")
 
 # for action_inputNo in range(1, maxNoOfYMLActionNo+1):
 #     if sys.argv[1] == str(action_inputNo):

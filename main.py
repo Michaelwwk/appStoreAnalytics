@@ -15,7 +15,7 @@ from commonFunctions import read_gbq, to_gbq
 # Hard-coded values
 appleMaxSlice = 10 # No. of parts to slice Apple df into
 googleMaxSlice = 10 # No. of parts to slice Google df into
-wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, DateTime
+wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 TrainTest_actionNo = 22 # YAML action no. for TrainTest
 maxNoOfYMLActionNo = 22 # Total no. of YAML files
 

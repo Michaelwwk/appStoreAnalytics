@@ -119,6 +119,7 @@ main_dict[TrainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest =
 
 for action_inputNo in range(1, maxNoOfYMLActionNo+1):
     if sys.argv[1] == str(action_inputNo):
-        main_dict[action_inputNo]
+        print('success!')
+        main_dict[action_inputNo]()
     else:
         print("Invalid YAML file specified.")

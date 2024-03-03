@@ -8,23 +8,13 @@ from commonFunctions import read_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
-def dateTime(spark):
-
-    folder_path = os.getcwd().replace("\\", "/")
-    # Extract Google API from GitHub Secret Variable
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
-        json.dump(googleAPI_dict, f)
+def dateTime(spark, project_id, client, googleAPI_json_path):
 
     # Hard-coded variables
-    project_id =  googleAPI_dict["project_id"]
     dateTimeDataset = "dateTimeData"
     dateTime_table_name = "dateTime"
     dateTime_db_dataSetTableName = f"{dateTimeDataset}.{dateTime_table_name}"
     dateTime_db_path = f"{project_id}.{dateTime_db_dataSetTableName}"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
     
     try:
         sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)

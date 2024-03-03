@@ -282,6 +282,9 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     appsChecked = 0
     for appId in apple.iloc[:, 2]:
 
+        # Record the start time
+        start_time = time.time()
+
         appsChecked += 1
         appReviewCounts = 0
 
@@ -316,7 +319,13 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
         except Exception as e:
             # with open(log_file_path, "a") as log_file:
                 # log_file.write(f"{appId} -> Error occurred: {e}\n")
-            print(f"Apple: {e}")
+            print(f"Apple: {appId} ->: {e}")
+
+        # Record the end time
+        end_time = time.time()         
+        # Calculate and print the elapsed time in seconds
+        elapsed_time = end_time - start_time
+        print(f"({appId} -> {elapsed_time} seconds)")
 
     # Remove empty rows
     apple_main = apple_main[apple_main['name'] != 'App Store']

@@ -129,10 +129,15 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
             time.sleep(delay_between_requests)
         return output
 
-    appsChecked = 0
     google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
+
+    appsChecked = 0
     for appId in google.iloc[:, 1]:
+
+        # Record the start time
+        start_time = time.time()
+
         appsChecked += 1
         appReviewCounts = 0
 
@@ -178,11 +183,17 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
         except Exception as e:
             # with open(log_file_path, "a") as log_file:
                 # log_file.write(f"{appId} -> Error occurred: {e}\n")
-            print(f"Google: {e}")
+            print(f"Google: {appId} ->: {e}")
+
+        # Record the end time
+        end_time = time.time()         
+        # Calculate and print the elapsed time in seconds
+        elapsed_time = end_time - start_time
+        print(f"({appId} -> {elapsed_time} seconds)")
             
-    # Create tables into Google BigQuery
-    client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
-    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
+        # Create tables into Google BigQuery
+        client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
+        client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
     load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)

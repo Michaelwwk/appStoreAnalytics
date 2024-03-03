@@ -30,9 +30,6 @@ def dataIngestionFunction(appleSlices, currentAppleSubDf, googleSlices, currentG
     dataIngestionApple(noOfSlices = appleSlices, subDf = currentAppleSubDf)
     dataIngestionGoogle(noOfSlices = googleSlices, subDf = currentGoogleSubDf)
 
-main_Dict = {}
-
-# Define a function to wrap dataIngestionFunction with pre-defined arguments
 def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows=False):
     return lambda: dataIngestionFunction(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows)
 
@@ -106,15 +103,16 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     # Stop Spark session
     spark.stop()
 
-main_Dict[wranglingMLDateTime_actionNo] = wranglingMLDateTime_TrainTest(trainTest = False)
-main_Dict[TrainTest_actionNo] = wranglingMLDateTime_TrainTest(trainTest = True)
+def create_wranglingMLDateTime_TrainTest(trainTest = False):
+    return lambda: wranglingMLDateTime_TrainTest(trainTest)
+
+main_dict[wranglingMLDateTime_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = False)
+main_dict[TrainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = True)
 
 ### Run above functions conditionally depending on which YAML file is calling it ###
 
 for action_inputNo in range(1, maxNoOfYMLActionNo+1):
     if sys.argv[1] == str(action_inputNo):
-        print(action_inputNo)
-        print(main_Dict[action_inputNo])
-        main_Dict[action_inputNo]
+        main_dict[action_inputNo]
     else:
         print("Invalid YAML file specified.")

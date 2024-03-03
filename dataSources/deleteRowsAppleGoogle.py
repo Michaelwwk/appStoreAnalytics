@@ -29,11 +29,13 @@ def deleteRowsAppleGoogle():
 
     try:
         job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
+        print(f"Data in {appleScraped_db_path} deleted.")
     except:
         pass
 
     try:
         job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
+        print(f"Data in {googleScraped_db_path} deleted.")
     except:
         pass
 

@@ -294,27 +294,33 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
                                     country=country,
                                     delay_between_requests = delay_between_requests
                                     )
-            row = [value for value in app_results.values()]
-            row.append(appId)
-            apple_main.loc[len(apple_main)] = row
             
-            if saveReviews == True:
-
-                token = get_token(country, 'anything', appId, user_agents)
-                reviews, offset, status_code = fetch_reviews(country, 'anything', appId, user_agents, token)
-                df = pd.json_normalize(reviews)
-
-                appReviewCounts = len(df)
-
-                if df.empty:
-                    pass
-                else:
-                    apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
+            if app_results['name'] == 'App Store':
+                failedAppId = appId
+                print(f"Apple: {failedAppId} ->: App not found.")
+            else:
+                successAppId = appId
+                row = [value for value in app_results.values()]
+                row.append(successAppId)
+                apple_main.loc[len(apple_main)] = row
             
-            matchedAppleMain = len(apple_main[apple_main['name'] != 'App Store'])
-            # with open(log_file_path, "a") as log_file:
-                # log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+                if saveReviews == True:
+
+                    token = get_token(country, 'anything', successAppId, user_agents)
+                    reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token)
+                    df = pd.json_normalize(reviews)
+
+                    appReviewCounts = len(df)
+
+                    if df.empty:
+                        pass
+                    else:
+                        apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
+            
+                matchedAppleMain = len(apple_main)
+                # with open(log_file_path, "a") as log_file:
+                    # log_file.write(f"{successAppId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
+                print(f'Apple: {successAppId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
             # with open(log_file_path, "a") as log_file:
@@ -326,9 +332,6 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
         # Calculate and print the elapsed time in seconds
         elapsed_time = end_time - start_time
         print(f"({appId} -> {elapsed_time} seconds)")
-
-    # Remove empty rows
-    apple_main = apple_main[apple_main['name'] != 'App Store']
 
     # Rename columns
     apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',

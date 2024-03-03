@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-import json
 import shutil
 from google.cloud import bigquery, storage
 

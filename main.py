@@ -18,6 +18,8 @@ googleMaxSlice = 10 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
 
+main_dict = {}
+
 ### Data Ingestion ###
 
 currentAppleSubDf = 1
@@ -31,8 +33,6 @@ def dataIngestionFunction(appleSlices, currentAppleSubDf, googleSlices, currentG
 
 def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows = False, project_id = project_id, client = client):
     return lambda: dataIngestionFunction(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows, project_id, client)
-
-main_dict = {}
 
 for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of YAML action no.s for data ingestion
     if action_no == 1:

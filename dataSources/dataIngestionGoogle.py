@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore')
 def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Hard-coded variables
-    googleAppsSample = 100 # 999 = all samples!
+    googleAppsSample = 200000 # 999 = all samples!
     saveReviews = True
     reviewCountPerApp = 20 # 40
     requests_per_second = None # None = turn off throttling!

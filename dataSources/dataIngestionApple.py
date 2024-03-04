@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.ERROR)
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Hard-coded variables
-    appleAppsSample = 50 # 999 = all samples!
+    appleAppsSample = 200000 # 999 = all samples!
     saveReviews = True
     appleReviewCountPerApp = 20 # max 20!
     requests_per_second = None # None = turn off throttling!

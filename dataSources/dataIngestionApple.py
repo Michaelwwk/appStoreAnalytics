@@ -261,7 +261,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             
             if app_results['name'] == 'App Store':
                 failedAppId = appId
-                print(f"Apple: {failedAppId} ->: App not found.")
+                print(f"Apple: {failedAppId} -> App not found.")
             else:
                 successAppId = appId
                 row = [value for value in app_results.values()]
@@ -286,7 +286,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
-            print(f"Apple: {appId} ->: {e}")
+            print(f"Apple: {appId} -> {e}")
 
         # Record the end time
         end_time = time.time()         

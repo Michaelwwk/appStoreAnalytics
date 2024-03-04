@@ -148,7 +148,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
             print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
 & {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
         except Exception as e:
-            print(f"Google: {appId} ->: {e}")
+            print(f"Google: {appId} -> {e}")
 
         # Record the end time
         end_time = time.time()         

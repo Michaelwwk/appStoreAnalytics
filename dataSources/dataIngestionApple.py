@@ -285,7 +285,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             
                 matchedAppleMain = len(apple_main)
                 print(f'Apple: {successAppId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) \
-                      & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+& {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
             print(f"Apple: {appId} ->: {e}")

@@ -5,7 +5,7 @@ from common import read_gbq, to_gbq
 from google.cloud import bigquery
 
 # TODO Follow this template when scripting!!
-def dataWrangling(spark, project_id, client, googleAPI_json_path):
+def dataWrangling(spark, project_id, client):
 
     # Hard-coded variables
     rawDataset = "rawData" # TODO TO CHANGE FOLDER NAME
@@ -15,10 +15,10 @@ def dataWrangling(spark, project_id, client, googleAPI_json_path):
     cleanGoogleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
     cleanGoogleScraped_db_path = f"{project_id}.{cleanGoogleScraped_db_dataSetTableName}"
 
-    sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = rawDataset, GBQtable = GoogleScraped_table_name)
+    sparkDf = read_gbq(spark, GBQdataset = rawDataset, GBQtable = GoogleScraped_table_name)
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, client, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
+    to_gbq(sparkDf, cleanGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
 
     # TODO for both Apple & Google Reviews table, need to sort by appId & date asc then keep last row (drop duplicates, subset columns without developers' replies)!

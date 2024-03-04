@@ -54,10 +54,10 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
     if trainTest == False:
         # Run main functions
-        dataWrangling(spark, project_id, client, googleAPI_json_path)
+        dataWrangling(spark, project_id, client)
         time.sleep(5)
-        finalizedMLModels(spark, project_id, client, googleAPI_json_path)
-        dateTime(spark, project_id, client, googleAPI_json_path)
+        finalizedMLModels(spark, project_id, client)
+        dateTime(spark, project_id, client)
         ## Remove files and folder
         try:
             os.remove(googleAPI_json_path)
@@ -75,9 +75,9 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         for table_name in table_names:
             trainTest_dataSetTableName = f"{trainTestDataset}.{table_name}"
             trainTest_db_path = f"{project_id}.{trainTest_dataSetTableName}"
-            sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = rawDataset, GBQtable = table_name)
+            sparkDf = read_gbq(spark, GBQdataset = rawDataset, GBQtable = table_name)
             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
-            to_gbq(sparkDf, client, trainTest_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
+            to_gbq(sparkDf, trainTest_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
     # Stop Spark session
     spark.stop()
 

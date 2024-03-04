@@ -15,7 +15,7 @@ def dateTime(spark, project_id, client, googleAPI_json_path):
     dateTime_db_path = f"{project_id}.{dateTime_db_dataSetTableName}"
     
     try:
-        sparkDf = read_gbq(spark, client, googleAPI_json_path, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
+        sparkDf = read_gbq(spark, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
         rowNo_int = sparkDf.count()+1
     except:
         rowNo_int = 1

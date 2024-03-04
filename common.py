@@ -44,7 +44,8 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable, project_id = project_id, folder_path = folder_path):
+def read_gbq(spark, GBQdataset, GBQtable, client = client,
+             googleAPI_json_path = googleAPI_json_path, project_id = project_id, folder_path = folder_path):
 
     project_id = project_id
     bucket_name = "nusebac_storage"
@@ -86,7 +87,8 @@ def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable, project_i
 
     return sparkDf
 
-def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False, folder_path = folder_path): # 'WRITE_TRUNCATE' if want to replace values!
+def to_gbq(dataframe, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False,
+           client = client, folder_path = folder_path): # 'WRITE_TRUNCATE' if want to replace values!
 
     if sparkdf == True:
 

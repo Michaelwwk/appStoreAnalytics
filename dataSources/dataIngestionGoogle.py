@@ -23,18 +23,18 @@ warnings.filterwarnings('ignore')
 #         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
 #         .save()
 
-def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
+def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     
-    # Set folder path
-    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
+    # # Set folder path
+    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    # googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    # log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
 
-    # Extract Google API from GitHub Secret Variable
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open(googleAPI_json_path, "w") as f:
-        json.dump(googleAPI_dict, f)
+    # # Extract Google API from GitHub Secret Variable
+    # googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
+    # with open(googleAPI_json_path, "w") as f:
+    #     json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
     googleAppsSample = 100 # 999 = all samples!
@@ -43,14 +43,14 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
-    project_id =  googleAPI_dict["project_id"]
+    project_id =  project_id
     rawDataset = "rawData"
     googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
 
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+    # client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     # Google
     ## Clone the repository
@@ -96,10 +96,10 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     if googleAppsSample != 999:
         google = google.sample(googleAppsSample)
 
-    try:
-        os.remove(log_file_path)
-    except:
-        pass
+    # try:
+    #     os.remove(log_file_path)
+    # except:
+    #     pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
@@ -202,9 +202,9 @@ def dataIngestionGoogle(noOfSlices = 1, subDf = 1):
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 
-    ## Remove files and folder
-    try:
-        os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    except:
-        pass
+    # ## Remove files and folder
+    # try:
+    #     os.remove(googleAPI_json_path)
+    #     shutil.rmtree(f"{folder_path}apple-appstore-apps")
+    # except:
+    #     pass

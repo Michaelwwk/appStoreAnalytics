@@ -1,6 +1,7 @@
 import sys
 import time
 import os
+import shutil
 import json
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
@@ -10,45 +11,34 @@ from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataWrangling.dataWrangling import dataWrangling
 from models.models import finalizedMLModels
 from dateTime import dateTime
-from commonFunctions import read_gbq, to_gbq
+from commonFunctions import read_gbq, to_gbq, client, project_id, googleAPI_json_path, folder_path
 
-# Hard-coded values
+# Hard-coded values (impt!)
 appleMaxSlice = 10 # No. of parts to slice Apple df into
 googleMaxSlice = 10 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 TrainTest_actionNo = 22 # YAML action no. for TrainTest
 maxNoOfYMLActionNo = 22 # Total no. of YAML files
 
-# Configurations
-folder_path = os.getcwd().replace("\\", "/")
-# folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-# folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-googleAPI_json_path = f"{folder_path}/googleAPI.json"
-with open(googleAPI_json_path, "w") as f:
-    json.dump(googleAPI_dict, f)
-project_id =  googleAPI_dict["project_id"]
-client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-
 ### Data Ingestion ###
 
 currentAppleSubDf = 1
 currentGoogleSubDf = 1
 
-def dataIngestionFunction(appleSlices, currentAppleSubDf, googleSlices, currentGoogleSubDf, deleteRows = False):
+def dataIngestionFunction(appleSlices, currentAppleSubDf, googleSlices, currentGoogleSubDf, deleteRows = False, project_id = project_id, client = client):
     if deleteRows == True:
-        deleteRowsAppleGoogle()
-    dataIngestionApple(noOfSlices = appleSlices, subDf = currentAppleSubDf)
-    dataIngestionGoogle(noOfSlices = googleSlices, subDf = currentGoogleSubDf)
+        deleteRowsAppleGoogle(project_id = project_id, client = client)
+    dataIngestionApple(noOfSlices = appleSlices, subDf = currentAppleSubDf, client = client, project_id = project_id)
+    dataIngestionGoogle(noOfSlices = googleSlices, subDf = currentGoogleSubDf, client = client, project_id = project_id)
 
-def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows=False):
-    return lambda: dataIngestionFunction(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows)
+def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows = False, project_id = project_id, client = client):
+    return lambda: dataIngestionFunction(apple_slices, current_apple_sub_df, google_slices, current_google_sub_df, delete_rows, project_id, client)
 
 main_dict = {}
 
 for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of YAML action no.s for data ingestion
     if action_no == 1:
-        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1, delete_rows=True)
+        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1, delete_rows = True)
         currentAppleSubDf += 1
     elif action_no in range(2, appleMaxSlice + 1): # range of YAML action no.s for Apple ONLY
         main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1)
@@ -107,5 +97,6 @@ for action_inputNo in range(1, maxNoOfYMLActionNo+1):
 ## Remove files and folder
 try:
     os.remove(googleAPI_json_path)
+    shutil.rmtree(f"{folder_path}apple-appstore-apps")
 except:
     pass

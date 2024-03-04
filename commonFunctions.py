@@ -4,6 +4,17 @@ import json
 import shutil
 from google.cloud import bigquery, storage
 
+# Configurations
+folder_path = os.getcwd().replace("\\", "/")
+# folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+# folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
+googleAPI_json_path = f"{folder_path}/googleAPI.json"
+with open(googleAPI_json_path, "w") as f:
+    json.dump(googleAPI_dict, f)
+project_id =  googleAPI_dict["project_id"]
+client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+
 def split_df(df, noOfSlices = 1, subDf = 1):
 
     if noOfSlices != 0:
@@ -35,17 +46,18 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable):
+def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable, project_id = project_id, folder_path = folder_path):
 
-    project_id = "big-data-analytics-415801"
+    project_id = project_id
     bucket_name = "nusebac_storage"
     file_name = f"{GBQtable}.csv"
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
 
-    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    folder_path = folder_path
     local_file_path = f"{folder_path}/{file_name}"
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
@@ -79,12 +91,13 @@ def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable):
 
     return sparkDf
 
-def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False): # 'WRITE_TRUNCATE' if want to replace values!
+def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', sparkdf = False, folder_path = folder_path): # 'WRITE_TRUNCATE' if want to replace values!
 
     if sparkdf == True:
 
-        folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-        folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+        # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+        # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+        folder_path = os.getcwd().replace("\\", "/")
         local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
 
         dataframe.write.parquet(local_file_path, mode="overwrite")

@@ -1,7 +1,6 @@
 import os
 import time
 import subprocess
-import shutil
 import pandas as pd
 import numpy as np
 import json
@@ -29,19 +28,19 @@ logging.basicConfig(level=logging.ERROR)
 #         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
 #         .save()
 
-def dataIngestionApple(noOfSlices = 1, subDf = 1):
+def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     
     # folder_path = os.getcwd().replace("\\", "/")
     # Set folder path
-    folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
+    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
+    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
+    # googleAPI_json_path = f"{folder_path}/googleAPI.json"
+    # log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
 
     # Extract Google API from GitHub Secret Variable
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open(googleAPI_json_path, "w") as f:
-        json.dump(googleAPI_dict, f)
+    # googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
+    # with open(googleAPI_json_path, "w") as f:
+    #     json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
     appleAppsSample = 50 # 999 = all samples!
@@ -50,14 +49,14 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     language = 'en'
-    project_id =  googleAPI_dict["project_id"]
+    # project_id =  googleAPI_dict["project_id"]
     rawDataset = "rawData"
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+    # client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     # Apple
     ## Clone the repository
@@ -83,10 +82,10 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     if appleAppsSample != 999:
         apple = apple.sample(appleAppsSample)
 
-    try:
-        os.remove(log_file_path)
-    except:
-        pass
+    # try:
+    #     os.remove(log_file_path)
+    # except:
+    #     pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
@@ -348,9 +347,9 @@ def dataIngestionApple(noOfSlices = 1, subDf = 1):
     load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
 
-    ## Remove files and folder
-    try:
-        os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    except:
-        pass
+    # ## Remove files and folder
+    # try:
+    #     # os.remove(googleAPI_json_path)
+    #     shutil.rmtree(f"{folder_path}apple-appstore-apps")
+    # except:
+    #     pass

@@ -87,13 +87,13 @@ def read_gbq(spark, GBQdataset, GBQtable, client = client,
 
     return sparkDf
 
-def to_gbq(dataframe, dataSet_tableName, sparkdf = False, client = client,
+def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE'): # 'WRITE_APPEND' if want to append values!
 
     if sparkdf == True:
 
         folder_path = os.getcwd().replace("\\", "/")
-        local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
+        local_file_path = f"{folder_path}/{GBQdataset}.{GBQtable}.parquet"
 
         dataframe.write.parquet(local_file_path, mode="overwrite")
         df = pd.read_parquet(local_file_path)
@@ -143,7 +143,7 @@ def to_gbq(dataframe, dataSet_tableName, sparkdf = False, client = client,
     job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
     load_job = client.load_table_from_dataframe(
         df,
-        dataSet_tableName,
+        f"{GBQdataset}.{GBQtable}",
         job_config=job_config
     )
 

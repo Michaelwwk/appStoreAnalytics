@@ -12,13 +12,12 @@ def dataWrangling(spark, project_id, client):
     cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
     GoogleScraped_table_name = 'googleMain' # TODO CHANGE PATH
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
-    cleanGoogleScraped_db_dataSetTableName = f"{cleanDataset}.{cleanGoogleScraped_table_name}"
-    cleanGoogleScraped_db_path = f"{project_id}.{cleanGoogleScraped_db_dataSetTableName}"
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
 
-    sparkDf = read_gbq(spark, GBQdataset = rawDataset, GBQtable = GoogleScraped_table_name)
+    sparkDf = read_gbq(spark, rawDataset, GoogleScraped_table_name)
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, cleanGoogleScraped_db_dataSetTableName, sparkdf = True)
+    to_gbq(sparkDf, cleanDataset, cleanGoogleScraped_table_name)
 
     # TODO for both Apple & Google Reviews table, need to sort by appId & date asc then keep last row (drop duplicates, subset columns without developers' replies)!

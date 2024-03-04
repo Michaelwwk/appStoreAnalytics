@@ -22,9 +22,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     language = 'en'
     project_id =  project_id
     rawDataset = "rawData"
-    googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
-    googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
 
     # Google
@@ -163,9 +161,9 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    load_job = to_gbq(google_main, googleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    load_job = to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     load_job.result()
 
-    load_job = to_gbq(google_reviews, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    load_job = to_gbq(google_reviews, rawDataset, googleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()

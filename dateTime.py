@@ -6,16 +6,15 @@ from common import read_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
-def dateTime(spark, project_id, client, googleAPI_json_path):
+def dateTime(spark, project_id, client):
 
     # Hard-coded variables
     dateTimeDataset = "dateTimeData"
     dateTime_table_name = "dateTime"
-    dateTime_db_dataSetTableName = f"{dateTimeDataset}.{dateTime_table_name}"
-    dateTime_db_path = f"{project_id}.{dateTime_db_dataSetTableName}"
+    dateTime_db_path = f"{project_id}.{dateTimeDataset}.{dateTime_table_name}"
     
     try:
-        sparkDf = read_gbq(spark, GBQdataset = dateTimeDataset, GBQtable = dateTime_table_name)
+        sparkDf = read_gbq(spark, dateTimeDataset, dateTime_table_name)
         rowNo_int = sparkDf.count()+1
     except:
         rowNo_int = 1
@@ -36,5 +35,5 @@ def dateTime(spark, project_id, client, googleAPI_json_path):
     client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
 
     # Push data into DB table
-    load_job = to_gbq(dateTime_df, client, dateTime_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    load_job = to_gbq(dateTime_df, dateTimeDataset, dateTime_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     load_job.result()

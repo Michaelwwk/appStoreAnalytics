@@ -17,8 +17,7 @@ from common import client, project_id, googleAPI_json_path, folder_path, read_gb
 appleMaxSlice = 10 # No. of parts to slice Apple df into
 googleMaxSlice = 10 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
-TrainTest_actionNo = 22 # YAML action no. for TrainTest
-maxNoOfYMLActionNo = 22 # Total no. of YAML files
+maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
 
 ### Data Ingestion ###
 
@@ -73,11 +72,10 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         GoogleReview_table_name = 'googleReview'
         table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
         for table_name in table_names:
-            trainTest_dataSetTableName = f"{trainTestDataset}.{table_name}"
-            trainTest_db_path = f"{project_id}.{trainTest_dataSetTableName}"
-            sparkDf = read_gbq(spark, GBQdataset = rawDataset, GBQtable = table_name)
+            trainTest_db_path = f"{project_id}.{trainTestDataset}.{table_name}"
+            sparkDf = read_gbq(spark, rawDataset, table_name)
             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
-            to_gbq(sparkDf, trainTest_dataSetTableName, sparkdf = True)
+            to_gbq(sparkDf, trainTestDataset, table_name)
     # Stop Spark session
     spark.stop()
 
@@ -85,10 +83,10 @@ def create_wranglingMLDateTime_TrainTest(trainTest = False):
     return lambda: wranglingMLDateTime_TrainTest(trainTest)
 
 main_dict[wranglingMLDateTime_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = False)
-main_dict[TrainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = True)
+main_dict[maxNoOfYML_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = True)
 
 ### Run above functions conditionally depending on which YAML file is calling it ###
-for action_inputNo in range(1, maxNoOfYMLActionNo+1):
+for action_inputNo in range(1, maxNoOfYML_actionNo+1):
     if sys.argv[1] == str(action_inputNo):
         main_dict[action_inputNo]()
     else:

@@ -12,11 +12,10 @@ def finalizedMLModels(spark, project_id, client):
     modelDataset = "modelData" # TODO TO CHANGE FOLDER NAME
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
     modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
-    modelGoogleScraped_db_dataSetTableName = f"{modelDataset}.{modelGoogleScraped_table_name}"
-    modelGgoogleScraped_db_path = f"{project_id}.{modelGoogleScraped_db_dataSetTableName}"
+    modelGgoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 
-    sparkDf = read_gbq(spark, GBQdataset = cleanDataset, GBQtable = cleanGoogleScraped_table_name)
+    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleScraped_table_name)
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, modelGoogleScraped_db_dataSetTableName, sparkdf = True)
+    to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)

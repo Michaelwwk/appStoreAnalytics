@@ -28,9 +28,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     country = 'us'
     # language = 'en'
     rawDataset = "rawData"
-    appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
-    appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 
     # Apple
@@ -305,9 +303,9 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    load_job = to_gbq(apple_main, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    load_job = to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     load_job.result()
 
-    load_job = to_gbq(apple_reviews, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    load_job = to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()

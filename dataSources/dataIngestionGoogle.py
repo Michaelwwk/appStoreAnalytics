@@ -2,39 +2,16 @@ import os
 import time
 import subprocess
 import glob
-import shutil
 import pandas as pd
-import json
 from google.cloud import bigquery
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
-from commonFunctions import to_gbq, split_df
+from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import googleScraped_table_name, googleReview_table_name
 import warnings
 warnings.filterwarnings('ignore')
 
-# # Function to convert pandas DataFrame to Spark DataFrame
-# def pandas_to_spark(df, spark):
-#     return spark.createDataFrame(df)
-
-# # Function to write Spark DataFrame to BigQuery
-# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
-#     spark_df.write.format('bigquery') \
-#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-#         .save()
-
 def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
-    
-    # # Set folder path
-    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-    # googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    # log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
-
-    # # Extract Google API from GitHub Secret Variable
-    # googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    # with open(googleAPI_json_path, "w") as f:
-    #     json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
     googleAppsSample = 100 # 999 = all samples!
@@ -49,8 +26,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
-
-    # client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     # Google
     ## Clone the repository
@@ -95,11 +70,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
     if googleAppsSample != 999:
         google = google.sample(googleAppsSample)
-
-    # try:
-    #     os.remove(log_file_path)
-    # except:
-    #     pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
@@ -177,12 +147,9 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
                     except IndexError:
                         continue
             
-            # with open(log_file_path, "a") as log_file:
-               # log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
-            print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) & {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+            print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
+                  & {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
         except Exception as e:
-            # with open(log_file_path, "a") as log_file:
-                # log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Google: {appId} ->: {e}")
 
         # Record the end time
@@ -199,12 +166,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
     load_job.result()
 
-    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
+    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
-
-    # ## Remove files and folder
-    # try:
-    #     os.remove(googleAPI_json_path)
-    #     shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    # except:
-    #     pass

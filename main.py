@@ -11,7 +11,7 @@ from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataWrangling.dataWrangling import dataWrangling
 from models.models import finalizedMLModels
 from dateTime import dateTime
-from commonFunctions import read_gbq, to_gbq, client, project_id, googleAPI_json_path, folder_path
+from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
 # Hard-coded values (impt!)
 appleMaxSlice = 10 # No. of parts to slice Apple df into

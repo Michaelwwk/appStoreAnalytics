@@ -6,8 +6,6 @@ from google.cloud import bigquery, storage
 
 # Configurations
 folder_path = os.getcwd().replace("\\", "/")
-# folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-# folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
 googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
 googleAPI_json_path = f"{folder_path}/googleAPI.json"
 with open(googleAPI_json_path, "w") as f:
@@ -54,9 +52,6 @@ def read_gbq(spark, client, googleAPI_json_path, GBQdataset, GBQtable, project_i
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-
-    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
     folder_path = folder_path
     local_file_path = f"{folder_path}/{file_name}"
 
@@ -95,8 +90,6 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
 
     if sparkdf == True:
 
-        # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-        # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
         folder_path = os.getcwd().replace("\\", "/")
         local_file_path = f"{folder_path}/{dataSet_tableName}.parquet"
 
@@ -121,6 +114,26 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
         #     job_config=job_config
         # )
 
+        """
+        # Convert Spark DF to Parquet format
+        ## Define the path where you want to save the Parquet file
+        parquet_path = "path/to/save/your/parquet/file"
+
+        ## Write the DataFrame to Parquet format
+        df_spark.write.parquet(parquet_path)
+
+        # ## Write the DataFrame to Parquet format with additional options
+        # df_spark.write.parquet(
+        # parquet_path,
+        # mode="overwrite",  # Overwrite the existing files
+        # compression="snappy",  # Use Snappy compression codec
+        # partitionBy="column_name"  # Partition the data by a specific column
+        # )
+
+        # Push Parquet to GBQ
+        to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
+        """
+
     else:
         df = dataframe.copy()
 
@@ -133,3 +146,13 @@ def to_gbq(dataframe, client, dataSet_tableName, mergeType ='WRITE_APPEND', spar
     )
 
     return load_job
+
+# # Function to convert pandas DataFrame to Spark DataFrame
+# def pandas_to_spark(df, spark):
+#     return spark.createDataFrame(df)
+
+# # Function to write Spark DataFrame to BigQuery
+# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
+#     spark_df.write.format('bigquery') \
+#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
+#         .save()

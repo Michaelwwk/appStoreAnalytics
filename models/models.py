@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import json
-from commonFunctions import read_gbq, to_gbq
+from common import read_gbq, to_gbq
 from google.cloud import bigquery
 
 # TODO Follow this template when scripting!!
@@ -20,23 +20,3 @@ def finalizedMLModels(spark, project_id, client, googleAPI_json_path):
 
     client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, client, modelGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
-
-    """
-    # Convert Spark DF to Parquet format
-    ## Define the path where you want to save the Parquet file
-    parquet_path = "path/to/save/your/parquet/file"
-
-    ## Write the DataFrame to Parquet format
-    df_spark.write.parquet(parquet_path)
-
-    # ## Write the DataFrame to Parquet format with additional options
-    # df_spark.write.parquet(
-    # parquet_path,
-    # mode="overwrite",  # Overwrite the existing files
-    # compression="snappy",  # Use Snappy compression codec
-    # partitionBy="column_name"  # Partition the data by a specific column
-    # )
-
-    # Push Parquet to GBQ
-    to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
-    """

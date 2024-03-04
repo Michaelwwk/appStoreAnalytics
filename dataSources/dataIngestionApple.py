@@ -11,36 +11,14 @@ from google.cloud import bigquery
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 from pyspark.sql.types import *
-from commonFunctions import to_gbq, split_df
+from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
 import warnings
 warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
 
-# # Function to convert pandas DataFrame to Spark DataFrame
-# def pandas_to_spark(df, spark):
-#     return spark.createDataFrame(df)
-
-# # Function to write Spark DataFrame to BigQuery
-# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
-#     spark_df.write.format('bigquery') \
-#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-#         .save()
-
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
-    
-    # folder_path = os.getcwd().replace("\\", "/")
-    # Set folder path
-    # folder_path = os.path.abspath(os.path.expanduser('~')).replace("\\", "/")
-    # folder_path = f"{folder_path}/work/appStoreAnalytics/appStoreAnalytics"
-    # googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    # log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
-
-    # Extract Google API from GitHub Secret Variable
-    # googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    # with open(googleAPI_json_path, "w") as f:
-    #     json.dump(googleAPI_dict, f)
 
     # Hard-coded variables
     appleAppsSample = 50 # 999 = all samples!
@@ -48,15 +26,12 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     appleReviewCountPerApp = 20 # max 20!
     requests_per_second = None # None = turn off throttling!
     country = 'us'
-    language = 'en'
-    # project_id =  googleAPI_dict["project_id"]
+    # language = 'en'
     rawDataset = "rawData"
     appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
-
-    # client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
 
     # Apple
     ## Clone the repository
@@ -71,7 +46,8 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     # Data Ingestion using 'app_store_scraper' API:
 
     apple_main = pd.DataFrame(columns = ['name', 'description', 'applicationCategory', 'datePublished',
-                                          'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price', 'priceCurrency', 'star_ratings', 'appId'])
+                                          'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price',
+                                          'priceCurrency', 'star_ratings', 'appId'])
     
     apple_reviews = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
                                             'attributes.review', 'attributes.rating', 'attributes.isEdited',
@@ -81,11 +57,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
     if appleAppsSample != 999:
         apple = apple.sample(appleAppsSample)
-
-    # try:
-    #     os.remove(log_file_path)
-    # except:
-    #     pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
@@ -142,16 +113,12 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         response = requests.get(f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}', 
                                 headers = {'User-Agent': random.choice(user_agents)},
                                 )
-        
-        # if response.status_code != 200:
-        #     print(f"GET request failed. Response: {response.status_code} {response.reason}")
 
         tags = response.text.splitlines()
         for tag in tags:
             if re.match(r"<meta.+web-experience-app/config/environment", tag):
                 token = re.search(r"token%22%3A%22(.+?)%22", tag).group(1)
         
-        # print(f"Bearer {token}")
         return token
         
     def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1'):
@@ -164,7 +131,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         - No known ability to sort by date, but the higher the offset, the older the reviews tend to be
         """
 
-        ## Define request headers and params ------------------------------------
+        ## Define request headers and params
         landingUrl = f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}'
         requestUrl = f'https://amp-api.apps.apple.com/v1/catalog/{country}/apps/{app_id}/reviews'
 
@@ -186,7 +153,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             ('additionalPlatforms', 'appletv,ipad,iphone,mac')
             )
 
-        ## Perform request & exception handling ----------------------------------
+        ## Perform request & exception handling
         retry_count = 0
         MAX_RETRIES = 5
         BASE_DELAY_SECS = 10
@@ -230,7 +197,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                     # print(f"{response.status_code} {response.reason}. There are no more reviews.")
                     break
 
-        ## Final output ---------------------------------------------------------
+        ## Final output
         # Get pagination offset for next request
         if 'next' in result and result['next'] is not None:
             offset = re.search("^.+offset=([0-9]+).*$", result['next']).group(1)
@@ -317,13 +284,10 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                         apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
             
                 matchedAppleMain = len(apple_main)
-                # with open(log_file_path, "a") as log_file:
-                    # log_file.write(f"{successAppId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-                print(f'Apple: {successAppId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+                print(f'Apple: {successAppId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) \
+                      & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
         except Exception as e:
-            # with open(log_file_path, "a") as log_file:
-                # log_file.write(f"{appId} -> Error occurred: {e}\n")
             print(f"Apple: {appId} ->: {e}")
 
         # Record the end time
@@ -344,12 +308,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName)
     load_job.result()
 
-    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
+    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')
+    # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
     load_job.result()
-
-    # ## Remove files and folder
-    # try:
-    #     # os.remove(googleAPI_json_path)
-    #     shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    # except:
-    #     pass

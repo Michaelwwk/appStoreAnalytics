@@ -2,7 +2,7 @@ import pandas as pd
 from google.cloud import bigquery
 from datetime import datetime
 from pytz import timezone
-from commonFunctions import read_gbq, to_gbq
+from common import read_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 

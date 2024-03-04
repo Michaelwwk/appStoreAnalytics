@@ -4,7 +4,7 @@ import os
 import shutil
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
-from dataSources.deleteRowsAppleGoogle import deleteRowsAppleGoogle
+from dataSources.deleteRowsAppleGoogle import rawDataset, deleteRowsAppleGoogle
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataWrangling.dataWrangling import dataWrangling
@@ -12,13 +12,14 @@ from models.models import finalizedMLModels
 from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
-# Hard-coded values (impt!)
+# Hard-coded variables (impt!)
 appleMaxSlice = 10 # No. of parts to slice Apple df into
 googleMaxSlice = 10 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
 
 main_dict = {}
+# rawDataset = rawDataset
 
 ### Data Ingestion ###
 
@@ -58,7 +59,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         dateTime(spark, project_id, client)
     else:
         # Hard-coded variables
-        rawDataset = "rawData"
+        rawDataset = rawDataset
         trainTestDataset = "trainTestData"
         AppleScraped_table_name = 'appleMain'
         AppleReview_table_name = 'appleReview'

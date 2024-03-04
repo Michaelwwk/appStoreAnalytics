@@ -1,13 +1,16 @@
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
+from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
+
+rawDataset = rawDataset
 
 # TODO Follow this template when scripting!!
 def dataWrangling(spark, project_id, client):
 
     # Hard-coded variables
-    rawDataset = "rawData" # TODO TO CHANGE FOLDER NAME
-    cleanDataset = "cleanData" # TODO TO CHANGE FOLDER NAME
-    GoogleScraped_table_name = 'googleMain' # TODO CHANGE PATH
+    rawDataset = rawDataset
+    cleanDataset = "cleanData"
+    GoogleScraped_table_name = googleScraped_table_name
     cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
 

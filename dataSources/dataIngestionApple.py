@@ -12,11 +12,13 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 from pyspark.sql.types import *
 from common import to_gbq, split_df
-from dataSources.deleteRowsAppleGoogle import appleScraped_table_name, appleReview_table_name
+from dataSources.deleteRowsAppleGoogle import rawDataset, appleScraped_table_name, appleReview_table_name
 import warnings
 warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
+
+rawDataset = rawDataset
 
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
@@ -27,7 +29,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     # language = 'en'
-    rawDataset = "rawData"
+    rawDataset = rawDataset
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 
@@ -303,9 +305,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    load_job = to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
-    load_job.result()
-
-    load_job = to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
-    load_job.result()

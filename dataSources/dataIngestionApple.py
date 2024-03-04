@@ -305,7 +305,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName)
+    load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
     load_job.result()
 
     load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')

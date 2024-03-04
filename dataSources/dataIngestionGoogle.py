@@ -163,7 +163,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
+    load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName, mergeType = 'WRITE_APPEND')
     load_job.result()
 
     load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND')

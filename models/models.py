@@ -19,4 +19,4 @@ def finalizedMLModels(spark, project_id, client):
     print(sparkDf.show())
 
     client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, modelGoogleScraped_db_dataSetTableName, mergeType ='WRITE_TRUNCATE', sparkdf = True)
+    to_gbq(sparkDf, modelGoogleScraped_db_dataSetTableName, sparkdf = True)

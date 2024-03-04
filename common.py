@@ -87,8 +87,8 @@ def read_gbq(spark, GBQdataset, GBQtable, client = client,
 
     return sparkDf
 
-def to_gbq(dataframe, dataSet_tableName, mergeType ='WRITE_TRUNCATE', sparkdf = False,
-           client = client, folder_path = folder_path): # 'WRITE_APPEND' if want to append values!
+def to_gbq(dataframe, dataSet_tableName, sparkdf = False, client = client,
+           folder_path = folder_path, mergeType = 'WRITE_TRUNCATE'): # 'WRITE_APPEND' if want to append values!
 
     if sparkdf == True:
 

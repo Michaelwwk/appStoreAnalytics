@@ -4,7 +4,8 @@ import os
 import shutil
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
-from dataSources.deleteRowsAppleGoogle import rawDataset, deleteRowsAppleGoogle
+from dataSources.deleteRowsAppleGoogle \
+import rawDataset, appleScraped_table_name, googleScraped_table_name, appleReview_table_name, googleReview_table_name, deleteRowsAppleGoogle
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataWrangling.dataWrangling import dataWrangling
@@ -17,6 +18,7 @@ appleMaxSlice = 10 # No. of parts to slice Apple df into
 googleMaxSlice = 10 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
+trainTestDataset = "trainTestData"
 
 main_dict = {}
 
@@ -56,13 +58,11 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         time.sleep(5)
         finalizedMLModels(spark, project_id, client)
         dateTime(spark, project_id, client)
-    else:
-        # Hard-coded variables
-        trainTestDataset = "trainTestData"
-        AppleScraped_table_name = 'appleMain'
-        AppleReview_table_name = 'appleReview'
-        GoogleScraped_table_name = 'googleMain'
-        GoogleReview_table_name = 'googleReview'
+    else:        
+        AppleScraped_table_name = appleScraped_table_name
+        AppleReview_table_name = appleReview_table_name
+        GoogleScraped_table_name = googleScraped_table_name
+        GoogleReview_table_name = googleReview_table_name
         table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
         for table_name in table_names:
             trainTest_db_path = f"{project_id}.{trainTestDataset}.{table_name}"

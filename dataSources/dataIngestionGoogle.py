@@ -11,16 +11,16 @@ from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_na
 import warnings
 warnings.filterwarnings('ignore')
 
+# Hard-coded variables
+googleAppsSample = 200000 # 999 = all samples!
+saveReviews = True
+reviewCountPerApp = 20 # 40
+requests_per_second = None # None = turn off throttling!
+country = 'us'
+language = 'en'
+
 def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
-    # Hard-coded variables
-    googleAppsSample = 200000 # 999 = all samples!
-    saveReviews = True
-    reviewCountPerApp = 20 # 40
-    requests_per_second = None # None = turn off throttling!
-    country = 'us'
-    language = 'en'
-    project_id =  project_id
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
 

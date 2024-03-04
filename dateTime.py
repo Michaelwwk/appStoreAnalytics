@@ -6,11 +6,12 @@ from common import read_gbq, to_gbq
 import warnings
 warnings.filterwarnings('ignore')
 
+# Hard-coded variables
+dateTimeDataset = "dateTimeData"
+dateTime_table_name = "dateTime"
+
 def dateTime(spark, project_id, client):
 
-    # Hard-coded variables
-    dateTimeDataset = "dateTimeData"
-    dateTime_table_name = "dateTime"
     dateTime_db_path = f"{project_id}.{dateTimeDataset}.{dateTime_table_name}"
     
     try:

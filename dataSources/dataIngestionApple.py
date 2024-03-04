@@ -18,15 +18,16 @@ warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
 
+# Hard-coded variables
+appleAppsSample = 200000 # 999 = all samples!
+saveReviews = True
+appleReviewCountPerApp = 20 # max 20!
+requests_per_second = None # None = turn off throttling!
+country = 'us'
+# language = 'en'
+
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
-    # Hard-coded variables
-    appleAppsSample = 200000 # 999 = all samples!
-    saveReviews = True
-    appleReviewCountPerApp = 20 # max 20!
-    requests_per_second = None # None = turn off throttling!
-    country = 'us'
-    # language = 'en'
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 

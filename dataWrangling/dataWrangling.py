@@ -20,4 +20,7 @@ def dataWrangling(spark, project_id, client):
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, cleanDataset, cleanGoogleScraped_table_name)
 
-    # TODO for both Apple & Google Reviews table, need to sort by appId & date asc then keep last row (drop duplicates, subset columns without developers' replies)!
+    """
+    TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc
+         in ascending order then take last row [drop duplicates(subset = 'columns without developers' replies', keep = 'last')]!
+    """

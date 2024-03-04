@@ -103,39 +103,6 @@ def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
         except:
             pass
 
-        # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
-
-        # job_config = bigquery.LoadJobConfig(
-        # source_format=bigquery.SourceFormat.PARQUET,
-        # write_disposition=mergeType,
-        # )
-
-        # load_job = client.load_table_from_uri(
-        #     parquet_file_path,
-        #     dataSet_tableName,
-        #     job_config=job_config
-        # )
-
-        """
-        # Convert Spark DF to Parquet format
-        ## Define the path where you want to save the Parquet file
-        parquet_path = "path/to/save/your/parquet/file"
-
-        ## Write the DataFrame to Parquet format
-        df_spark.write.parquet(parquet_path)
-
-        # ## Write the DataFrame to Parquet format with additional options
-        # df_spark.write.parquet(
-        # parquet_path,
-        # mode="overwrite",  # Overwrite the existing files
-        # compression="snappy",  # Use Snappy compression codec
-        # partitionBy="column_name"  # Partition the data by a specific column
-        # )
-
-        # Push Parquet to GBQ
-        to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
-        """
-
     else:
         df = dataframe.copy()
 
@@ -148,6 +115,37 @@ def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
     )
 
     return load_job
+
+    # # if using parquet to bucket method, add "parquet_file_path = None" into the function's params! Put pandas df chunk under Else statement
+
+            # job_config = bigquery.LoadJobConfig(
+            # source_format=bigquery.SourceFormat.PARQUET,
+            # write_disposition=mergeType,
+            # )
+
+            # load_job = client.load_table_from_uri(
+            #     parquet_file_path,
+            #     dataSet_tableName,
+            #     job_config=job_config
+            # )
+
+            # # Convert Spark DF to Parquet format
+            # ## Define the path where you want to save the Parquet file
+            # parquet_path = "path/to/save/your/parquet/file"
+
+            # ## Write the DataFrame to Parquet format
+            # df_spark.write.parquet(parquet_path)
+
+            # # ## Write the DataFrame to Parquet format with additional options
+            # # df_spark.write.parquet(
+            # # parquet_path,
+            # # mode="overwrite",  # Overwrite the existing files
+            # # compression="snappy",  # Use Snappy compression codec
+            # # partitionBy="column_name"  # Partition the data by a specific column
+            # # )
+
+            # # Push Parquet to GBQ
+            # to_gbq(parquet_path, client, googleScraped_db_dataSetTableName)
 
 # # Function to convert pandas DataFrame to Spark DataFrame
 # def pandas_to_spark(df, spark):

@@ -2,7 +2,6 @@ import sys
 import time
 import os
 import shutil
-import json
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import deleteRowsAppleGoogle
@@ -57,11 +56,6 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         time.sleep(5)
         finalizedMLModels(spark, project_id, client)
         dateTime(spark, project_id, client)
-        ## Remove files and folder
-        try:
-            os.remove(googleAPI_json_path)
-        except:
-            pass
     else:
         # Hard-coded variables
         rawDataset = "rawData"
@@ -89,8 +83,6 @@ main_dict[maxNoOfYML_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest 
 for action_inputNo in range(1, maxNoOfYML_actionNo+1):
     if sys.argv[1] == str(action_inputNo):
         main_dict[action_inputNo]()
-    else:
-        pass
 
 ## Remove files and folder
 try:

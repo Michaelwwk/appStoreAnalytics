@@ -18,8 +18,6 @@ warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
 
-rawDataset = rawDataset
-
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Hard-coded variables
@@ -29,7 +27,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     requests_per_second = None # None = turn off throttling!
     country = 'us'
     # language = 'en'
-    rawDataset = rawDataset
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 

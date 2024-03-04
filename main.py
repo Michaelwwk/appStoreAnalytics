@@ -19,7 +19,6 @@ wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
 maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
 
 main_dict = {}
-# rawDataset = rawDataset
 
 ### Data Ingestion ###
 
@@ -59,7 +58,6 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         dateTime(spark, project_id, client)
     else:
         # Hard-coded variables
-        rawDataset = rawDataset
         trainTestDataset = "trainTestData"
         AppleScraped_table_name = 'appleMain'
         AppleReview_table_name = 'appleReview'

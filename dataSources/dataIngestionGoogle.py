@@ -166,4 +166,4 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Completion log
     if noOfSlices != 0:
-        print(f'Data ingestion step completed using this runner. {googleScraped_table_name} & {googleReview_table_name} raw tables partially updated.')
+        print(f'Data ingestion step completed using this runner. {googleScraped_db_path} & {googleReview_db_path} raw tables partially updated.')

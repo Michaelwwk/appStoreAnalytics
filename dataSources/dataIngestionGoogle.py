@@ -163,3 +163,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     to_gbq(google_reviews, rawDataset, googleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
+
+    # Completion log
+    if noOfSlices != 0:
+        print(f'Data ingestion step completed using this runner. {google_main} & {google_reviews} raw tables partially updated.')

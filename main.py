@@ -55,9 +55,12 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     if trainTest == False:
         # Run main functions
         dataWrangling(spark, project_id, client)
+        print('Data wrangling step completed. Clean tables updated.')
         time.sleep(5)
         finalizedMLModels(spark, project_id, client)
+        print('ML step completed. Model tables updated.')
         dateTime(spark, project_id, client)
+        print('Date & time updated.')
     else:        
         AppleScraped_table_name = appleScraped_table_name
         AppleReview_table_name = appleReview_table_name
@@ -69,6 +72,8 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
             sparkDf = read_gbq(spark, rawDataset, table_name)
             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
             to_gbq(sparkDf, trainTestDataset, table_name)
+        print('Train/ test data transfer step completed. Train/ test tables updated.')
+        
     # Stop Spark session
     spark.stop()
 

@@ -306,3 +306,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
+
+    # Completion log
+    if noOfSlices != 0:
+        print(f'Data ingestion step completed using this runner. {apple_main} & {apple_reviews} raw tables partially updated.')

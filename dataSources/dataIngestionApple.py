@@ -309,4 +309,4 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Completion log
     if noOfSlices != 0:
-        print(f'Data ingestion step completed using this runner. {apple_main} & {apple_reviews} raw tables partially updated.')
+        print(f'Data ingestion step completed using this runner. {appleScraped_db_path} & {appleReview_db_path} raw tables partially updated.')

@@ -12,7 +12,7 @@ def dataWrangling(spark, project_id, client):
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
 
     sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
-    print(sparkDf.show())
+    # print(sparkDf.show())
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, cleanDataset, cleanGoogleScraped_table_name)
     

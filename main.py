@@ -14,10 +14,10 @@ from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
 # Hard-coded variables (impt!)
-appleMaxSlice = 10 # No. of parts to slice Apple df into
-googleMaxSlice = 10 # No. of parts to slice Google df into
+appleMaxSlice = 16 # No. of parts to slice Apple df into
+googleMaxSlice = 4 # No. of parts to slice Google df into
 wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
-maxNoOfYML_actionNo = 22 # Total no. of YAML files AND YAML action no. for TrainTest (default always the last YAML file)
+trainTest_actionNo = 22 # YAML action no. for TrainTest AND total no. of YAML files (trainTest always set as last YAML file!)
 trainTestDataset = "trainTestData"
 
 main_dict = {}
@@ -83,10 +83,10 @@ def create_wranglingMLDateTime_TrainTest(trainTest = False):
     return lambda: wranglingMLDateTime_TrainTest(trainTest)
 
 main_dict[wranglingMLDateTime_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = False)
-main_dict[maxNoOfYML_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = True)
+main_dict[trainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest = True)
 
 ### Run above functions conditionally depending on which YAML file is calling it ###
-for action_inputNo in range(1, maxNoOfYML_actionNo+1):
+for action_inputNo in range(1, trainTest_actionNo+1):
     if sys.argv[1] == str(action_inputNo):
         main_dict[action_inputNo]()
 

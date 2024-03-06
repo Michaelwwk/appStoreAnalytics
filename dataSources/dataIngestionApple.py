@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 # Hard-coded variables
-appleAppsSample = 1000 # 999 = all samples!
+appleAppsSample = 10000 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20, but > 2 will hit review scraping limit for parallel processing! [for all apps, 2 SEEMS fine.]
 requests_per_second = None # None = turn off throttling!
@@ -170,13 +170,13 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             if response.status_code == 200:
                 result = response.json()
                 reviews = result['data']
-                # if len(reviews) < 20:
-                #     print(f"{len(reviews)} reviews scraped. This is fewer than the expected 20.")
+                if len(reviews) < 20:
+                    print(f"{len(reviews)} reviews scraped. This is fewer than the expected 20.")
                 break
 
             # FAILURE
             elif response.status_code != 200:
-                # print(f"GET request failed. Response: {response.status_code} {response.reason}")
+                print(f"GET request failed. Response: {response.status_code} {response.reason}")
 
                 # RATE LIMITED
                 if response.status_code == 429:
@@ -193,7 +193,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
                 # NOT FOUND
                 elif response.status_code == 404:
-                    # print(f"{response.status_code} {response.reason}. There are no more reviews.")
+                    print(f"{response.status_code} {response.reason}. There are no more reviews.")
                     break
 
         ## Final output

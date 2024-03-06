@@ -20,7 +20,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 # Hard-coded variables
-appleAppsSample = 160 # 999 = all samples!
+appleAppsSample = 1600 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20!
 requests_per_second = None # None = turn off throttling!

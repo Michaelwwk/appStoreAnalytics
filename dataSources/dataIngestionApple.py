@@ -155,7 +155,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         ## Perform request & exception handling
         retry_count = 0
         MAX_RETRIES = 5
-        BASE_DELAY_SECS = 10
+        BASE_DELAY_SECS = 20 #10
         # Assign dummy variables in case of GET failure
         result = {'data': [], 'next': None}
         reviews = []

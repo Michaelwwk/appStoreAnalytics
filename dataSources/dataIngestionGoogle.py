@@ -8,14 +8,14 @@ from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name, googleReview_table_name
-from concurrent.futures import ThreadPoolExecutor # TODO NEW METHOD
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 warnings.filterwarnings('ignore')
 
 # Hard-coded variables
-googleAppsSample = 100000 # 999 = all samples!
+googleAppsSample = 999 # 999 = all samples!
 saveReviews = True
-reviewCountPerApp = 20 # 40
+reviewCountPerApp = 20 # 40 is the default under app() function
 requests_per_second = None # None = turn off throttling!
 country = 'us'
 language = 'en'
@@ -67,7 +67,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     reviewCountRange = range(0,reviewCountPerApp)
 
     if googleAppsSample != 999:
-        google = google.head(googleAppsSample) # TODO CHANGE BACK TO SAMPLE!!
+        google = google.sample(googleAppsSample)
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second

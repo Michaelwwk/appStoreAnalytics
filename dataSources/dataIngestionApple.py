@@ -13,16 +13,16 @@ from bs4 import BeautifulSoup
 from pyspark.sql.types import *
 from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import rawDataset, appleScraped_table_name, appleReview_table_name
-from concurrent.futures import ThreadPoolExecutor # TODO NEW METHOD
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
 
 # Hard-coded variables
-appleAppsSample = 100000 # 999 = all samples!
+appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
-appleReviewCountPerApp = 3 # max 20!
+appleReviewCountPerApp = 2 # max 20, but > 2 will hit review scraping limit for parallel processing!
 requests_per_second = None # None = turn off throttling!
 country = 'us'
 # language = 'en'
@@ -55,7 +55,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                                             'attributes.developerResponse.modified'])
 
     if appleAppsSample != 999:
-        apple = apple.head(appleAppsSample) # TODO CHANGE BACK TO SAMPLE!!
+        apple = apple.sample(appleAppsSample)
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second

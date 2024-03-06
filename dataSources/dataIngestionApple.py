@@ -257,9 +257,10 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 token = get_token(country, 'anything', successAppId, user_agents)
                 reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
-                print(f"{len(df)} reviews saved in 'df' DataFrame.") # TODO DELETE
+                print(f"{len(df)} reviews saved in 'df' DataFrame. {len(df.columns)} no. of columns.") # TODO DELETE
                 
                 df_list = df.values.tolist()
+                print(df_list)
                 if len(df.columns) <= 11:
                     for index in df_list:
                         apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]

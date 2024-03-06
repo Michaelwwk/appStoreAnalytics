@@ -15,10 +15,10 @@ from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
 # Hard-coded variables (impt!)
-appleMaxSlice = 16 # No. of parts to slice Apple df into
-googleMaxSlice = 4 # No. of parts to slice Google df into
-wranglingMLDateTime_actionNo = 21 # YAML action no. for wrangling, ML, dateTime
-trainTest_actionNo = 22 # YAML action no. for TrainTest AND total no. of YAML files (trainTest always set as last YAML file!)
+appleMaxSlice = 25 # No. of parts to slice Apple df into
+googleMaxSlice = 15 # No. of parts to slice Google df into
+wranglingMLDateTime_actionNo = 41 # YAML action no. for wrangling, ML, dateTime
+trainTest_actionNo = 42 # YAML action no. for TrainTest AND total no. of YAML files (trainTest always set as last YAML file!)
 trainTestDataset = "trainTestData"
 
 main_dict = {}

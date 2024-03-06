@@ -8,14 +8,15 @@ from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
 from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name, googleReview_table_name
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 warnings.filterwarnings('ignore')
 
 # Hard-coded variables
-googleAppsSample = 100000 # 999 = all samples!
+googleAppsSample = 999 # 999 = all samples!
 saveReviews = True
-reviewCountPerApp = 20 # 40
-requests_per_second = None # None = turn off throttling!
+reviewCountPerApp = 20 # 40 is the default under app() function
+requests_per_second = 2 # None = turn off throttling!
 country = 'us'
 language = 'en'
 
@@ -95,6 +96,41 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         if delay_between_requests != None:
             time.sleep(delay_between_requests)
         return output
+    
+    def process_app(appId):
+        app_results = appWithThrottle(
+                                appId,
+                                lang=language,
+                                country=country,
+                                delay_between_requests = delay_between_requests
+                                )
+
+        for feature in mainFeaturesToDrop:
+            app_results.pop(feature, None)
+        row = [value for value in app_results.values()]
+        google_main.loc[len(google_main)] = row
+
+        if saveReviews == True:
+
+            # for score in range(1,6):
+            review, continuation_token = reviewsWithThrottle(
+                appId,
+                lang=language,
+                country=country,
+                count=reviewCountPerApp,
+                score=None,
+                delay_between_requests = delay_between_requests
+            )
+
+            for count in reviewCountRange:
+                try:
+                    for feature in reviewFeaturesToDrop:
+                        review[count].pop(feature, None)
+                    row = [value for value in review[count].values()]
+                    row.append(appId)
+                    google_reviews.loc[len(google_reviews)] = row
+                except IndexError:
+                    continue
 
     google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
@@ -102,47 +138,25 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     appsChecked = 0
     for appId in google.iloc[:, 1]:
 
-        # Record the start time
-        start_time = time.time()
+        for appId in google.iloc[:, 1]:
+            appsChecked += 1
 
-        appsChecked += 1
-        appReviewCounts = 0
+            try:
+                # Record the start time
+                start_time = time.time()
 
-        try:
-            app_results = appWithThrottle(
-                                    appId,
-                                    lang=language,
-                                    country=country,
-                                    delay_between_requests = delay_between_requests
-                                    )
+                executor.submit(process_app, appId)
 
-            for feature in mainFeaturesToDrop:
-                app_results.pop(feature, None)
-            row = [value for value in app_results.values()]
-            google_main.loc[len(google_main)] = row
-
-            if saveReviews == True:
-
-                # for score in range(1,6):
-                review, continuation_token = reviewsWithThrottle(
-                    appId,
-                    lang=language,
-                    country=country,
-                    count=reviewCountPerApp,
-                    score=None,
-                    delay_between_requests = delay_between_requests
-                )
-
-                for count in reviewCountRange:
-                    try:
-                        for feature in reviewFeaturesToDrop:
-                            review[count].pop(feature, None)
-                        row = [value for value in review[count].values()]
-                        row.append(appId)
-                        google_reviews.loc[len(google_reviews)] = row
-                        appReviewCounts += 1
-                    except IndexError:
-                        continue
+                # Record the end time
+                end_time = time.time()         
+                # Calculate and print the elapsed time in seconds
+                elapsed_time = end_time - start_time
+                
+                print(f'Google: {appId} -> Successfully saved in {elapsed_time} seconds. \
+{appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+                
+            except Exception as e:
+                print(f"Google: {appId} -> {e}")
             
             print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
 & {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')

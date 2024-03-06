@@ -1,8 +1,6 @@
-name: Apple Data Ingestion (14)
+name: Create Train/ Test Data (42)
 
 on:
-  schedule:
-    - cron: '0 11 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
   workflow_dispatch: # Create a button to trigger the workflow manually
 
 jobs:
@@ -33,7 +31,7 @@ jobs:
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
-        run: python main.py 14
+        run: python main.py 40
           
       - name: commit files
         run: |

@@ -261,12 +261,14 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 
                 df_list = df.values.tolist()
                 print(df_list)
-                if len(df.columns) <= 11:
+                if len(df.columns) == 11:
                     for index in df_list:
+                        print('passed <= 11')
                         apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
                         print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
-                else: #14
+                elif len(df.columns) == 14: #14
                     for index in df_list:
+                        print('passed > 11')
                         apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
                         print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
                         

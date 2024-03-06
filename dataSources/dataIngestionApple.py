@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from pyspark.sql.types import *
 from common import to_gbq, split_df
 from dataSources.deleteRowsAppleGoogle import rawDataset, appleScraped_table_name, appleReview_table_name
+from concurrent.futures import ThreadPoolExecutor # TODO NEW METHOD
 import warnings
 warnings.filterwarnings('ignore')
 import logging
@@ -234,6 +235,30 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         else:
             return None
         
+    def process_app(appId):
+        app_results = appWithThrottle(
+                                appId = appId,
+                                country=country,
+                                delay_between_requests = delay_between_requests
+                                )
+        
+        if app_results['name'] != 'App Store':
+            successAppId = appId
+            row = [value for value in app_results.values()]
+            row.append(successAppId)
+            apple_main.loc[len(apple_main)] = row
+        
+            if saveReviews == True:
+
+                token = get_token(country, 'anything', successAppId, user_agents)
+                reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token)
+                df = pd.json_normalize(reviews)
+
+                if df.empty:
+                    pass
+                else:
+                    apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
+                
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
@@ -244,55 +269,31 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
 
     appsChecked = 0
-    for appId in apple.iloc[:, 2]:
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        print(f"No. of worker threads deployed: {os.cpu_count()}")
 
-        # Record the start time
-        start_time = time.time()
+        for appId in apple.iloc[:, 2]:
+            appsChecked += 1
 
-        appsChecked += 1
-        appReviewCounts = 0
+            try:
+                # Record the start time
+                start_time = time.time()
 
-        try:
-            app_results = appWithThrottle(
-                                    appId = appId,
-                                    country=country,
-                                    delay_between_requests = delay_between_requests
-                                    )
-            
-            if app_results['name'] == 'App Store':
-                failedAppId = appId
-                print(f"Apple: {failedAppId} -> App not found.")
-            else:
-                successAppId = appId
-                row = [value for value in app_results.values()]
-                row.append(successAppId)
-                apple_main.loc[len(apple_main)] = row
-            
-                if saveReviews == True:
+                executor.submit(process_app, appId)
 
-                    token = get_token(country, 'anything', successAppId, user_agents)
-                    reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token)
-                    df = pd.json_normalize(reviews)
+                # Record the end time
+                end_time = time.time()         
+                # Calculate and print the elapsed time in seconds
+                elapsed_time = end_time - start_time
+                print(f"({appId} -> {elapsed_time} seconds)")
 
-                    appReviewCounts = len(df)
+                if appId in apple_main['appId'].to_list():
+                    print(f'Apple: {appId} -> Successfully saved in {round(elapsed_time,2)} seconds. Total -> \
+{appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
-                    if df.empty:
-                        pass
-                    else:
-                        apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
-            
-                matchedAppleMain = len(apple_main)
-                print(f'Apple: {successAppId} -> Successfully saved with {appReviewCounts} review(s). Total -> {matchedAppleMain}/{appsChecked} app(s) \
-& {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
-
-        except Exception as e:
-            print(f"Apple: {appId} -> {e}")
-
-        # Record the end time
-        end_time = time.time()         
-        # Calculate and print the elapsed time in seconds
-        elapsed_time = end_time - start_time
-        print(f"({appId} -> {elapsed_time} seconds)")
+            except Exception as e:
+                print(f"Apple: {appId} -> {e}")
 
     # Rename columns
     apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',

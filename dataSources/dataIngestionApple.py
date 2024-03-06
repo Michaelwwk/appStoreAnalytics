@@ -48,11 +48,17 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                                           'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price',
                                           'priceCurrency', 'star_ratings', 'appId'])
     
-    apple_reviews = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
+    apple_reviews_no_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
                                             'attributes.review', 'attributes.rating', 'attributes.isEdited',
                                             'attributes.userName', 'attributes.title',
                                             'attributes.developerResponse.id', 'attributes.developerResponse.body',
                                             'attributes.developerResponse.modified'])
+    
+    apple_reviews_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
+                                        'attributes.review', 'attributes.rating', 'attributes.isEdited',
+                                        'attributes.userName', 'attributes.title',
+                                        'attributes.developerResponse.id', 'attributes.developerResponse.body',
+                                        'attributes.developerResponse.modified'])
 
     if appleAppsSample != 999:
         apple = apple.sample(appleAppsSample)
@@ -254,10 +260,18 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
                 print(f"{len(df)} reviews saved in 'df' DataFrame.")
-
+                
+                df_list = df.values.tolist()
+                if len(df.columns) == 11:
+                    for index in df_list:
+                        apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
+                else: #14
+                    for index in df_list:
+                        apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
+                        
                 # if not(df.empty):
-                apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
-                print(f"{len(apple_reviews)} reviews saved in 'apple_reviews' DataFrame.")
+                # apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
+                # print(f"{len(apple_reviews)} reviews saved in 'apple_reviews' DataFrame.")
                 
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
@@ -293,6 +307,10 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
             except Exception as e:
                 print(f"Apple: {appId} -> {e}")
+
+    apple_reviews = pd.concat([apple_reviews_devResponse, apple_reviews_no_devResponse], ignore_index=True)
+
+    print(apple_reviews.columns) # TODO delete!
 
     # Rename columns
     apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',

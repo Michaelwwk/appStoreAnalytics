@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Hard-coded variables
-googleAppsSample = 1000 # 999 = all samples!
+googleAppsSample = 240000 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40
 requests_per_second = None # None = turn off throttling!
@@ -66,7 +66,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     reviewCountRange = range(0,reviewCountPerApp)
 
     if googleAppsSample != 999:
-        google = google.head(googleAppsSample) # TODO CHANGE BACK TO SAMPLE!!
+        google = google.sample(googleAppsSample)
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second

@@ -147,7 +147,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         params = (
             ('l', 'en-GB'),                           # language
             ('offset', str(offset)),                  # paginate this offset
-            ('limit', str(5)),   # max valid is 20
+            ('limit', str(1)),   # max valid is 20
             ('platform', 'web'),
             ('additionalPlatforms', 'appletv,ipad,iphone,mac')
             )

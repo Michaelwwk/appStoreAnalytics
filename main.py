@@ -4,7 +4,6 @@ import os
 import shutil
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
-from concurrent.futures import ThreadPoolExecutor
 from dataSources.deleteRowsAppleGoogle \
 import rawDataset, appleScraped_table_name, googleScraped_table_name, appleReview_table_name, googleReview_table_name, deleteRowsAppleGoogle
 from dataSources.dataIngestionApple import dataIngestionApple
@@ -89,11 +88,7 @@ main_dict[trainTest_actionNo] = create_wranglingMLDateTime_TrainTest(trainTest =
 ### Run above functions conditionally depending on which YAML file is calling it ###
 for action_inputNo in range(1, trainTest_actionNo+1):
     if sys.argv[1] == str(action_inputNo):
-
-        # Enable ThreadPoolExecutor for parallel processing
-        with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
-            print(f"No. of worker threads deployed: {os.cpu_count()}")
-            executor.submit(main_dict[action_inputNo]())
+        main_dict[action_inputNo]()
 
 ## Remove files and folder
 try:

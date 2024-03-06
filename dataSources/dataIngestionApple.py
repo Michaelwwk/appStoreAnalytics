@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.ERROR)
 # Hard-coded variables
 appleAppsSample = 100000 # 999 = all samples!
 saveReviews = True
-appleReviewCountPerApp = 5 # max 20!
+appleReviewCountPerApp = 3 # max 20!
 requests_per_second = None # None = turn off throttling!
 country = 'us'
 # language = 'en'
@@ -120,7 +120,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         
         return token
         
-    def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1'):
+    def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1', appleReviewCountPerApp = 20):
 
         """
         Fetches reviews for a given app from the Apple App Store API.
@@ -147,7 +147,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         params = (
             ('l', 'en-GB'),                           # language
             ('offset', str(offset)),                  # paginate this offset
-            ('limit', str(3)),   # max valid is 20 # TODO 1 works!!! 5,4 doesnt.
+            ('limit', str(appleReviewCountPerApp)),   # max valid is 20 (does not work in parallel), but 3 works
             ('platform', 'web'),
             ('additionalPlatforms', 'appletv,ipad,iphone,mac')
             )
@@ -251,7 +251,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             if saveReviews == True:
 
                 token = get_token(country, 'anything', successAppId, user_agents)
-                reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token)
+                reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
 
                 if df.empty:

@@ -286,10 +286,9 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 end_time = time.time()         
                 # Calculate and print the elapsed time in seconds
                 elapsed_time = end_time - start_time
-                print(f"({appId} -> {elapsed_time} seconds)")
 
-                if appId in apple_main['appId'].to_list():
-                    print(f'Apple: {appId} -> Successfully saved in {round(elapsed_time,2)} seconds. Total -> \
+                # if appId in apple_main['appId'].to_list():
+                print(f'Apple: {appId} -> Successfully saved in {round(elapsed_time,2)} seconds. Total -> \
 {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
             except Exception as e:

@@ -129,7 +129,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
                     row = [value for value in review[count].values()]
                     row.append(appId)
                     google_reviews.loc[len(google_reviews)] = row
-                    appReviewCounts += 1
                 except IndexError:
                     continue
 
@@ -142,27 +141,25 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
         for appId in google.iloc[:, 1]:
-
-            # Record the start time
-            start_time = time.time()
-
             appsChecked += 1
-            appReviewCounts = 0
 
             try:
+                # Record the start time
+                start_time = time.time()
+
                 executor.submit(process_app, appId)
+
+                # Record the end time
+                end_time = time.time()         
+                # Calculate and print the elapsed time in seconds
+                elapsed_time = end_time - start_time
+                print(f"({appId} -> {elapsed_time} seconds)")
                 
-                print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
-& {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+                print(f'Google: {appId} -> Successfully saved in {round(elapsed_time,2)} seconds. \
+{appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
                 
             except Exception as e:
                 print(f"Google: {appId} -> {e}")
-
-            # Record the end time
-            end_time = time.time()         
-            # Calculate and print the elapsed time in seconds
-            elapsed_time = end_time - start_time
-            print(f"({appId} -> {elapsed_time} seconds)")
             
     # Create tables into Google BigQuery
     client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)

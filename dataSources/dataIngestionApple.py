@@ -19,7 +19,7 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 # Hard-coded variables
-appleAppsSample = 240000 # 999 = all samples!
+appleAppsSample = 100000 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20!
 requests_per_second = None # None = turn off throttling!
@@ -54,7 +54,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                                             'attributes.developerResponse.modified'])
 
     if appleAppsSample != 999:
-        apple = apple.sample(appleAppsSample)
+        apple = apple.head(appleAppsSample) # TODO CHANGE BACK TO SAMPLE!!
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second

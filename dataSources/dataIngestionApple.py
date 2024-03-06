@@ -20,10 +20,10 @@ import logging
 logging.basicConfig(level=logging.ERROR)
 
 # Hard-coded variables
-appleAppsSample = 10000 # 999 = all samples!
+appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20, but > 2 will hit review scraping limit for parallel processing! [for all apps, 2 SEEMS fine.]
-requests_per_second = None # None = turn off throttling!
+requests_per_second = 2 # None = turn off throttling!
 country = 'us'
 # language = 'en'
 
@@ -174,13 +174,13 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             if response.status_code == 200:
                 result = response.json()
                 reviews = result['data']
-                if len(reviews) < 20:
-                    print(f"{len(reviews)} reviews scraped. This is fewer than the expected 20.")
+                # if len(reviews) < 20:
+                #     print(f"{len(reviews)} reviews scraped. This is fewer than the expected 20.")
                 break
 
             # FAILURE
             elif response.status_code != 200:
-                print(f"GET request failed. Response: {response.status_code} {response.reason}")
+                # print(f"GET request failed. Response: {response.status_code} {response.reason}")
 
                 # RATE LIMITED
                 if response.status_code == 429:
@@ -197,7 +197,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
                 # NOT FOUND
                 elif response.status_code == 404:
-                    print(f"{response.status_code} {response.reason}. There are no more reviews.")
+                    # print(f"{response.status_code} {response.reason}. There are no more reviews.")
                     break
 
         ## Final output
@@ -217,7 +217,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
         # Default sleep to decrease rate of calls
         time.sleep(0.5)
-        return reviews, offset, response.status_code 
+        return reviews
 
     def extract_app_id(url):
         # Extract the portion after the last "/"
@@ -255,32 +255,24 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
             if saveReviews == True:
 
                 token = get_token(country, 'anything', successAppId, user_agents)
-                reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
+                reviews = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
-                print(f"{len(df)} reviews saved in 'df' DataFrame. {len(df.columns)} no. of columns.") # TODO DELETE
                 
                 df_list = df.values.tolist()
-                print(df_list)
                 if len(df.columns) == 11:
                     for index in range(0, len(df_list)):
-                        print('passed <= 11')
                         try:
                             apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
-                            print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
+                            # print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
                         except Exception as e:
                             print(f"Apple: {appId} -> {e}")
                 elif len(df.columns) == 14: #14
                     for index in range(0, len(df_list)):
-                        print('passed > 11')
                         try:
                             apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
-                            print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
+                            # print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
                         except Exception as e:
                             print(f"Apple: {appId} -> {e}")
-                        
-                # if not(df.empty):
-                # apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)
-                # print(f"{len(apple_reviews)} reviews saved in 'apple_reviews' DataFrame.")
                 
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
@@ -318,8 +310,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 print(f"Apple: {appId} -> {e}")
 
     apple_reviews = pd.concat([apple_reviews_devResponse, apple_reviews_no_devResponse], ignore_index=True)
-
-    print(apple_reviews.columns) # TODO delete!
 
     # Rename columns
     apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',

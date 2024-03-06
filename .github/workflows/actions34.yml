@@ -1,4 +1,4 @@
-name: Apple Data Ingestion (14)
+name: Google Data Ingestion (34)
 
 on:
   schedule:
@@ -33,7 +33,7 @@ jobs:
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
-        run: python main.py 14
+        run: python main.py 34
           
       - name: commit files
         run: |

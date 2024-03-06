@@ -1,8 +1,8 @@
-name: Google Data Ingestion 8
+name: Apple Data Ingestion (18)
 
 on:
   schedule:
-    - cron: '0 17 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
+    - cron: '0 11 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
   workflow_dispatch: # Create a button to trigger the workflow manually
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
-        run: python main.py 35
+        run: python main.py 18
           
       - name: commit files
         run: |

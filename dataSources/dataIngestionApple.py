@@ -50,9 +50,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     
     apple_reviews_no_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
                                             'attributes.review', 'attributes.rating', 'attributes.isEdited',
-                                            'attributes.userName', 'attributes.title',
-                                            'attributes.developerResponse.id', 'attributes.developerResponse.body',
-                                            'attributes.developerResponse.modified'])
+                                            'attributes.userName', 'attributes.title'])
     
     apple_reviews_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
                                         'attributes.review', 'attributes.rating', 'attributes.isEdited',
@@ -262,12 +260,14 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 print(f"{len(df)} reviews saved in 'df' DataFrame.") # TODO DELETE
                 
                 df_list = df.values.tolist()
-                if len(df.columns) == 11:
+                if len(df.columns) <= 11:
                     for index in df_list:
                         apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
+                        print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
                 else: #14
                     for index in df_list:
                         apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
+                        print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
                         
                 # if not(df.empty):
                 # apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)

@@ -253,6 +253,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 token = get_token(country, 'anything', successAppId, user_agents)
                 reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
+                print(f"{len(df)} reviews saved in 'df' DataFrame.")
 
                 # if not(df.empty):
                 apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)

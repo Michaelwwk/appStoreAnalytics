@@ -262,15 +262,21 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 df_list = df.values.tolist()
                 print(df_list)
                 if len(df.columns) == 11:
-                    for index in df_list:
+                    for index in range(0, len(df_list)):
                         print('passed <= 11')
-                        apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
-                        print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
+                        try:
+                            apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
+                            print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
+                        except Exception as e:
+                            print(f"Apple: {appId} -> {e}")
                 elif len(df.columns) == 14: #14
-                    for index in df_list:
+                    for index in range(0, len(df_list)):
                         print('passed > 11')
-                        apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
-                        print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
+                        try:
+                            apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
+                            print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
+                        except Exception as e:
+                            print(f"Apple: {appId} -> {e}")
                         
                 # if not(df.empty):
                 # apple_reviews = pd.concat([apple_reviews, df], ignore_index=True)

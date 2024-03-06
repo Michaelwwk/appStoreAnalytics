@@ -147,7 +147,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         params = (
             ('l', 'en-GB'),                           # language
             ('offset', str(offset)),                  # paginate this offset
-            ('limit', str(appleReviewCountPerApp)),   # max valid is 20 (does not work in parallel), but 3 works
+            ('limit', str(appleReviewCountPerApp)),   # max valid is 20
             ('platform', 'web'),
             ('additionalPlatforms', 'appletv,ipad,iphone,mac')
             )

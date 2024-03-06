@@ -142,21 +142,26 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
+        futures = []
         for appId in google.iloc[:, 1]:
-
+            
             # Record the start time
             start_time = time.time()
 
-            appsChecked += 1
             appReviewCounts = 0
+            future = executor.submit(process_app, appId)
+            futures.append((appId, future))
+
+        for appId, future in futures:
+            appsChecked += 1
 
             try:
-                appReviewCounts, len_google_main, len_google_reviews = executor.submit(process_app, appId)
-                
+                appReviewCounts, len_google_main, len_google_reviews = future.result()
+
                 print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len_google_main}/{appsChecked} app(s) \
 & {len_google_reviews} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
                 # TODO {appReviewCounts} and {google_main} and {google_reviews} printing having problems! put {appReviewCounts} as a params and delete {google_main} and {google_reviews} params!
-                
+
             except Exception as e:
                 print(f"Google: {appId} -> {e}")
                 # TODO printing having problems!

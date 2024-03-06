@@ -132,6 +132,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
                     appReviewCounts += 1
                 except IndexError:
                     continue
+        return appReviewCounts, len(google_main), len(google_reviews)
 
     google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
@@ -150,13 +151,15 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
             appReviewCounts = 0
 
             try:
-                executor.submit(process_app, appId)
+                appReviewCounts, len_google_main, len_google_reviews = executor.submit(process_app, appId)
                 
-                print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
-& {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+                print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len_google_main}/{appsChecked} app(s) \
+& {len_google_reviews} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+                # TODO {appReviewCounts} and {google_main} and {google_reviews} printing having problems! put {appReviewCounts} as a params and delete {google_main} and {google_reviews} params!
                 
             except Exception as e:
                 print(f"Google: {appId} -> {e}")
+                # TODO printing having problems!
 
             # Record the end time
             end_time = time.time()         

@@ -148,7 +148,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
             # Record the start time
             start_time = time.time()
 
-            appReviewCounts = 0
             future = executor.submit(process_app, appId)
             futures.append((appId, future))
 

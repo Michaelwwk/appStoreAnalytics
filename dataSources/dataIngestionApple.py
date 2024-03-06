@@ -160,7 +160,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
         ## Perform request & exception handling
         retry_count = 0
-        MAX_RETRIES = 5
+        MAX_RETRIES = 1 # 5
         BASE_DELAY_SECS = 10
         # Assign dummy variables in case of GET failure
         result = {'data': [], 'next': None}
@@ -259,7 +259,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                 token = get_token(country, 'anything', successAppId, user_agents)
                 reviews, offset, status_code = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
                 df = pd.json_normalize(reviews)
-                print(f"{len(df)} reviews saved in 'df' DataFrame.")
+                print(f"{len(df)} reviews saved in 'df' DataFrame.") # TODO DELETE
                 
                 df_list = df.values.tolist()
                 if len(df.columns) == 11:

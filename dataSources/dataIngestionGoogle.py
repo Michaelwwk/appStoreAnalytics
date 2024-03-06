@@ -153,9 +153,8 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
                 end_time = time.time()         
                 # Calculate and print the elapsed time in seconds
                 elapsed_time = end_time - start_time
-                print(f"({appId} -> {elapsed_time} seconds)")
                 
-                print(f'Google: {appId} -> Successfully saved in {round(elapsed_time,2)} seconds. \
+                print(f'Google: {appId} -> Successfully saved in {elapsed_time} seconds. \
 {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
                 
             except Exception as e:

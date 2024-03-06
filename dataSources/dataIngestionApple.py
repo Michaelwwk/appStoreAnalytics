@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.ERROR)
 # Hard-coded variables
 appleAppsSample = 100000 # 999 = all samples!
 saveReviews = True
-appleReviewCountPerApp = 20 # max 20!
+appleReviewCountPerApp = 5 # max 20!
 requests_per_second = None # None = turn off throttling!
 country = 'us'
 # language = 'en'
@@ -155,7 +155,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         ## Perform request & exception handling
         retry_count = 0
         MAX_RETRIES = 5
-        BASE_DELAY_SECS = 20 #10 (original!)
+        BASE_DELAY_SECS = 10
         # Assign dummy variables in case of GET failure
         result = {'data': [], 'next': None}
         reviews = []

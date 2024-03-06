@@ -136,7 +136,9 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
 
     appsChecked = 0
-    for appId in google.iloc[:, 1]:
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        print(f"No. of worker threads deployed: {os.cpu_count()}")
 
         for appId in google.iloc[:, 1]:
             appsChecked += 1
@@ -158,20 +160,9 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
             except Exception as e:
                 print(f"Google: {appId} -> {e}")
             
-            print(f'Google: {appId} -> Successfully saved with {appReviewCounts} review(s). Total -> {len(google_main)}/{appsChecked} app(s) \
-& {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
-        except Exception as e:
-            print(f"Google: {appId} -> {e}")
-
-        # Record the end time
-        end_time = time.time()         
-        # Calculate and print the elapsed time in seconds
-        elapsed_time = end_time - start_time
-        print(f"({appId} -> {elapsed_time} seconds)")
-            
-        # Create tables into Google BigQuery
-        client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
-        client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
+    # Create tables into Google BigQuery
+    client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
+    client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
     to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)

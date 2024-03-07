@@ -321,6 +321,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                     print(f"Apple: {appId} -> {e}")
             
             else:
+                print("Exiting data ingestion prematurely ..")
                 break
 
     apple_reviews = pd.concat([apple_reviews_devResponse, apple_reviews_no_devResponse], ignore_index=True)

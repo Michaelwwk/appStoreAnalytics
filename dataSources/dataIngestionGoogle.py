@@ -172,6 +172,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
                     print(f"Google: {appId} -> {e}")
             
             else:
+                print("Exiting data ingestion prematurely ..")
                 break
             
     # Create tables into Google BigQuery

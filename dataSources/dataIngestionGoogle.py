@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 googleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40 is the default under app() function
-requests_per_second = 2 # None = turn off throttling!
+requests_per_second = 4 # None = turn off throttling!
 country = 'us'
 language = 'en'
 
@@ -169,7 +169,7 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
                     
                 except Exception as e:
-                    print(f"Google: {appId} -> {e}")
+                    print(f"Google (Error): {appId} -> {e}")
             
             else:
                 print("Exiting data ingestion prematurely ..")
@@ -186,4 +186,6 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Completion log
     if noOfSlices != 0:
-        print(f'Data ingestion step completed using this runner. {googleScraped_db_path} & {googleReview_db_path} raw tables partially updated.')
+        print(f"Data ingestion step completed using this runner. \
+{len(google_main.appId.unique())}/ {len(google['App Id'].unique())} ({round(len(google_main.appId.unique())/len(google['App Id'].unique())*100,1)}%) matched.")
+        print(f"{googleScraped_db_path} & {googleReview_db_path} raw tables partially updated.")

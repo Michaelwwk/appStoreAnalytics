@@ -266,16 +266,18 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                     for index in range(0, len(df_list)):
                         try:
                             apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
-                            # print(f"{len(apple_reviews_no_devResponse)} reviews saved in 'apple_reviews_no_devResponse' DataFrame.")
                         except Exception as e:
-                            print(f"Apple: {appId} -> {e}")
+                            print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_no_devResponse shape: {apple_reviews_no_devResponse.shape}, \
+apple_reviews_no_devResponse length: {len(apple_reviews_no_devResponse)}, \
+df_list[index] length: {len(df_list[index])}")
                 elif len(df.columns) == 14: #14
                     for index in range(0, len(df_list)):
                         try:
                             apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
-                            # print(f"{len(apple_reviews_devResponse)} reviews saved in 'apple_reviews_devResponse' DataFrame.")
                         except Exception as e:
-                            print(f"Apple: {appId} -> {e}")
+                            print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_devResponse shape: {apple_reviews_devResponse.shape}, \
+apple_reviews_devResponse length: {len(apple_reviews_devResponse)}, \
+df_list[index] length: {len(df_list[index])}")
                 
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
@@ -318,7 +320,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
     {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
                 except Exception as e:
-                    print(f"Apple: {appId} -> {e}")
+                    print(f"Apple (Error): {appId} -> {e}")
             
             else:
                 print("Exiting data ingestion prematurely ..")
@@ -341,4 +343,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
     # Completion log
     if noOfSlices != 0:
-        print(f'Data ingestion step completed using this runner. {appleScraped_db_path} & {appleReview_db_path} raw tables partially updated.')
+        print(f"Data ingestion step completed using this runner. \
+{len(apple_main.appId.unique())}/ {len(apple.App_Id.unique())} ({round(len(apple_main.appId.unique())/len(apple.App_Id.unique())*100,1)}%) matched.")
+        print(f"{appleScraped_db_path} & {appleReview_db_path} raw tables partially updated.")

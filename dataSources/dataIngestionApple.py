@@ -29,6 +29,9 @@ country = 'us'
 
 def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
+    # Record the overall start time
+    overall_start_time = time.time()
+
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
 
@@ -289,25 +292,36 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
         for appId in apple.iloc[:, 2]:
-            appsChecked += 1
 
-            try:
-                # Record the start time
-                start_time = time.time()
+            # Record the end time
+            overall_end_time = time.time()         
+            # Calculate and print the overall elapsed time in seconds
+            overall_elapsed_time = overall_end_time - overall_start_time
 
-                executor.submit(process_app, appId)
+            if overall_elapsed_time < 21000: # 5 hour 50 mins
 
-                # Record the end time
-                end_time = time.time()         
-                # Calculate and print the elapsed time in seconds
-                elapsed_time = end_time - start_time
+                appsChecked += 1
 
-                # if appId in apple_main['appId'].to_list():
-                print(f'Apple: {appId} -> Successfully saved in {elapsed_time} seconds. Total -> \
-{appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+                try:
+                    # Record the start time
+                    start_time = time.time()
 
-            except Exception as e:
-                print(f"Apple: {appId} -> {e}")
+                    executor.submit(process_app, appId)
+
+                    # Record the end time
+                    end_time = time.time()         
+                    # Calculate and print the elapsed time in seconds
+                    elapsed_time = end_time - start_time
+
+                    # if appId in apple_main['appId'].to_list():
+                    print(f'Apple: {appId} -> Successfully saved in {elapsed_time} seconds. Total -> \
+    {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+
+                except Exception as e:
+                    print(f"Apple: {appId} -> {e}")
+            
+            else:
+                break
 
     apple_reviews = pd.concat([apple_reviews_devResponse, apple_reviews_no_devResponse], ignore_index=True)
 

@@ -22,6 +22,9 @@ language = 'en'
 
 def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
+     # Record the overall start time
+    overall_start_time = time.time()
+
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
 
@@ -141,24 +144,35 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
         for appId in google.iloc[:, 1]:
-            appsChecked += 1
 
-            try:
-                # Record the start time
-                start_time = time.time()
+            # Record the end time
+            overall_end_time = time.time()         
+            # Calculate and print the overall elapsed time in seconds
+            overall_elapsed_time = overall_end_time - overall_start_time
 
-                executor.submit(process_app, appId)
+            if overall_elapsed_time < 21000: # 5 hour 50 mins
 
-                # Record the end time
-                end_time = time.time()         
-                # Calculate and print the elapsed time in seconds
-                elapsed_time = end_time - start_time
-                
-                print(f'Google: {appId} -> Successfully saved in {elapsed_time} seconds. \
+                appsChecked += 1
+
+                try:
+                    # Record the start time
+                    start_time = time.time()
+
+                    executor.submit(process_app, appId)
+
+                    # Record the end time
+                    end_time = time.time()         
+                    # Calculate and print the elapsed time in seconds
+                    elapsed_time = end_time - start_time
+                    
+                    print(f'Google: {appId} -> Successfully saved in {elapsed_time} seconds. \
 {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
-                
-            except Exception as e:
-                print(f"Google: {appId} -> {e}")
+                    
+                except Exception as e:
+                    print(f"Google: {appId} -> {e}")
+            
+            else:
+                break
             
     # Create tables into Google BigQuery
     client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)

@@ -58,7 +58,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         # Run main functions
         dataWrangling(spark, project_id, client)
         print('Data wrangling step completed. Clean tables updated.')
-        time.sleep(5)
+        time.sleep(30)
         finalizedMLModels(spark, project_id, client)
         print('ML step completed. Model tables updated.')
         dateTime(spark, project_id, client)

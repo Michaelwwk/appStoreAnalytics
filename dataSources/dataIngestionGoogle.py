@@ -185,7 +185,8 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
 
     # Completion log
-    if noOfSlices != 0:
+    if noOfSlices != 0:     
         print(f"Data ingestion step completed using this runner. \
-{len(google_main.appId.unique())}/ {len(google['App Id'].unique())} ({round(len(google_main.appId.unique())/len(google['App Id'].unique())*100,1)}%) matched.")
+{len(google_main.appId.unique())}/{len(google['App Id'].unique())} ({round(len(google_main.appId.unique())/len(google['App Id'].unique())*100,1)}%) apps matched. \
+{google_reviews.appId.nunique()}/{google_main.appId.nunique()} ({round(google_reviews.appId.nunique()/google_main.appId.nunique()*100,1)}%) apps has reviews.")
         print(f"{googleScraped_db_path} & {googleReview_db_path} raw tables partially updated.")

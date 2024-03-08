@@ -268,7 +268,6 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                             apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
                         except Exception as e:
                             print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_no_devResponse shape: {apple_reviews_no_devResponse.shape}, \
-apple_reviews_no_devResponse length: {len(apple_reviews_no_devResponse)}, \
 df_list[index] length: {len(df_list[index])}")
                 elif len(df.columns) == 14: #14
                     for index in range(0, len(df_list)):
@@ -276,7 +275,6 @@ df_list[index] length: {len(df_list[index])}")
                             apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
                         except Exception as e:
                             print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_devResponse shape: {apple_reviews_devResponse.shape}, \
-apple_reviews_devResponse length: {len(apple_reviews_devResponse)}, \
 df_list[index] length: {len(df_list[index])}")
                 
     user_agents = [
@@ -317,7 +315,7 @@ df_list[index] length: {len(df_list[index])}")
 
                     # if appId in apple_main['appId'].to_list():
                     print(f'Apple: {appId} -> Successfully saved in {elapsed_time} seconds. Total -> \
-    {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+{appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
 
                 except Exception as e:
                     print(f"Apple (Error): {appId} -> {e}")
@@ -344,5 +342,6 @@ df_list[index] length: {len(df_list[index])}")
     # Completion log
     if noOfSlices != 0:
         print(f"Data ingestion step completed using this runner. \
-{len(apple_main.appId.unique())}/ {len(apple.App_Id.unique())} ({round(len(apple_main.appId.unique())/len(apple.App_Id.unique())*100,1)}%) matched.")
+{len(apple_main.appId.unique())}/{len(apple.App_Id.unique())} ({round(len(apple_main.appId.unique())/len(apple.App_Id.unique())*100,1)}%) apps matched. \
+{apple_reviews.appId.nunique()}/{apple_main.appId.nunique()} ({round(apple_reviews.appId.nunique()/apple_main.appId.nunique()*100,1)}%) apps has reviews.")
         print(f"{appleScraped_db_path} & {appleReview_db_path} raw tables partially updated.")

@@ -12,7 +12,8 @@ def finalizedMLModels(spark, project_id, client):
     modelGgoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleScraped_table_name)
-    # print(sparkDf.show())
+    print(sparkDf.show())
+    sparkDf.count()
 
     client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)

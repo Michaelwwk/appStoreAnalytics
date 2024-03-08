@@ -22,8 +22,8 @@ logging.basicConfig(level=logging.ERROR)
 # Hard-coded variables
 appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
-appleReviewCountPerApp = 20 # max 20, but > 2 will hit review scraping limit for parallel processing! [for all apps, 2 SEEMS fine.]
-requests_per_second = 2 # None = turn off throttling!
+appleReviewCountPerApp = 20 # max 20
+requests_per_second = 5 # None = turn off throttling!
 country = 'us'
 # language = 'en'
 

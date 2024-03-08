@@ -88,22 +88,69 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 #     return sparkDf
 
+# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+#              project_id=project_id, folder_path=folder_path):
+#     project_id = project_id
+#     bucket_name = "nusebac_storage"
+#     file_prefix = f"{GBQtable}.csv"
+
+#     # Construct the full table reference path
+#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+#     folder_path = folder_path
+#     local_file_path = f"{folder_path}/"
+
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+
+#     # Export BigQuery table to GCS
+#     destination_uri = f'gs://{bucket_name}/{file_prefix}*'
+#     job_config = bigquery.ExtractJobConfig()
+#     job = client.extract_table(
+#         table_ref,
+#         destination_uri,
+#         location="US",
+#         job_config=job_config
+#     )
+#     job.result()
+
+#     # Download the files
+#     client = storage.Client()
+#     bucket = client.bucket(bucket_name)
+#     blobs = bucket.list_blobs(prefix=file_prefix)
+
+#     for blob in blobs:
+#         # Download each file
+#         file_name = blob.name.split('/')[-1]
+#         new_file_name = file_name.replace(file_prefix, f"{GBQtable}")
+#         blob.download_to_filename(f"{local_file_path}/{new_file_name}")
+
+#     # Read CSV files into PySpark DataFrame
+#     sparkDf = spark.read.format("csv") \
+#         .option("inferSchema", "true") \
+#         .option("header", "true") \
+#         .option("multiline", "true") \
+#         .option("escape", "\"") \
+#         .csv(f"{local_file_path}/{GBQtable}*")  # Use wildcard to read all files
+
+#     return sparkDf
+
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path):
+    project_id=project_id, folder_path=folder_path):
+
     project_id = project_id
     bucket_name = "nusebac_storage"
-    file_prefix = f"{GBQtable}.csv"
+    file_name = f"{GBQtable}.csv.gz"  # Compressed file format
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
     folder_path = folder_path
-    local_file_path = f"{folder_path}/"
+    local_file_path = f"{folder_path}/{file_name}"
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-    # Export BigQuery table to GCS
-    destination_uri = f'gs://{bucket_name}/{file_prefix}*'
+    # Export BigQuery table to GCS in GZIP compressed format
+    destination_uri = f'gs://{bucket_name}/{file_name}'
     job_config = bigquery.ExtractJobConfig()
+    job_config.compression = "GZIP"  # Set compression to GZIP
     job = client.extract_table(
         table_ref,
         destination_uri,
@@ -112,24 +159,22 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     )
     job.result()
 
-    # Download the files
+    # Download the compressed file
     client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blobs = bucket.list_blobs(prefix=file_prefix)
+    blob = bucket.blob(file_name)
 
-    for blob in blobs:
-        # Download each file
-        file_name = blob.name.split('/')[-1]
-        new_file_name = file_name.replace(file_prefix, f"{GBQtable}")
-        blob.download_to_filename(f"{local_file_path}/{new_file_name}")
+    # Download the compressed file to the specified local path
+    blob.download_to_filename(local_file_path)
 
-    # Read CSV files into PySpark DataFrame
+    # Read GZIP compressed CSV file into PySpark DataFrame
     sparkDf = spark.read.format("csv") \
-        .option("inferSchema", "true") \
-        .option("header", "true") \
-        .option("multiline", "true") \
-        .option("escape", "\"") \
-        .csv(f"{local_file_path}/{GBQtable}*")  # Use wildcard to read all files
+                        .option("inferSchema", "true") \
+                        .option("header", "true") \
+                        .option("multiline", "true") \
+                        .option("escape", "\"") \
+                        .option("compression", "gzip") \
+                        .csv(local_file_path)
 
     return sparkDf
 

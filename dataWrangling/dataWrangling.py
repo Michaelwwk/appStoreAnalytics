@@ -13,7 +13,8 @@ def dataWrangling(spark, project_id, client):
 
     sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
     print(sparkDf.show())
-    sparkDf.count()
+    print(sparkDf.count())
+    
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, cleanDataset, cleanGoogleScraped_table_name)
     

@@ -87,10 +87,10 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
         .option("escape", "\"") \
         .csv(f"{local_file_path}*")  # Use wildcard to read all files
 
-    # Delete local files
-    for blob in blobs:
-        local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
-        os.remove(local_file_name)
+    # # Delete local files
+    # for blob in blobs:
+    #     local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
+    #     os.remove(local_file_name)
 
     # Delete files from GCS
     for blob in blobs:

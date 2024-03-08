@@ -72,7 +72,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     # Download the files
     client = storage.Client()
     bucket = client.bucket(bucket_name)
-    blobs = bucket.list_blobs(prefix=file_name)
+    blobs = list(bucket.list_blobs(prefix=file_name))  # Convert iterator to list
 
     for blob in blobs:
         # Download each file

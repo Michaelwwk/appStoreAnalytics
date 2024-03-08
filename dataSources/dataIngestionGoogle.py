@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 googleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40 is the default under app() function
-requests_per_second = 4 # None = turn off throttling!
+requests_per_second = None # None = turn off throttling!
 country = 'us'
 language = 'en'
 

@@ -17,7 +17,7 @@ googleAppsSample = 10000 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40 is the default under app() function
 requests_per_second = None # None = turn off throttling!
-earlyExitTimeLimit = 600 # 5 hour 50 mins (21000)
+earlyExitTimeLimit = 300 # 5 hour 50 mins (21000)
 country = 'us'
 language = 'en'
 

@@ -1,9 +1,9 @@
 # Hard-coded variables (raw data)
 rawDataset = "rawData"
 appleScraped_table_name = 'appleMain' # TODO CHANGE PATH
-googleScraped_table_name = 'googleMain' # TODO CHANGE PATH
+googleScraped_table_name = 'googleMainTEST' # TODO CHANGE PATH
 appleReview_table_name = 'appleReview' # TODO CHANGE PATH
-googleReview_table_name = 'googleReview' # TODO CHANGE PATH
+googleReview_table_name = 'googleReviewTEST' # TODO CHANGE PATH
 
 def deleteRowsAppleGoogle(project_id, client):
 

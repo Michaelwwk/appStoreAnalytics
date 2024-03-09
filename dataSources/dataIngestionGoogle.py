@@ -13,7 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Hard-coded variables
-googleAppsSample = 10000 # 999 = all samples!
+googleAppsSample = 50000 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40 is the default under app() function
 requests_per_second = None # None = turn off throttling!

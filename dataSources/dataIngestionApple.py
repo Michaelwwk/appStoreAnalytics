@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.ERROR)
 appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20
-requests_per_second = 5 # None = turn off throttling!
+requests_per_second = 2 # None = turn off throttling!
 country = 'us'
 # language = 'en'
 
@@ -276,6 +276,9 @@ df_list[index] length: {len(df_list[index])}")
                         except Exception as e:
                             print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_devResponse shape: {apple_reviews_devResponse.shape}, \
 df_list[index] length: {len(df_list[index])}")
+                            
+        else:
+            print("App not found.")
                 
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',

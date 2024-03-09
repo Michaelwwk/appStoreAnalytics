@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 googleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 reviewCountPerApp = 20 # 40 is the default under app() function
-requests_per_second = 10 # None = turn off throttling!
+requests_per_second = None # None = turn off throttling!
 country = 'us'
 language = 'en'
 
@@ -101,39 +101,46 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
         return output
     
     def process_app(appId):
-        app_results = appWithThrottle(
-                                appId,
-                                lang=language,
-                                country=country,
-                                delay_between_requests = delay_between_requests
-                                )
 
-        for feature in mainFeaturesToDrop:
-            app_results.pop(feature, None)
-        row = [value for value in app_results.values()]
-        google_main.loc[len(google_main)] = row
+        try:
+            app_results = appWithThrottle(
+                                    appId,
+                                    lang=language,
+                                    country=country,
+                                    delay_between_requests = delay_between_requests
+                                    )
+
+            for feature in mainFeaturesToDrop:
+                app_results.pop(feature, None)
+            row = [value for value in app_results.values()]
+            google_main.loc[len(google_main)] = row
+        except:
+            print(f"Google (Error for app_results): {appId} -> {e}.")
 
         if saveReviews == True:
 
-            # for score in range(1,6):
-            review, continuation_token = reviewsWithThrottle(
-                appId,
-                lang=language,
-                country=country,
-                count=reviewCountPerApp,
-                score=None,
-                delay_between_requests = delay_between_requests
-            )
+            try:
+                # for score in range(1,6):
+                review, continuation_token = reviewsWithThrottle(
+                    appId,
+                    lang=language,
+                    country=country,
+                    count=reviewCountPerApp,
+                    score=None,
+                    delay_between_requests = delay_between_requests
+                )
 
-            for count in reviewCountRange:
-                try:
-                    for feature in reviewFeaturesToDrop:
-                        review[count].pop(feature, None)
-                    row = [value for value in review[count].values()]
-                    row.append(appId)
-                    google_reviews.loc[len(google_reviews)] = row
-                except IndexError:
-                    continue
+                for count in reviewCountRange:
+                    try:
+                        for feature in reviewFeaturesToDrop:
+                            review[count].pop(feature, None)
+                        row = [value for value in review[count].values()]
+                        row.append(appId)
+                        google_reviews.loc[len(google_reviews)] = row
+                    except IndexError:
+                        continue
+            except:
+                print(f"Google (Error for review): {appId} -> {e}.")
 
     google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
     google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)

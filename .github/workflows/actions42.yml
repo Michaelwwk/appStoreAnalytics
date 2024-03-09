@@ -31,7 +31,7 @@ jobs:
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}
-        run: python main.py 40
+        run: python main.py 42
           
       - name: commit files
         run: |

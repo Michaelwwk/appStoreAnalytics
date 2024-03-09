@@ -278,7 +278,7 @@ df_list[index] length: {len(df_list[index])}")
 df_list[index] length: {len(df_list[index])}")
                             
         else:
-            print("App not found.")
+            print(f"Apple: {appId} -> App not found.")
                 
     user_agents = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',

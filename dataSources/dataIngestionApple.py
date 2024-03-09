@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.ERROR)
 appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20
-requests_per_second = 5 # None = turn off throttling!
+requests_per_second = 2 # None = turn off throttling!
 country = 'us'
 # language = 'en'
 

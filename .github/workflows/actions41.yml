@@ -1,8 +1,8 @@
 name: Data Wrangling + ML + Date Time (41)
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
+  # schedule:
+  #   - cron: '0 0 * * *' # cron: '* * * * *' (runs every 5 mins) # cron: '0 20 * * *' (runs at 4am daily at GMT+08, Singapore time)
   workflow_dispatch: # Create a button to trigger the workflow manually
 
 jobs:

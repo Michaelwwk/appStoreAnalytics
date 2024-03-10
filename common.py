@@ -47,13 +47,11 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
              project_id=project_id, folder_path=folder_path):
 
-    project_id = project_id
     bucket_name = "nusebac_storage"
     file_name = f"{GBQtable}.csv"
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    folder_path = folder_path
     local_file_path = f"{folder_path}/{file_name}"
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
@@ -94,11 +92,10 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     return sparkDf
 
 def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
-           folder_path = folder_path, mergeType = 'WRITE_TRUNCATE'): # 'WRITE_APPEND' if want to append values!
+           folder_path = folder_path, mergeType = 'WRITE_TRUNCATE'): # 'WRITE_APPEND' if want to append values instead!
 
     if sparkdf == True:
 
-        folder_path = os.getcwd().replace("\\", "/")
         local_file_path = f"{folder_path}/{GBQdataset}.{GBQtable}.parquet"
 
         dataframe.write.parquet(local_file_path, mode="overwrite")

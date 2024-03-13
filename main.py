@@ -38,7 +38,7 @@ def create_data_ingestion_function(apple_slices, current_apple_sub_df, google_sl
 
 for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of YAML action no.s for data ingestion
     if action_no == 1:
-        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1, delete_rows = True)
+        main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1, delete_rows = False)
         currentAppleSubDf += 1
     elif action_no in range(2, appleMaxSlice + 1): # range of YAML action no.s for Apple ONLY
         main_dict[action_no] = create_data_ingestion_function(appleMaxSlice, currentAppleSubDf, 0, 1)

@@ -201,7 +201,7 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
                                 pbar.update(1)
                         continue
                     else:
-                        print("Rate limited! Skipping this app Id.")
+                        print(f"Rate limited! Skipping for app Id: {app_id}.")
                         break
 
                 # NOT FOUND

@@ -24,6 +24,7 @@ appleAppsSample = 999 # 999 = all samples!
 saveReviews = True
 appleReviewCountPerApp = 20 # max 20
 requests_per_second = 2 # None = turn off throttling!
+retries = False # True = On, False = Off; Switching On may incur much longer computational time!
 country = 'us'
 # language = 'en'
 
@@ -187,16 +188,21 @@ def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
                 # RATE LIMITED
                 if response.status_code == 429:
-                    # Perform backoff using retry_count as the backoff factor
-                    retry_count += 1
-                    backoff_time = BASE_DELAY_SECS * retry_count
-                    print(f"Rate limited! Retrying ({retry_count}/{MAX_RETRIES}) after {backoff_time} seconds...")
-                    
-                    with tqdm(total=backoff_time, unit="sec", ncols=50) as pbar:
-                        for _ in range(backoff_time):
-                            time.sleep(1)
-                            pbar.update(1)
-                    continue
+
+                    if retries:
+                        # Perform backoff using retry_count as the backoff factor
+                        retry_count += 1
+                        backoff_time = BASE_DELAY_SECS * retry_count
+                        print(f"Rate limited! Retrying ({retry_count}/{MAX_RETRIES}) after {backoff_time} seconds...")
+                        
+                        with tqdm(total=backoff_time, unit="sec", ncols=50) as pbar:
+                            for _ in range(backoff_time):
+                                time.sleep(1)
+                                pbar.update(1)
+                        continue
+                    else:
+                        print("Rate limited! Skipping this app Id.")
+                        break
 
                 # NOT FOUND
                 elif response.status_code == 404:

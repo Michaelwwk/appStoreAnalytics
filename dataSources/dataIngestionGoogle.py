@@ -2,68 +2,31 @@ import os
 import time
 import subprocess
 import glob
-import shutil
 import pandas as pd
-import json
 from google.cloud import bigquery
-# from datetime import datetime
-# from pytz import timezone
 from google_play_scraper import app, reviews, Sort
 from pyspark.sql.types import *
-from commonFunctions import to_gbq
+from common import to_gbq, split_df
+from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name, googleReview_table_name
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 warnings.filterwarnings('ignore')
 
-# # Function to convert pandas DataFrame to Spark DataFrame
-# def pandas_to_spark(df, spark):
-#     return spark.createDataFrame(df)
+# Hard-coded variables
+googleAppsSample = 999 # 999 = all samples!
+saveReviews = True
+reviewCountPerApp = 20 # 40 is the default under app() function
+requests_per_second = None # None = turn off throttling!
+country = 'us'
+language = 'en'
 
-# # Function to write Spark DataFrame to BigQuery
-# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
-#     spark_df.write.format('bigquery') \
-#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-#         .save()
+def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
 
-def dataIngestionGoogle():
-    
-    folder_path = os.getcwd().replace("\\", "/")
-    # Extract Google API from GitHub Secret Variable
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
-        json.dump(googleAPI_dict, f)
+     # Record the overall start time
+    overall_start_time = time.time()
 
-    # Hard-coded variables
-    googleAppsSample = 50 # 999 = all samples!
-    saveReviews = True
-    reviewCountPerApp = 40
-    requests_per_second = None # None = turn off throttling!
-    country = 'us'
-    language = 'en'
-    project_id =  googleAPI_dict["project_id"]
-    rawDataset = "practice_project"
-    googleScraped_table_name = 'google_scraped_test3' # TODO CHANGE PATH
-    googleReview_table_name = 'google_reviews_test3' # TODO CHANGE PATH
-    googleScraped_db_dataSetTableName = f"{rawDataset}.{googleScraped_table_name}"
     googleScraped_db_path = f"{project_id}.{rawDataset}.{googleScraped_table_name}"
-    googleReview_db_dataSetTableName = f"{rawDataset}.{googleReview_table_name}"
     googleReview_db_path = f"{project_id}.{rawDataset}.{googleReview_table_name}"
-    # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
-    # dateTime_csv_path = f"{folder_path}/dateTime.csv"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/googleDataIngestion.log"
-
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-    # # Apple
-    # ## Clone the repository
-    # subprocess.run(["git", "clone", "https://github.com/gauthamp10/apple-appstore-apps.git"])
-    # ## Change directory to the dataset folder
-    # os.chdir("apple-appstore-apps/dataset")
-    # ## Extract the tar.lzma file
-    # subprocess.run(["tar", "-xvf", "appleAppData.json.tar.lzma"])
-    # ## Read into DataFrame
-    # apple = pd.read_json("appleAppData.json")
 
     # Google
     ## Clone the repository
@@ -80,7 +43,15 @@ def dataIngestionGoogle():
             with open(csvfile, "rb") as infile:
                 outfile.write(infile.read())
     ## Read into DataFrame
-    google = pd.read_csv("Google-Playstore-Dataset.csv") # low_memory = False
+    google = pd.read_csv("Google-Playstore-Dataset.csv", header = None) # low_memory = False
+    column_names = ['App Name', 'App Id', 'Category', 'Rating', 'Rating Count', 'Installs',
+                    'Minimum Installs', 'Maximum Installs', 'Free', 'Price', 'Currency',
+                    'Size', 'Minimum Android', 'Developer Id', 'Developer Website',
+                    'Developer Email', 'Released', 'Last Updated', 'Content Rating',
+                    'Privacy Policy', 'Ad Supported', 'In App Purchases', 'Editors Choice',
+                    'Scraped Time']
+    google.columns = column_names
+    google = google[~((google['App Name'] == 'App Name') & (google['App Id'] == 'App Id'))]
 
     # Data Ingestion using 'google_play_scraper' API:
 
@@ -100,11 +71,6 @@ def dataIngestionGoogle():
 
     if googleAppsSample != 999:
         google = google.sample(googleAppsSample)
-
-    try:
-        os.remove(log_file_path)
-    except:
-        pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
@@ -133,11 +99,8 @@ def dataIngestionGoogle():
         if delay_between_requests != None:
             time.sleep(delay_between_requests)
         return output
-
-    appsChecked = 0
-    for appId in google.iloc[:, 1]:
-        appsChecked += 1
-        appReviewCounts = 0
+    
+    def process_app(appId):
 
         try:
             app_results = appWithThrottle(
@@ -151,9 +114,12 @@ def dataIngestionGoogle():
                 app_results.pop(feature, None)
             row = [value for value in app_results.values()]
             google_main.loc[len(google_main)] = row
+        except:
+            print(f"Google (Error for app_results): {appId} -> {e}.")
 
-            if saveReviews == True:
+        if saveReviews == True:
 
+            try:
                 # for score in range(1,6):
                 review, continuation_token = reviewsWithThrottle(
                     appId,
@@ -171,42 +137,63 @@ def dataIngestionGoogle():
                         row = [value for value in review[count].values()]
                         row.append(appId)
                         google_reviews.loc[len(google_reviews)] = row
-                        appReviewCounts += 1
                     except IndexError:
                         continue
+            except:
+                print(f"Google (Error for review): {appId} -> {e}.")
+
+    google.drop_duplicates(subset = ['App Id'], keep = 'first', inplace = True)
+    google = split_df(google, noOfSlices = noOfSlices, subDf = subDf)
+
+    appsChecked = 0
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        print(f"No. of worker threads deployed: {os.cpu_count()}")
+
+        for appId in google.iloc[:, 1]:
+
+            # Record the end time
+            overall_end_time = time.time()         
+            # Calculate and print the overall elapsed time in seconds
+            overall_elapsed_time = overall_end_time - overall_start_time
+
+            if overall_elapsed_time < 21000: # 5 hour 50 mins
+
+                appsChecked += 1
+
+                try:
+                    # Record the start time
+                    start_time = time.time()
+
+                    executor.submit(process_app, appId)
+
+                    # Record the end time
+                    end_time = time.time()         
+                    # Calculate and print the elapsed time in seconds
+                    elapsed_time = end_time - start_time
+                    
+                    print(f'Google: {appId} -> Successfully saved in {elapsed_time} seconds. \
+{appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
+                    
+                except Exception as e:
+                    print(f"Google (Error): {appId} -> {e}")
             
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(google_main)} app(s) & {len(google_reviews)} review(s) saved.\n")
-            print(f'Google: {len(google_main)}/{appsChecked} app(s) & {len(google_reviews)} review(s) saved. {appsChecked}/{len(google)} ({round(appsChecked/len(google)*100,1)}%) completed.')
-        except Exception as e:
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Error occurred: {e}\n")
-            print(f"Google: {e}")
+            else:
+                print("Exiting data ingestion prematurely ..")
+                break
             
     # Create tables into Google BigQuery
-    try:
-        job = client.query(f"DELETE FROM {googleScraped_db_path} WHERE TRUE").result()
-    except:
-        pass
     client.create_table(bigquery.Table(googleScraped_db_path), exists_ok = True)
-    # try:
-    #     job = client.query(f"DELETE FROM {googleReview_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    google_main = google_main.astype(str) # all columns will be string
-    load_job = to_gbq(google_main, client, googleScraped_db_dataSetTableName)
-    load_job.result()
+    to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    to_gbq(google_reviews, rawDataset, googleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
 
-    # google_reviews = google_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(google_reviews, client, googleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
-    load_job.result()
-
-    ## Remove files and folder
-    try:
-        os.remove(googleAPI_json_path)
-        shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    except:
-        pass
+    # Completion log
+    if noOfSlices != 0:     
+        print(f"Data ingestion step completed using this runner. \
+{len(google_main.appId.unique())}/{len(google['App Id'].unique())} ({round(len(google_main.appId.unique())/len(google['App Id'].unique())*100,1)}%) apps matched. \
+{google_reviews.appId.nunique()}/{google_main.appId.nunique()} ({round(google_reviews.appId.nunique()/google_main.appId.nunique()*100,1)}%) apps has reviews.")
+        print(f"{googleScraped_db_path} & {googleReview_db_path} raw tables partially updated.")

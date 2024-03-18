@@ -1,66 +1,40 @@
 import os
 import time
 import subprocess
-import glob
-import shutil
 import pandas as pd
 import numpy as np
 import json
 import re
-from google.cloud import bigquery
-from datetime import datetime
-from pytz import timezone
+import random
 import requests
+from google.cloud import bigquery
+from tqdm import tqdm
 from bs4 import BeautifulSoup
-# from google_play_scraper import app, reviews, Sort
-from app_store_scraper import AppStore
 from pyspark.sql.types import *
-from commonFunctions import to_gbq
+from common import to_gbq, split_df
+from dataSources.deleteRowsAppleGoogle import rawDataset, appleScraped_table_name, appleReview_table_name
+from concurrent.futures import ThreadPoolExecutor
 import warnings
 warnings.filterwarnings('ignore')
 import logging
 logging.basicConfig(level=logging.ERROR)
 
-# # Function to convert pandas DataFrame to Spark DataFrame
-# def pandas_to_spark(df, spark):
-#     return spark.createDataFrame(df)
+# Hard-coded variables
+appleAppsSample = 999 # 999 = all samples!
+saveReviews = True
+appleReviewCountPerApp = 20 # max 20
+requests_per_second = 2 # None = turn off throttling!
+retries = False # True = On, False = Off; Switching On may incur much longer computational time!
+country = 'us'
+# language = 'en'
 
-# # Function to write Spark DataFrame to BigQuery
-# def write_spark_to_bigquery(spark_df, table_name, dataset_name, project_id):
-#     spark_df.write.format('bigquery') \
-#         .option('table', f'{project_id}.{dataset_name}.{table_name}') \
-#         .save()
+def dataIngestionApple(client, project_id, noOfSlices = 1, subDf = 1):
 
-def dataIngestionApple():
-    
-    folder_path = os.getcwd().replace("\\", "/")
-    # Extract Google API from GitHub Secret Variable
-    googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
-    with open("googleAPI.json", "w") as f:
-        json.dump(googleAPI_dict, f)
+    # Record the overall start time
+    overall_start_time = time.time()
 
-    # Hard-coded variables
-    appleAppsSample = 50 # 999 = all samples!
-    saveReviews = False
-    appleReviewCountPerApp = 40 # in batches of 20! Google's app() function pulls latest 40 reviews per app!!
-    requests_per_second = None # None = turn off throttling!
-    country = 'us'
-    language = 'en'
-    project_id =  googleAPI_dict["project_id"]
-    rawDataset = "practice_project"
-    appleScraped_table_name = 'apple_scraped_test3' # TODO CHANGE PATH
-    appleReview_table_name = 'apple_reviews_test3' # TODO CHANGE PATH
-    appleScraped_db_dataSetTableName = f"{rawDataset}.{appleScraped_table_name}"
     appleScraped_db_path = f"{project_id}.{rawDataset}.{appleScraped_table_name}"
-    appleReview_db_dataSetTableName = f"{rawDataset}.{appleReview_table_name}"
     appleReview_db_path = f"{project_id}.{rawDataset}.{appleReview_table_name}"
-    # dateTime_db_path = f"{project_id}.{rawDataset}.dateTime"
-    # dateTime_csv_path = f"{folder_path}/dateTime.csv"
-    googleAPI_json_path = f"{folder_path}/googleAPI.json"
-    log_file_path = f"{folder_path}/dataSources/appleDataIngestion.log"
-
-    client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
-    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Apple
     ## Clone the repository
@@ -75,27 +49,28 @@ def dataIngestionApple():
     # Data Ingestion using 'app_store_scraper' API:
 
     apple_main = pd.DataFrame(columns = ['name', 'description', 'applicationCategory', 'datePublished',
-                                          'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price', 'priceCurrency', 'star_ratings', 'appId'])
+                                          'operatingSystem', 'authorname', 'authorurl', 'ratingValue', 'reviewCount', 'price',
+                                          'priceCurrency', 'star_ratings', 'appId'])
     
-    apple_reviews = pd.DataFrame(columns = ['appId', 'developerResponse', 'date', 'review', 'rating', 'isEdited', 'title', 'userName'])
-
-    reviewCountRange = range(0,appleReviewCountPerApp)
+    apple_reviews_no_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
+                                            'attributes.review', 'attributes.rating', 'attributes.isEdited',
+                                            'attributes.userName', 'attributes.title'])
+    
+    apple_reviews_devResponse = pd.DataFrame(columns = ['id', 'type', 'offset', 'n_batch', 'app_id', 'attributes.date',
+                                        'attributes.review', 'attributes.rating', 'attributes.isEdited',
+                                        'attributes.userName', 'attributes.title',
+                                        'attributes.developerResponse.id', 'attributes.developerResponse.body',
+                                        'attributes.developerResponse.modified'])
 
     if appleAppsSample != 999:
         apple = apple.sample(appleAppsSample)
-
-    try:
-        os.remove(log_file_path)
-    except:
-        pass
     
     if requests_per_second != None:
         delay_between_requests = 1 / requests_per_second
     else:
         delay_between_requests = None
 
-
-    # Data Ingestion using BeautifulSoup
+    # Data Ingestion using web scraping
 
     def appWithThrottle(appId, country = 'us', delay_between_requests = None):
 
@@ -135,20 +110,125 @@ def dataIngestionApple():
 
         return extracted_info
 
-    # Data Ingestion using 'app_store_scraper' API for REVIEWS:
+    def get_token(country:str , app_name:str , app_id: str, user_agents: dict):
 
-    def reviewsWithThrottle(app_id, app_name = 'anything', country = 'us', reviewCount = 100, delay_between_requests = None):
-        info = AppStore(country = country, app_name = app_name, app_id = app_id)
-        info.review(how_many = reviewCount)
+        """
+        Retrieves the bearer token required for API requests
+        Regex adapted from base.py of https://github.com/cowboy-bebug/app-store-scraper
+        """
+
+        response = requests.get(f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}', 
+                                headers = {'User-Agent': random.choice(user_agents)},
+                                )
+
+        tags = response.text.splitlines()
+        for tag in tags:
+            if re.match(r"<meta.+web-experience-app/config/environment", tag):
+                token = re.search(r"token%22%3A%22(.+?)%22", tag).group(1)
         
-        if delay_between_requests != None:
-            time.sleep(delay_between_requests)
-
-        return info.reviews
+        return token
         
-    appsChecked = 0
-    for url in apple.iloc[:, 2]:
+    def fetch_reviews(country:str , app_name:str , app_id: str, user_agents: dict, token: str, offset: str = '1', appleReviewCountPerApp = 20):
 
+        """
+        Fetches reviews for a given app from the Apple App Store API.
+
+        - Default sleep after each call to reduce risk of rate limiting
+        - Retry with increasing backoff if rate-limited (429)
+        - No known ability to sort by date, but the higher the offset, the older the reviews tend to be
+        """
+
+        ## Define request headers and params
+        landingUrl = f'https://apps.apple.com/{country}/app/{app_name}/id{app_id}'
+        requestUrl = f'https://amp-api.apps.apple.com/v1/catalog/{country}/apps/{app_id}/reviews'
+
+        headers = {
+            'Accept': 'application/json',
+            'Authorization': f'bearer {token}',
+            'Connection': 'keep-alive',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Origin': 'https://apps.apple.com',
+            'Referer': landingUrl,
+            'User-Agent': random.choice(user_agents)
+            }
+
+        params = (
+            ('l', 'en-GB'),                           # language
+            ('offset', str(offset)),                  # paginate this offset
+            ('limit', str(appleReviewCountPerApp)),   # max valid is 20
+            ('platform', 'web'),
+            ('additionalPlatforms', 'appletv,ipad,iphone,mac')
+            )
+
+        ## Perform request & exception handling
+        retry_count = 0
+        MAX_RETRIES = 1 # 5
+        BASE_DELAY_SECS = 10
+        # Assign dummy variables in case of GET failure
+        result = {'data': [], 'next': None}
+        reviews = []
+
+        while retry_count < MAX_RETRIES:
+
+            # Perform request
+            response = requests.get(requestUrl, headers=headers, params=params)
+
+            # SUCCESS
+            # Parse response as JSON and exit loop if request was successful
+            if response.status_code == 200:
+                result = response.json()
+                reviews = result['data']
+                # if len(reviews) < 20:
+                #     print(f"{len(reviews)} reviews scraped. This is fewer than the expected 20.")
+                break
+
+            # FAILURE
+            elif response.status_code != 200:
+                # print(f"GET request failed. Response: {response.status_code} {response.reason}")
+
+                # RATE LIMITED
+                if response.status_code == 429:
+
+                    if retries:
+                        # Perform backoff using retry_count as the backoff factor
+                        retry_count += 1
+                        backoff_time = BASE_DELAY_SECS * retry_count
+                        print(f"Rate limited! Retrying ({retry_count}/{MAX_RETRIES}) after {backoff_time} seconds...")
+                        
+                        with tqdm(total=backoff_time, unit="sec", ncols=50) as pbar:
+                            for _ in range(backoff_time):
+                                time.sleep(1)
+                                pbar.update(1)
+                        continue
+                    else:
+                        print(f"Rate limited! Skipping for app Id: {app_id}.")
+                        break
+
+                # NOT FOUND
+                elif response.status_code == 404:
+                    # print(f"{response.status_code} {response.reason}. There are no more reviews.")
+                    break
+
+        ## Final output
+        # Get pagination offset for next request
+        if 'next' in result and result['next'] is not None:
+            offset = re.search("^.+offset=([0-9]+).*$", result['next']).group(1)
+            # print(f"Offset: {offset}")
+        else:
+            offset = None
+            # print("No offset found.")
+
+        # Append offset, number of reviews in batch, and app_id
+        for rev in reviews:
+            rev['offset'] = offset
+            rev['n_batch'] = len(reviews)
+            rev['app_id'] = app_id
+
+        # Default sleep to decrease rate of calls
+        time.sleep(0.5)
+        return reviews
+
+    def extract_app_id(url):
         # Extract the portion after the last "/"
         last_slash_index = url.rfind("/")
         if last_slash_index != -1:
@@ -162,104 +242,115 @@ def dataIngestionApple():
 
             # Extract the app ID from the matched string
             if match:
-                appId = match.group(1)
+                return match.group(1)
             else:
-                print("App ID not found.")
+                return None
         else:
-            print("No '/' found in the URL.")
-
-        appsChecked += 1
-        appReviewCounts = 0
-
-        try:
-            app_results = appWithThrottle(
-                                    appId = appId,
-                                    country=country,
-                                    delay_between_requests = delay_between_requests
-                                    )
+            return None
+        
+    def process_app(appId):
+        app_results = appWithThrottle(
+                                appId = appId,
+                                country=country,
+                                delay_between_requests = delay_between_requests
+                                )
+        
+        if app_results['name'] != 'App Store':
+            successAppId = appId
             row = [value for value in app_results.values()]
-            row.append(appId)
+            row.append(successAppId)
             apple_main.loc[len(apple_main)] = row
-            
+        
             if saveReviews == True:
-                review = reviewsWithThrottle(
-                    app_id = appId,
-                    country = country,
-                    reviewCount = appleReviewCountPerApp,
-                    delay_between_requests = delay_between_requests
-                )
-                for count in reviewCountRange:
-                    try:
-                        developer_response = review[count].get('developerResponse')
-                        if developer_response is None:
-                            review[count]['developerResponse'] = np.NaN
-                        row_values = list(review[count].values())
-                        row = {'appId': appId}
-                        row['developerResponse'] = developer_response
-                        row.update(zip(review[count].keys(), row_values))
-                        apple_reviews.loc[len(apple_reviews)] = row
-                        appReviewCounts += 1
-                    except IndexError:
-                        continue
 
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Successfully saved with {appReviewCounts} review(s). Total: {len(apple_main)} app(s) & {len(apple_reviews)} review(s) saved.\n")
-            print(f'Apple: {len(apple_main)}/{appsChecked} app(s) & {len(apple_reviews)} review(s) saved. {appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+                token = get_token(country, 'anything', successAppId, user_agents)
+                reviews = fetch_reviews(country, 'anything', successAppId, user_agents, token, appleReviewCountPerApp = appleReviewCountPerApp)
+                df = pd.json_normalize(reviews)
+                
+                df_list = df.values.tolist()
+                if len(df.columns) == 11:
+                    for index in range(0, len(df_list)):
+                        try:
+                            apple_reviews_no_devResponse.loc[len(apple_reviews_no_devResponse)] = df_list[index]
+                        except Exception as e:
+                            print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_no_devResponse shape: {apple_reviews_no_devResponse.shape}, \
+df_list[index] length: {len(df_list[index])}")
+                elif len(df.columns) == 14: #14
+                    for index in range(0, len(df_list)):
+                        try:
+                            apple_reviews_devResponse.loc[len(apple_reviews_devResponse)] = df_list[index]
+                        except Exception as e:
+                            print(f"Apple (Appending Error): {appId} -> {e}. apple_reviews_devResponse shape: {apple_reviews_devResponse.shape}, \
+df_list[index] length: {len(df_list[index])}")
+                            
+        else:
+            print(f"Apple: {appId} -> App not found.")
+                
+    user_agents = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+    ]
 
-        except Exception as e:
-            with open(log_file_path, "a") as log_file:
-                log_file.write(f"{appId} -> Error occurred: {e}\n")
-            print(f"Apple: {e}")
+    apple['AppStore_Url'] = apple['AppStore_Url'].apply(extract_app_id)
+    apple.drop_duplicates(subset = ['AppStore_Url'], keep = 'first', inplace = True)
+    apple = split_df(apple, noOfSlices = noOfSlices, subDf = subDf)
 
-    # Drop duplicates
-    apple_main.drop_duplicates(subset = ['appId'], inplace = True)
+    appsChecked = 0
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        print(f"No. of worker threads deployed: {os.cpu_count()}")
+
+        for appId in apple.iloc[:, 2]:
+
+            # Record the end time
+            overall_end_time = time.time()         
+            # Calculate and print the overall elapsed time in seconds
+            overall_elapsed_time = overall_end_time - overall_start_time
+
+            if overall_elapsed_time < 21000: # 5 hour 50 mins
+
+                appsChecked += 1
+
+                try:
+                    # Record the start time
+                    start_time = time.time()
+
+                    executor.submit(process_app, appId)
+
+                    # Record the end time
+                    end_time = time.time()         
+                    # Calculate and print the elapsed time in seconds
+                    elapsed_time = end_time - start_time
+
+                    # if appId in apple_main['appId'].to_list():
+                    print(f'Apple: {appId} -> Successfully saved in {elapsed_time} seconds. Total -> \
+{appsChecked}/{len(apple)} ({round(appsChecked/len(apple)*100,1)}%) completed.')
+
+                except Exception as e:
+                    print(f"Apple (Error): {appId} -> {e}")
+            
+            else:
+                print("Exiting data ingestion prematurely ..")
+                break
+
+    apple_reviews = pd.concat([apple_reviews_devResponse, apple_reviews_no_devResponse], ignore_index=True)
+
+    # Rename columns
+    apple_reviews.columns = ['id', 'type', 'offset', 'nBatch', 'appId', 'date', 'review', 'rating', 'isEdited', 'userName', 'title',
+                            'developerResponseId', 'developerResponseBody', 'developerResponseModified']
 
     # Create tables into Google BigQuery
-    try:
-        job = client.query(f"DELETE FROM {appleScraped_db_path} WHERE TRUE").result()
-    except:
-        pass
     client.create_table(bigquery.Table(appleScraped_db_path), exists_ok = True)
-    # try:
-    #     job = client.query(f"DELETE FROM {appleReview_db_path} WHERE TRUE").result()
-    # except:
-    #     pass
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    apple_main = apple_main.astype(str) # all columns will be string
-    load_job = to_gbq(apple_main, client, appleScraped_db_dataSetTableName)
-    load_job.result()
+    to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False)
+    # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
 
-    # apple_reviews = apple_reviews.astype(str) # all columns will be string
-    load_job = to_gbq(apple_reviews, client, appleReview_db_dataSetTableName, mergeType = 'WRITE_APPEND') # this raw table will have duplicates; drop the duplicates before pushing to clean table!!
-    load_job.result()
-
-    # # Create 'dateTime' table and push info into DB
-    # job = client.query(f"DELETE FROM {dateTime_db_path} WHERE TRUE").result()
-    # client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
-    # current_time = datetime.now(timezone('Asia/Shanghai'))
-    # timestamp_string = current_time.isoformat()
-    # dt = datetime.strptime(timestamp_string, '%Y-%m-%dT%H:%M:%S.%f%z')
-    # date_time_str = dt.strftime('%d-%m-%Y %H:%M:%S')
-    # time_zone = dt.strftime('%z')
-    # output = f"{date_time_str}; GMT+{time_zone[2]} (SGT)"
-    # dateTime_df = pd.DataFrame(data = [output], columns = ['dateTime'])
-    # dateTime_df.to_csv(dateTime_csv_path, header = True, index = False)
-    # dateTime_job_config = bigquery.LoadJobConfig(
-    #     autodetect=True,
-    #     skip_leading_rows=1,
-    #     source_format=bigquery.SourceFormat.CSV,
-    # )
-    # dateTime_config = client.dataset(rawDataset).table('dateTime')
-    # with open(dateTime_csv_path, 'rb') as f:
-    #     dateTime_load_job = client.load_table_from_file(f, dateTime_config, job_config=dateTime_job_config)
-    # dateTime_load_job.result()
-
-    ## Remove files and folder
-    try:
-        # os.remove(dateTime_csv_path)
-        os.remove(googleAPI_json_path)
-        # shutil.rmtree(f"{folder_path}apple-appstore-apps")
-    except:
-        pass
+    # Completion log
+    if noOfSlices != 0:
+        print(f"Data ingestion step completed using this runner. \
+{len(apple_main.appId.unique())}/{len(apple.App_Id.unique())} ({round(len(apple_main.appId.unique())/len(apple.App_Id.unique())*100,1)}%) apps matched. \
+{apple_reviews.appId.nunique()}/{apple_main.appId.nunique()} ({round(apple_reviews.appId.nunique()/apple_main.appId.nunique()*100,1)}%) apps has reviews.")
+        print(f"{appleScraped_db_path} & {appleReview_db_path} raw tables partially updated.")

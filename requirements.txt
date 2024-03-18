@@ -1,6 +1,7 @@
 pandas
 numpy
 google-cloud-bigquery
+google-cloud-storage
 pandas-gbq
 datetime
 pytz
@@ -11,3 +12,4 @@ pyspark
 pyarrow
 requests
 beautifulsoup4
+tqdm

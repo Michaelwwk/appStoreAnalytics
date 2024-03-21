@@ -57,12 +57,12 @@ def dataWrangling(spark, project_id, client):
 
         # Define schema for the table
     schema = [
-        bigquery.SchemaField("minInstalls", "INTEGER"),
-        bigquery.SchemaField("realInstalls", "INTEGER"),
-        bigquery.SchemaField("score", "INTEGER"),
-        bigquery.SchemaField("ratings", "INTEGER"),
-        bigquery.SchemaField("reviews", "INTEGER"),
-        bigquery.SchemaField("price", "INTEGER"),
+        bigquery.SchemaField("minInstalls", "INT64"),
+        bigquery.SchemaField("realInstalls", "INT64"),
+        bigquery.SchemaField("score", "INT64"),
+        bigquery.SchemaField("ratings", "INT64"),
+        bigquery.SchemaField("reviews", "INT64"),
+        bigquery.SchemaField("price", "INT64"),
         # Define other fields here with appropriate data types
     ]
 

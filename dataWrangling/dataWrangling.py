@@ -56,7 +56,7 @@ def dataWrangling(spark, project_id, client):
     cleaned_sparkDf = clean_data(sparkDf)
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, cleanDataset, cleanGoogleScraped_table_name)
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)
     
 """
 TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc

@@ -18,11 +18,11 @@ def dataWrangling(spark, project_id, client):
 
     # Code section for cleaning googleMain data
     def clean_data(df):
-        # # Convert datatype from string to integer for specified columns
-        # columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
+        # Convert datatype from string to integer for specified columns
+        columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
 
-        # # for col_name in columns_to_convert:
-        # #     df = df.withColumn(col_name, col(col_name).cast("int"))
+        for col_name in columns_to_convert:
+            df = df.withColumn(col_name, col(col_name).cast("int"))
 
         # # Apply cast to integer for specified columns
         # df = (df
@@ -38,14 +38,14 @@ def dataWrangling(spark, project_id, client):
         strings_to_remove = {
             'description': ['<b>']
         }
-        # for column, strings in strings_to_remove.items():
-        #     for string in strings:
-        #         df = df.withColumn(column, regexp_replace(col(column), string, ""))
+        for column, strings in strings_to_remove.items():
+            for string in strings:
+                df = df.withColumn(column, regexp_replace(col(column), string, ""))
 
-        # Apply regexp_replace to remove specified strings from the respective columns
-        df = (df
-            .select(*[regexp_replace(col(column), string, "").alias(column) if column == col_name else col(column) for col_name, strings in strings_to_remove.items() for string in strings])
-            )        
+        # # Apply regexp_replace to remove specified strings from the respective columns
+        # df = (df
+        #     .select(*[regexp_replace(col(column), string, "").alias(column) if column == col_name else col(column) for col_name, strings in strings_to_remove.items() for string in strings])
+        #     )        
 
         # Drop records where 'ratings' column has a value of 0
         df = df.filter(col("ratings") != 0)

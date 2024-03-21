@@ -18,16 +18,16 @@ def dataWrangling(spark, project_id, client):
 
     # Code section for cleaning googleMain data
     def clean_data(df):
-        # Convert datatype from string to integer for specified columns
-        columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
+        # # Convert datatype from string to integer for specified columns
+        # columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
 
-        # for col_name in columns_to_convert:
-        #     df = df.withColumn(col_name, col(col_name).cast("int"))
+        # # for col_name in columns_to_convert:
+        # #     df = df.withColumn(col_name, col(col_name).cast("int"))
 
-        # Apply cast to integer for specified columns
-        df = (df
-            .select(*[col(col_name).cast("int").alias(col_name) if col_name in columns_to_convert else col(col_name) for col_name in df.columns])
-            )
+        # # Apply cast to integer for specified columns
+        # df = (df
+        #     .select(*[col(col_name).cast("int").alias(col_name) if col_name in columns_to_convert else col(col_name) for col_name in df.columns])
+        #     )
 
         # Drop specific columns
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']

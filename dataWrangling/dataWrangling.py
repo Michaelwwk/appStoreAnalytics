@@ -1,6 +1,7 @@
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
+from pyspark.sql.functions import col, regexp_replace, split, expr
 
 # Hard-coded variables
 cleanDataset = "cleanData"

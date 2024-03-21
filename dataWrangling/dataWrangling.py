@@ -55,7 +55,18 @@ def dataWrangling(spark, project_id, client):
     
     cleaned_sparkDf = clean_data(sparkDf)
 
-    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
+        # Define schema for the table
+    schema = [
+        bigquery.SchemaField("minInstalls", "INTEGER"),
+        bigquery.SchemaField("realInstalls", "INTEGER"),
+        bigquery.SchemaField("score", "INTEGER"),
+        bigquery.SchemaField("ratings", "INTEGER"),
+        bigquery.SchemaField("reviews", "INTEGER"),
+        bigquery.SchemaField("price", "INTEGER"),
+        # Define other fields here with appropriate data types
+    ]
+
+    client.create_table(bigquery.Table(cleanGoogleScraped_db_path, schema=schema), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)
     
 """

@@ -9,6 +9,17 @@ cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
 
 # TODO Follow this template when scripting!!
 def dataWrangling(spark, project_id, client):
+
+            # Define schema for the table
+    schema = [
+        bigquery.SchemaField("minInstalls", "INT64"),
+        bigquery.SchemaField("realInstalls", "INT64"),
+        bigquery.SchemaField("score", "INT64"),
+        bigquery.SchemaField("ratings", "INT64"),
+        bigquery.SchemaField("reviews", "INT64"),
+        bigquery.SchemaField("price", "INT64"),
+        # Define other fields here with appropriate data types
+    ]
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
 
@@ -54,17 +65,6 @@ def dataWrangling(spark, project_id, client):
         return df
     
     cleaned_sparkDf = clean_data(sparkDf)
-
-        # Define schema for the table
-    schema = [
-        bigquery.SchemaField("minInstalls", "INT64"),
-        bigquery.SchemaField("realInstalls", "INT64"),
-        bigquery.SchemaField("score", "INT64"),
-        bigquery.SchemaField("ratings", "INT64"),
-        bigquery.SchemaField("reviews", "INT64"),
-        bigquery.SchemaField("price", "INT64"),
-        # Define other fields here with appropriate data types
-    ]
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path, schema=schema), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)

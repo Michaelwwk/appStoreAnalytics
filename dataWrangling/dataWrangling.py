@@ -18,11 +18,6 @@ def dataWrangling(spark, project_id, client):
 
     # Code section for cleaning googleMain data
     def clean_data(df):
-        # Convert datatype from string to integer for specified columns
-        columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
-
-        for col_name in columns_to_convert:
-            df = df.withColumn(col_name, col(col_name).cast("int"))
 
         # Drop specific columns
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
@@ -36,8 +31,11 @@ def dataWrangling(spark, project_id, client):
             for string in strings:
                 df = df.withColumn(column, regexp_replace(col(column), string, ""))
 
-        # Drop records where 'ratings' column has a value of 0
-        df = df.filter(col("ratings") != 0)
+        # Drop records where 'ratings' column has a value of 0 or is None
+        df = df.filter((col("ratings") != 0) & (col("ratings").isNotNull()))
+
+        # Drop records where 'score' column has a value of 0 or is None
+        df = df.filter(col("score") != 0) & (col("score").isNotNull())
 
         # Drop records where 'minInstalls' column is None
         df = df.filter(col("minInstalls").isNotNull())

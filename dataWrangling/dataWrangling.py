@@ -24,16 +24,10 @@ def dataWrangling(spark, project_id, client):
         for col_name in columns_to_convert:
             df = df.withColumn(col_name, col(col_name).cast("int"))
 
-        # # Apply cast to integer for specified columns
-        # df = (df
-        #     .select(*[col(col_name).cast("int").alias(col_name) if col_name in columns_to_convert else col(col_name) for col_name in df.columns])
-        #     )
-
         # Drop specific columns
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
         df = df.drop(*columns_to_drop)
         
-
         # Remove specified strings from specified columns
         strings_to_remove = {
             'description': ['<b>']
@@ -41,11 +35,6 @@ def dataWrangling(spark, project_id, client):
         for column, strings in strings_to_remove.items():
             for string in strings:
                 df = df.withColumn(column, regexp_replace(col(column), string, ""))
-
-        # # Apply regexp_replace to remove specified strings from the respective columns
-        # df = (df
-        #     .select(*[regexp_replace(col(column), string, "").alias(column) if column == col_name else col(column) for col_name, strings in strings_to_remove.items() for string in strings])
-        #     )        
 
         # Drop records where 'ratings' column has a value of 0
         df = df.filter(col("ratings") != 0)

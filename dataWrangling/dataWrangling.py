@@ -72,35 +72,35 @@ def dataWrangling(spark, project_id, client):
 
 
 # # Hard-coded variables
-# cleanDataset = "cleanData"
-# cleanGoogleScraped_table_name = 'cleanGoogleReviews'
+cleanDataset = "cleanData"
+cleanGoogleScraped_table_name = 'cleanGoogleReviews'
 
 # # TODO Follow this template when scripting!!
-# def dataWrangling(spark, project_id, client):
+def dataWrangling(spark, project_id, client):
     
-#     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
 
-#     sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
-#     # print(sparkDf.show())
-#     print(sparkDf.count())
+    sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
+    # print(sparkDf.show())
+    print(sparkDf.count())
 
 #     # Code section for cleaning googlereview data
-#     def clean_data(df):
+    def clean_data(df):
 
 #         # Drop specific columns
-#         columns_to_drop = ['userName', 'reviewCreatedVersion', 'appVersion']
-#         df = df.drop(*columns_to_drop)
+        columns_to_drop = ['userName', 'reviewCreatedVersion', 'appVersion']
+        df = df.drop(*columns_to_drop)
 
 #         # Remove duplicates
-#         columns = ['reviewId']  # Example columns, modify as needed
-#         return df.drop_duplicates(subset=columns)
+        columns = ['reviewId']  # Example columns, modify as needed
+        return df.drop_duplicates(subset=columns)
     
 
     
-#     cleaned_sparkDf = clean_data(sparkDf)
+    cleaned_sparkDf = clean_data(sparkDf)
 
-#     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-#     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)
+    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)
 
 """
 TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc

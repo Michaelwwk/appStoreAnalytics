@@ -91,9 +91,9 @@ def dataWrangling(spark, project_id, client):
         columns_to_drop = ['userName', 'reviewCreatedVersion', 'appVersion']
         df = df.drop(*columns_to_drop)
 
-#         # Remove duplicates
-        columns = ['reviewId']  # Example columns, modify as needed
-        return df.drop_duplicates(subset=columns)
+#         # Remove duplicates (doesnt work!)
+        # columns = ['reviewId']  # Example columns, modify as needed
+        # return df.drop_duplicates(subset=columns)
     
 
     

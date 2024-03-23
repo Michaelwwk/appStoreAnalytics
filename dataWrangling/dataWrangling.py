@@ -2,7 +2,10 @@ from functools import reduce
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
-from pyspark.sql.functions import col, regexp_replace, split, expr
+from pyspark.sql.functions import col, regexp_replace, split, expr, udf
+from pyspark.sql.types import ArrayType, StringType
+import ast
+
 
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema
@@ -35,8 +38,6 @@ def dataWrangling(spark, project_id, client):
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
         df = df.drop(*columns_to_drop)
 
-
-        
         # Remove specified strings from specified columns
         strings_to_remove = {
         'description': ['<b>']
@@ -45,18 +46,19 @@ def dataWrangling(spark, project_id, client):
             for string in strings:
                 df = df.withColumn(column, regexp_replace(col(column), string, ""))
 
-        # # Remove specified strings from specified columns
-        # strings_to_remove = {
-        #     'description': ['<b>']
-        # }
+        # Convert categories list dictionary into list
+        # Define the extract_names_udf function as a UDF
+        def extract_names_udf(data):
+            elements = ast.literal_eval(data)  # Convert the string to a list of dictionaries
+            names = [item['name'] for item in elements]  # Extract 'name' if 'id' is not None
+            return names
         
-        # # Define a function to remove strings from specified columns
-        # def remove_strings(df, column, strings):
-        #     return df.withColumn(column, reduce(lambda df, s: regexp_replace(df, col(column), s, ""), strings))
+        extract_names = udf(extract_names_udf, ArrayType(StringType()))
         
-        # # Apply the function using iterators
-        # df = reduce(lambda acc, item: remove_strings(acc, item[0], item[1]), strings_to_remove.items(), df)
-
+        # Apply the UDF to the "categories" column
+        df = df.withColumn("categories_list", extract_names("categories"))
+        df = df.drop("categories")
+        
 
         
         # Drop records where 'ratings' column has a value of 0

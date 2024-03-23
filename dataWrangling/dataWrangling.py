@@ -89,33 +89,33 @@ def dataWrangling(spark, project_id, client):
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleMainScraped_table_name)
 
-
-
     # googleReview
     
-    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
+    cleanGoogleReviewScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
 
     sparkDf = read_gbq(spark, trainTestdata, googleReview)
     # print(sparkDf.show())
     print(sparkDf.count())
 
-    ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
+    ref_appid_sparkDf = cleaned_sparkDf
     # print(sparkDf.show())
     print(ref_appid_sparkDf.count())
 
     # Code section for cleaning googleMain data
+
+    client.create_table(bigquery.Table(cleanGoogleReviewScraped_db_path), exists_ok = True)
+
     def clean_data_googleReview(df):
 
         # Drop specific columns
         columns_to_drop = ['reviewCreatedVersion', 'appVersion']
         df = df.drop(*columns_to_drop)
 
-       # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
+        # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
         df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
 
         # Drop duplicates
         df = df.dropDuplicates(['reviewId'])
-
 
         def translate_text(text):
             try:
@@ -131,22 +131,16 @@ def dataWrangling(spark, project_id, client):
         translate_udf = udf(translate_text)
 
         # Apply translation to the DataFrame
-        df = df.withColumn("translated_text", translate_udf("content"))
+        cleanedGoogleReview_sparkDf = df.withColumn("translated_text", translate_udf("content"))
 
-        return df
-    
-    # Split sparkDf into smaller chunks
-    chunk_size = len(sparkDf) // os.cpu_count()  # Divide the DataFrame into chunks
-    df_chunks = [sparkDf[i:i+chunk_size] for i in range(0, len(sparkDf), chunk_size)]
+        to_gbq(cleanedGoogleReview_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
     
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
-        cleaned_sparkDf_chunks = list(executor.map(clean_data_googleReview, df_chunks))
-        cleaned_sparkDf = reduce(lambda df1, df2: df1.union(df2), cleaned_sparkDf_chunks)
+        executor.submit(clean_data_googleReview, sparkDf)
 
-    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
+    
 
 
 """

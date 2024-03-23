@@ -81,7 +81,7 @@ def dataWrangling(spark, project_id, client):
 
         # Drop specific columns
         columns_to_drop = ['reviewCreatedVersion', 'appVersion']
-        df = df.drop(*columns_to_drop))
+        df = df.drop(*columns_to_drop)
         
         return df
     

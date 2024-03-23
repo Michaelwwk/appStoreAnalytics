@@ -96,7 +96,7 @@ def dataWrangling(spark, project_id, client):
     # print(sparkDf.show())
     print(sparkDf.count())
 
-    ref_appid_sparkDf = read_gbq(spark, cleanData, cleanGoogleMain)
+    ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_n)
     # print(sparkDf.show())
     print(ref_appid_sparkDf.count())
 

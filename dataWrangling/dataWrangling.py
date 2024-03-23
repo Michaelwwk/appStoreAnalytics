@@ -61,7 +61,7 @@ def dataWrangling(spark, project_id, client):
     
     cleaned_sparkDf = clean_data_googleMain(sparkDf)
 
-    client.create_table(bigquery.Table(cleanGoogleMainScraped_table_name), exists_ok = True)
+    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleMainScraped_table_name)
 
 

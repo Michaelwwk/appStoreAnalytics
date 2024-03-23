@@ -57,6 +57,8 @@ def dataWrangling(spark, project_id, client):
         
         # Apply the UDF to the "categories" column
         df = df.withColumn("categories_list", extract_names("categories"))
+        # Convert the categories_list column to string datatype
+        df = df.withColumn("categories_list", col("categories_list").cast(StringType()))
         df = df.drop("categories")
         
 

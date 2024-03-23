@@ -116,9 +116,12 @@ def dataWrangling(spark, project_id, client):
 
 
         def translate_text(text):
-            translator = Translator()
-            translation = translator.translate(text, dest='en')
-            return translation.text
+            try:
+                translator = Translator()
+                translation = translator.translate(text, dest='en')
+                return translation.text
+            except Exception as e:
+                return str(e)
         
         # Register the translation function as a UDF
         translate_udf = udf(translate_text)

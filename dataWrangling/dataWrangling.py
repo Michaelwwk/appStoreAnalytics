@@ -19,7 +19,7 @@ appleReview = "appleReview" # Table
 # TODO Follow this template when scripting!!
 def dataWrangling(spark, project_id, client):
     
-    cleanGoogleScraped_db_path = f"{project_id}.{cleanDatasetcleanGoogleMainScraped_table_namegoogleMain}" # Schema + Table
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleMainScraped_table_name}" # Schema + Table
 
     sparkDf = read_gbq(spark, trainTestData, googleMain)
     # print(sparkDf.show())

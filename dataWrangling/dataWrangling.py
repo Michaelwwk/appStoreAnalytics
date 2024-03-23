@@ -1,4 +1,5 @@
 from functools import reduce
+from concurrent.futures import ThreadPoolExecutor
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
@@ -6,12 +7,13 @@ from pyspark.sql.functions import col, regexp_replace, split, expr, udf
 from pyspark.sql.types import ArrayType, StringType
 from googletrans import Translator
 import ast
+import os
 
 
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
-cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview_MIC_TEST_2' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
@@ -119,8 +121,10 @@ def dataWrangling(spark, project_id, client):
             try:
                 translator = Translator()
                 translation = translator.translate(text, dest='en')
+                print(translation.text)
                 return translation.text
             except Exception as e:
+                print(str(e))
                 return str(e)
         
         # Register the translation function as a UDF
@@ -131,7 +135,15 @@ def dataWrangling(spark, project_id, client):
 
         return df
     
-    cleaned_sparkDf = clean_data_googleReview(sparkDf)
+    # Split sparkDf into smaller chunks
+    chunk_size = len(sparkDf) // os.cpu_count()  # Divide the DataFrame into chunks
+    df_chunks = [sparkDf[i:i+chunk_size] for i in range(0, len(sparkDf), chunk_size)]
+    
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        print(f"No. of worker threads deployed: {os.cpu_count()}")
+
+        cleaned_sparkDf_chunks = list(executor.map(clean_data_googleReview, df_chunks))
+        cleaned_sparkDf = reduce(lambda df1, df2: df1.union(df2), cleaned_sparkDf_chunks)
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)

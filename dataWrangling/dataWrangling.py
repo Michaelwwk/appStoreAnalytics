@@ -35,13 +35,25 @@ def dataWrangling(spark, project_id, client):
         df = df.drop(*columns_to_drop)
 
 
+        # # Remove specified strings from specified columns
+        # strings_to_remove = {
+        # 'description': ['<b>']
+        # }
+        # for column, strings in strings_to_remove.items():
+        #     for string in strings:
+        #         df = df.withColumn(column, regexp_replace(col(column), string, ""))
+
         # Remove specified strings from specified columns
         strings_to_remove = {
-        'description': ['<b>']
+            'description': ['<b>']
         }
-        for column, strings in strings_to_remove.items():
-            for string in strings:
-                df = df.withColumn(column, regexp_replace(col(column), string, ""))
+        
+        # Define a function to remove strings from specified columns
+        def remove_strings(df, column, strings):
+            return df.withColumn(column, reduce(lambda df, s: regexp_replace(df, col(column), s, ""), strings))
+        
+        # Apply the function using iterators
+        df = reduce(lambda acc, item: remove_strings(acc, item[0], item[1]), strings_to_remove.items(), df)
 
         # Drop records where 'ratings' column has a value of 0
         df = df.filter(col("ratings") != 0)

@@ -18,10 +18,6 @@ def dataWrangling(spark, project_id, client):
 
     # Code section for cleaning googleMain data
     def clean_data(df):
-        # Convert datatype from string to integer for specified columns
-        columns_to_convert = ['minInstalls', 'realInstalls', 'score', 'ratings', 'reviews', 'price']
-        for col_name in columns_to_convert:
-            df = df.withColumn(col_name, col(col_name).cast("int"))
 
         # Drop specific columns
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
@@ -68,3 +64,29 @@ TODO Since review tables are cumulative and main tables are latest (both Apple &
 (Actually is it even a good idea for review tables to be cumulative though? Scared it may exceed the 10GB free tier limit as it's few 100k rows each pull and we doing it daily.)
 """
 
+# # Hard-coded variables
+# cleanDataset = "cleanData"
+# cleanGoogleScraped_table_name = 'cleangoogleReview' # TODO CHANGE PATH
+
+# # TODO Follow this template when scripting!!
+# def dataWrangling(spark, project_id, client):
+    
+#     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
+
+#     sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
+#     # print(sparkDf.show())
+#     print(sparkDf.count())
+
+#     # Code section for cleaning googleMain data
+#     def clean_data(df):
+
+#         # Drop specific columns
+#         columns_to_drop = ['reviewCreatedVersion', 'appVersion']
+#         df = df.drop(*columns_to_drop)
+
+#         return df
+    
+#     cleaned_sparkDf = clean_data(sparkDf)
+
+#     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
+#     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)

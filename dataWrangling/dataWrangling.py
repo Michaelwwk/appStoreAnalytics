@@ -111,7 +111,7 @@ def dataWrangling(spark, project_id, client):
         df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
 
         # Drop duplicates
-        df = df.drop_duplicates(subset=['reviewId'], inplace=True)
+        df = df.dropDuplicates(['reviewId'])
         
         return df
     

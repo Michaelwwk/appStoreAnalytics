@@ -1,3 +1,4 @@
+from functools import reduce
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name

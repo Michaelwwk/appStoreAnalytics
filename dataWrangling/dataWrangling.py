@@ -11,7 +11,7 @@ import ast
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
-cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview_MIC_TEST' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 

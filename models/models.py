@@ -1,6 +1,6 @@
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
-from dataWrangling.dataWrangling import cleanDataset, cleanGoogleScraped_table_name
+from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
 
 # Hard-coded variables
 modelDataset = "modelData"
@@ -11,7 +11,7 @@ def finalizedMLModels(spark, project_id, client):
 
     modelGgoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleScraped_table_name)
+    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     # print(sparkDf.show())
     print(sparkDf.count())
 

@@ -114,20 +114,20 @@ def dataWrangling(spark, project_id, client):
         # Drop duplicates
         df = df.dropDuplicates(['reviewId'])
 
-
-        def translate_text(text):
-            try:
-                translator = Translator()
-                translation = translator.translate(text, dest='en')
-                return translation.text
-            except Exception as e:
-                return str(e)
+        ### Translate function takes too long to run (>6hrs)
+        # def translate_text(text):
+        #     try:
+        #         translator = Translator()
+        #         translation = translator.translate(text, dest='en')
+        #         return translation.text
+        #     except Exception as e:
+        #         return str(e)
         
-        # Register the translation function as a UDF
-        translate_udf = udf(translate_text)
+        # # Register the translation function as a UDF
+        # translate_udf = udf(translate_text)
 
-        # Apply translation to the DataFrame
-        df = df.withColumn("translated_text", translate_udf("content"))
+        # # Apply translation to the DataFrame
+        # df = df.withColumn("translated_text", translate_udf("content"))
 
         return df
     

@@ -96,7 +96,7 @@ def dataWrangling(spark, project_id, client):
     # print(sparkDf.show())
     print(sparkDf.count())
 
-    ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_n)
+    ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     # print(sparkDf.show())
     print(ref_appid_sparkDf.count())
 
@@ -109,6 +109,9 @@ def dataWrangling(spark, project_id, client):
 
        # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
         df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
+
+        # Drop duplicates
+        df = df.drop_duplicates(subset=['reviewId'], inplace=True)
         
         return df
     

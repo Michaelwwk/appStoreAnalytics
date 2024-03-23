@@ -35,7 +35,7 @@ def dataWrangling(spark, project_id, client):
     def clean_data_googleMain(df):
 
         # Drop specific columns
-        columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
+        columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated']
         df = df.drop(*columns_to_drop)
 
         # Remove specified strings from specified columns
@@ -96,12 +96,19 @@ def dataWrangling(spark, project_id, client):
     # print(sparkDf.show())
     print(sparkDf.count())
 
+    ref_appid_sparkDf = read_gbq(spark, cleanData, cleanGoogleMain)
+    # print(sparkDf.show())
+    print(ref_appid_sparkDf.count())
+
     # Code section for cleaning googleMain data
     def clean_data_googleReview(df):
 
         # Drop specific columns
         columns_to_drop = ['reviewCreatedVersion', 'appVersion']
         df = df.drop(*columns_to_drop)
+
+       # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
+        df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
         
         return df
     

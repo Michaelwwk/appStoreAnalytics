@@ -18,6 +18,8 @@ appleReview = "appleReview" # Table
 
 # TODO Follow this template when scripting!!
 def dataWrangling(spark, project_id, client):
+
+    # googleMain
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleMainScraped_table_name}" # Schema + Table
 
@@ -63,6 +65,30 @@ def dataWrangling(spark, project_id, client):
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleMainScraped_table_name)
+
+
+
+    # googleReview
+    
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
+
+    sparkDf = read_gbq(spark, trainTestdata, googleReview)
+    # print(sparkDf.show())
+    print(sparkDf.count())
+
+    # Code section for cleaning googleMain data
+    def clean_data_googleReview(df):
+
+        # Drop specific columns
+        columns_to_drop = ['reviewCreatedVersion', 'appVersion']
+        df = df.drop(*columns_to_drop))
+        
+        return df
+    
+    cleaned_sparkDf = clean_data_googleReview(sparkDf)
+
+    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
 
 
 """

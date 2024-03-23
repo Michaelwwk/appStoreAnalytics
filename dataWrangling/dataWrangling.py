@@ -4,20 +4,29 @@ from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_na
 from pyspark.sql.functions import col, regexp_replace, split, expr
 
 # Hard-coded variables
-cleanDataset = "cleanData"
-cleanGoogleScraped_table_name = 'cleanGoogleMain' # TODO CHANGE PATH
+cleanDataset = "cleanData" # Schema
+cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
+cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
+cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
+
+traintestdata = "trainTestData" # Schema
+googleMain = "googleMain" # Table
+googleReview = "googleReview" # Table
+appleMain = "appleMain" # Table
+appleReview = "appleReview" # Table
 
 # TODO Follow this template when scripting!!
 def dataWrangling(spark, project_id, client):
     
-    cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleScraped_table_name}"
+    cleanGoogleScraped_db_path = f"{project_id}.{cleanDatasetcleanGoogleMainScraped_table_namegoogleMain}" # Schema + Table
 
-    sparkDf = read_gbq(spark, rawDataset, googleScraped_table_name)
+    sparkDf = read_gbq(spark, trainTestData, googleMain)
     # print(sparkDf.show())
     print(sparkDf.count())
 
     # Code section for cleaning googleMain data
-    def clean_data(df):
+    def clean_data_googleMain(df):
 
         # Drop specific columns
         columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated', 'appId']
@@ -50,10 +59,10 @@ def dataWrangling(spark, project_id, client):
 
         return df
     
-    cleaned_sparkDf = clean_data(sparkDf)
+    cleaned_sparkDf = clean_data_googleMain(sparkDf)
 
-    client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
-    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleScraped_table_name)
+    client.create_table(bigquery.Table(cleanGoogleMainScraped_table_name), exists_ok = True)
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleMainScraped_table_name)
 
 
 """

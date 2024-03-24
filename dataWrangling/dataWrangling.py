@@ -105,7 +105,7 @@ def dataWrangling(spark, project_id, client):
     def clean_data_googleReview(df):
 
         # Drop specific columns
-        columns_to_drop = ['reviewCreatedVersion', 'appVersion']
+        columns_to_drop = ['appVersion']
         df = df.drop(*columns_to_drop)
 
        # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()

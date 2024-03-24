@@ -4,7 +4,7 @@ from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf
 from pyspark.sql.types import ArrayType, StringType
-from googletrans import Translator
+# from googletrans import Translator
 import ast
 
 

@@ -43,9 +43,28 @@ def dataWrangling(spark, project_id, client):
         strings_to_remove = {
         'description': ['<b>']
         }
-        for column, strings in strings_to_remove.items():
-            for string in strings:
-                df = df.withColumn(column, regexp_replace(col(column), string, ""))
+        # for column, strings in strings_to_remove.items():
+        #     for string in strings:
+        #         df = df.withColumn(column, regexp_replace(col(column), string, ""))
+
+        def remove_strings_from_columns(df, strings_to_remove):
+            def remove_string_from_column(column, string):
+                return regexp_replace(col(column), string, "")
+
+            def remove_strings_from_df(df, column, strings):
+                for string in strings:
+                    df = df.withColumn(column, remove_string_from_column(column, string))
+                return df
+
+            return reduce(lambda acc, column: remove_strings_from_df(acc, column, strings_to_remove[column]), strings_to_remove, df)
+
+        df = remove_strings_from_columns(df, strings_to_remove)
+
+
+
+
+
+
 
         # Convert categories list dictionary into list
         # Define the extract_names_udf function as a UDF

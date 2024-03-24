@@ -13,7 +13,7 @@ import os
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
-cleanGoogleReviewScraped_table_name = 'cleanGoogleReview_MIC_TEST_2' # Table
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview_MIC_TEST' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
@@ -103,8 +103,6 @@ def dataWrangling(spark, project_id, client):
 
     # Code section for cleaning googleMain data
 
-    client.create_table(bigquery.Table(cleanGoogleReviewScraped_db_path), exists_ok = True)
-
     def clean_data_googleReview(df):
 
         # Drop specific columns
@@ -125,7 +123,7 @@ def dataWrangling(spark, project_id, client):
                 return translation.text
             except Exception as e:
                 print(str(e))
-                return str(e)
+                pass
         
         # Register the translation function as a UDF
         translate_udf = udf(translate_text)
@@ -133,15 +131,15 @@ def dataWrangling(spark, project_id, client):
         # Apply translation to the DataFrame
         cleanedGoogleReview_sparkDf = df.withColumn("translated_text", translate_udf("content"))
 
+        client.create_table(bigquery.Table(cleanGoogleReviewScraped_db_path), exists_ok = True)
+        print("Google review table created.")
         to_gbq(cleanedGoogleReview_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
+        print("Google review table updated with review translations.")
     
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         print(f"No. of worker threads deployed: {os.cpu_count()}")
 
         executor.submit(clean_data_googleReview, sparkDf)
-
-    
-
 
 """
 TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc

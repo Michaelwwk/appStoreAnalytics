@@ -51,10 +51,17 @@ def dataWrangling(spark, project_id, client):
             def remove_string_from_column(column, string):
                 return regexp_replace(col(column), string, "")
 
+            # def remove_strings_from_df(df, column, strings):
+            #     for string in strings:
+            #         df = df.withColumn(column, remove_string_from_column(column, string))
+            #     return df
+            
             def remove_strings_from_df(df, column, strings):
-                for string in strings:
-                    df = df.withColumn(column, remove_string_from_column(column, string))
-                return df
+                def helper(df, string):
+                    return df.withColumn(column, remove_string_from_column(column, string))
+                
+                return reduce(lambda acc, string: helper(acc, string), strings, df)
+
 
             return reduce(lambda acc, column: remove_strings_from_df(acc, column, strings_to_remove[column]), strings_to_remove, df)
 
@@ -65,16 +72,16 @@ def dataWrangling(spark, project_id, client):
 
 
         # Convert categories list dictionary into list
-        # Define the extract_names_udf function as a UDF
+        # Define the extract_names_udf function as a UDF (Purely Functional Programming)
 
         def extract_names_udf(data):
             elements = ast.literal_eval(data)
             return list(map(lambda item: item['name'], elements))
 
-        # def extract_names_udf(data):
-        #     elements = ast.literal_eval(data)
-        #     names = [item['name'] for item in elements] 
-        #     return names
+                        # def extract_names_udf(data):
+                        #     elements = ast.literal_eval(data)
+                        #     names = [item['name'] for item in elements] 
+                        #     return names
         
         extract_names = udf(extract_names_udf, ArrayType(StringType()))
         
@@ -82,7 +89,7 @@ def dataWrangling(spark, project_id, client):
         df = df.withColumn("categories_list", extract_names("categories"))
         # Convert the categories_list column to string datatype
         df = df.withColumn("categories_list", col("categories_list").cast(StringType()))
-        # df = df.drop("categories")
+        df = df.drop("categories")
     
         
 

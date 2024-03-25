@@ -97,9 +97,6 @@ def dataWrangling(spark, project_id, client):
         df = df.drop("categories")
     
         
-        # Drop records where 'score' column is None
-        # df = df.filter((col("score") != '0') & (~col("score") != 'nan') & (col("score") != 'None'))
-
         # Drop records where 'ratings' column has a value of 0, nan or None
         df = df.filter((col("ratings") != '0') & (~col("ratings") != 'nan') & (col("ratings") != 'None'))
 

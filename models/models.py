@@ -9,6 +9,7 @@ from nltk.corpus import stopwords
 from gensim import corpora, models
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
+import shutil
 
 # Hard-coded variables
 modelDataset = "modelData"
@@ -25,6 +26,22 @@ def finalizedMLModels(spark, project_id, client):
 
     appleReview = read_gbq(spark, trainTestDataset, modelAppleleReview_table_name)
     googleReview = read_gbq(spark, trainTestDataset, modelGoogleReview_table_name)
+
+    local_file_path = f"{modelAppleleReview_table_name}.parquet"
+    appleReview.write.parquet(local_file_path, mode="overwrite")
+    appleReview = pd.read_parquet(local_file_path)
+    try:
+        shutil.rmtree(local_file_path)
+    except:
+        pass
+
+    local_file_path = f"{modelGoogleReview_table_name}.parquet"
+    googleReview.write.parquet(local_file_path, mode="overwrite")
+    googleReview = pd.read_parquet(local_file_path)
+    try:
+        shutil.rmtree(local_file_path)
+    except:
+        pass
 
     appleReview = appleReview.toPandas()
     googleReview = googleReview.toPandas()

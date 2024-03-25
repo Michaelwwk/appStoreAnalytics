@@ -119,7 +119,7 @@ def dataWrangling(spark, project_id, client):
 
 
 
-    # googleReview
+    #################################################### googleReview
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
 
@@ -148,10 +148,13 @@ def dataWrangling(spark, project_id, client):
 
         strings_to_remove = ["<b>"]
 
+        # def remove_strings(content, strings_to_remove):
+        #     for s in strings_to_remove:
+        #         content = content.replace(s, "")
+        #     return content
+        
         def remove_strings(content, strings_to_remove):
-            for s in strings_to_remove:
-                content = content.replace(s, "")
-            return content
+            return reduce(lambda acc, s: acc.replace(s, ""), strings_to_remove, content)
 
         remove_strings_udf = udf(lambda x: remove_strings(x, strings_to_remove), StringType())
 

@@ -44,9 +44,6 @@ def finalizedMLModels(spark, project_id, client):
     except:
         pass
 
-    appleReview = appleReview.toPandas()
-    googleReview = googleReview.toPandas()
-
     def preprocess_text(tokens):
 
         # variable "tokens" being a list of words/tokens/characters

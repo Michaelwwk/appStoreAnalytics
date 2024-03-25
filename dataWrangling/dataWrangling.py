@@ -10,6 +10,7 @@ from pyspark.sql.types import ArrayType, StringType, BooleanType
 # nltk.download('words')
 # nltk.download('punkt')
 from langdetect import detect
+import spacy
 import ast
 
 
@@ -182,6 +183,20 @@ def dataWrangling(spark, project_id, client):
 
         # # Apply language detection to the 'content' column
         # df = df.withColumn("language", detect_language_udf("content"))
+
+        # Function to detect language using Spacy
+        # Load spaCy language detection model
+        nlp = spacy.load("en_core_web_sm")
+
+        def detect_language(text):
+            try:
+                doc = nlp(text)
+                return doc.lang_
+            except:
+                return "unknown"
+
+        # Apply language detection to the 'content' column
+        df = df.withColumn("language", detect_language("content"))
 
         return df
     

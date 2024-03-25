@@ -47,17 +47,33 @@ def dataWrangling(spark, project_id, client):
         #     for string in strings:
         #         df = df.withColumn(column, regexp_replace(col(column), string, ""))
 
+        ############################################################
+        # def remove_strings_from_columns(df, strings_to_remove):
+        #     def remove_string_from_column(column, string):
+        #         return regexp_replace(col(column), string, "")
+
+        #     def remove_strings_from_df(df, column, strings):
+        #         for string in strings:
+        #             df = df.withColumn(column, remove_string_from_column(column, string))
+        #         return df
+
+        #     return reduce(lambda acc, column: remove_strings_from_df(acc, column, strings_to_remove[column]), strings_to_remove, df)
+        ############################################################
+        
+        def remove_string_from_column(df, column, string):
+            return df.withColumn(column, regexp_replace(col(column), string, ""))
+        
+        def remove_strings_from_df(df, column_strings):
+            def helper(df, column_string):
+                column, string = column_string
+                return remove_string_from_column(df, column, string)
+            
+            return reduce(helper, column_strings.items(), df)
+        
         def remove_strings_from_columns(df, strings_to_remove):
-            def remove_string_from_column(column, string):
-                return regexp_replace(col(column), string, "")
-
-            def remove_strings_from_df(df, column, strings):
-                for string in strings:
-                    df = df.withColumn(column, remove_string_from_column(column, string))
-                return df
-
-            return reduce(lambda acc, column: remove_strings_from_df(acc, column, strings_to_remove[column]), strings_to_remove, df)
-
+            return remove_strings_from_df(df, strings_to_remove)
+            
+        
         df = remove_strings_from_columns(df, strings_to_remove)
 
 

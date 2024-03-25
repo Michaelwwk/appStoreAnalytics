@@ -144,6 +144,20 @@ def dataWrangling(spark, project_id, client):
         # Drop duplicates
         df = df.dropDuplicates(['reviewId'])
 
+        # Remove specific strings from specific columns
+
+        strings_to_remove = ["<b>"]
+
+        def remove_strings(content, strings_to_remove):
+            for s in strings_to_remove:
+                content = content.replace(s, "")
+            return content
+
+        remove_strings_udf = udf(lambda x: remove_strings(x, strings_to_remove), StringType())
+
+        df = df.withColumn("content", remove_strings_udf(col("content")))
+
+
         ### Translate function takes too long to run (>6hrs)
         # def translate_text(text):
         #     try:

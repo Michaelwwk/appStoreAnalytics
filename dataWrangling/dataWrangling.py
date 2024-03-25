@@ -98,10 +98,12 @@ def dataWrangling(spark, project_id, client):
     
         
         # Drop records where 'ratings' column has a value of 0, nan or None
-        df = df.filter((col("ratings") != 0) & (~col("ratings") != 'nan') & (col("ratings") != 'None'))
+        df = df.filter((col("ratings") != 0))
+                    #    & (~col("ratings") != 'nan') & (col("ratings") != 'None'))
 
         # Drop records where 'minInstalls' column is None
-        df = df.filter((col("minInstalls") != 0) & (~col("minInstalls") != 'nan') & (col("minInstalls") != 'None'))
+        df = df.filter((col("minInstalls") != 0))
+                    #    & (~col("minInstalls") != 'nan') & (col("minInstalls") != 'None'))
 
 
         # Split 'histogram' column into 5 columns

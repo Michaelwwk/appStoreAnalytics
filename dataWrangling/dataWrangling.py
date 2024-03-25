@@ -167,19 +167,19 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        ### Remove non-english words
+        ### Remove non-english words ### NLKT list of words not serializable across Spark cluster
         # Function to remove non-English words
         def remove_non_english(text):
-            english_words = set(token.lower() for token in words.words()) # lower cap
-            tokens = word_tokenize(text.lower()) # lower cap
+            english_words = set(words.words())
+            tokens = word_tokenize(text.lower())
             english_tokens = [token for token in tokens if token in english_words]
             return " ".join(english_tokens)
         
-        # Define a UDF to apply the remove_non_english function to each row
-        remove_non_english_udf = udf(lambda text: remove_non_english(text), StringType())
+        # Apply NLTK function using map
+        cleaned_rdd = df.rdd.map(lambda row: (remove_non_english(row[0]),))
 
-        # Apply the UDF to the DataFrame to remove non-English words
-        df = df.withColumn("cleaned_content", remove_non_english_udf(df["content"]))
+        # Convert RDD back to DataFrame
+        df = spark.createDataFrame(cleaned_rdd, ["cleaned_text"])
 
         return df
     

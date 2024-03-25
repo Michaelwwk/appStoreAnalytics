@@ -49,7 +49,7 @@ def finalizedMLModels(spark, project_id, client):
 
         return tokens
     
-    for store in [appleReview, googleReview]:
+    for store in [appleReview.head(50), googleReview.head(50)]:
 
         documents = store['content'].apply(preprocess_text)
         dictionary = corpora.Dictionary(documents)

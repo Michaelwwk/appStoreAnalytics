@@ -56,13 +56,13 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     
     if trainTest == False:
         # Run main functions
-        dataWrangling(spark, project_id, client)
-        print('Data wrangling step completed. Clean tables updated.')
-        time.sleep(30)
+        # dataWrangling(spark, project_id, client)
+        # print('Data wrangling step completed. Clean tables updated.')
+        # time.sleep(30)
         finalizedMLModels(spark, project_id, client)
         print('ML step completed. Model tables updated.')
-        dateTime(spark, project_id, client)
-        print('Date & time updated.')
+        # dateTime(spark, project_id, client)
+        # print('Date & time updated.')
     else:        
         AppleScraped_table_name = appleScraped_table_name
         AppleReview_table_name = appleReview_table_name

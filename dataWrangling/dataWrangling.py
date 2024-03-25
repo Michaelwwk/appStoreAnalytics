@@ -9,7 +9,6 @@ from googletrans import Translator
 import ast
 import os
 
-
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table

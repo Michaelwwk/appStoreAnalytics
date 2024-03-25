@@ -1,19 +1,105 @@
+import nltk
+import string
+import pandas as pd
 from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
+from nltk import word_tokenize, FreqDist
+from nltk.corpus import stopwords
+from gensim import corpora, models
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import TruncatedSVD
 
 # Hard-coded variables
 modelDataset = "modelData"
 modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
 
+trainTestDataset = 'trainTestData'
+modelAppleleReview_table_name = 'appleReview'
+modelGoogleReview_table_name = 'googleReview'
+
 # TODO Follow this template when scripting!!
 def finalizedMLModels(spark, project_id, client):
 
-    modelGgoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
+    # modelGoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    # print(sparkDf.show())
-    print(sparkDf.count())
+    appleReview = read_gbq(spark, trainTestDataset, modelAppleleReview_table_name)
+    googleReview = read_gbq(spark, trainTestDataset, modelGoogleReview_table_name)
 
-    client.create_table(bigquery.Table(modelGgoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)
+    def preprocess_text(tokens):
+
+        # variable "tokens" being a list of words/tokens/characters
+        # Convert all characters to lower case
+        tokens = [t.lower() for t in tokens]
+        # Remove Punctuations (.,)
+        tokens = [t for t in tokens if t not in string.punctuation]
+        # Remove Stopwords (I, you, our, we)
+        stop = stopwords.words('english')
+        tokens = [t for t in tokens if t not in stop]
+        # Remove Numbers/Numerics
+        tokens = [t for t in tokens if not t.isnumeric()]
+        # Remove from filtered list, to manually include
+        filter_list = ["’", "“", "”", "would", "could", "'s", "left", "right", "a.m.", "p.m."]
+        tokens = [t for t in tokens if ':' not in t and t not in filter_list]
+
+        # Lemmatization - Reduce words to base form/lemma
+        #nltk.download('omw-1.4')
+        wnl = nltk.WordNetLemmatizer()
+        tokens = [ wnl.lemmatize(t) for t in tokens ] 
+
+        return tokens
+    
+    for store in [appleReview, googleReview]:
+
+        documents = store['content'].apply(preprocess_text)
+        dictionary = corpora.Dictionary(documents)
+        dictionary.filter_extremes(no_below=2, no_above=0.8)
+        corpus = [dictionary.doc2bow(doc) for doc in documents]
+        tfidf = models.TfidfModel(corpus)
+        tfidf_corpus = tfidf[corpus]
+        print(store)
+        print("tfidf_corpus:")
+        print(tfidf_corpus)
+
+        try:
+            n_components = 1000  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
+            svd = TruncatedSVD(n_components=n_components)
+            tfidf_reduced = svd.fit_transform(tfidf_corpus)
+            tfidf_df = pd.DataFrame(tfidf_reduced, columns=[f'component_{i}' for i in range(n_components)])
+            print(f"tfidf_corpus successfully converted to tfidf_df! Shape: {tfidf_df.shape}")
+        except:
+            print("tfidf_corpus can't be converted into tfidf_df!")
+
+        tdm = TfidfVectorizer(tokenizer = preprocess_text, min_df = 2, max_df = 0.7)
+        tfidf_dtm = tdm.fit_transform(store['content'])
+        print(store)
+        print("tfidf_dtm:")
+        print(tfidf_dtm)
+
+        try:
+            n_components = 1000  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
+            svd = TruncatedSVD(n_components=n_components)
+            tfidf_reduced = svd.fit_transform(tfidf_dtm)
+            tfidf_df = pd.DataFrame(tfidf_reduced, columns=[f'component_{i}' for i in range(n_components)])
+            print(f"tfidf_dtm successfully converted to tfidf_df! Shape: {tfidf_df.shape}")
+        except:
+            print("tfidf_dtm can't be converted into tfidf_df!")
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    # client.create_table(bigquery.Table(modelGoogleScraped_db_path), exists_ok = True)
+    # to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)

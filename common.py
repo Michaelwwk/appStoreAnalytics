@@ -84,7 +84,13 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     #     .option("multiline", "true") \
     #     .option("escape", "\"") \
     #     .csv(f"{local_file_path}*")  # Use wildcard to read all files
-    sparkDf = pd.read_csv(local_file_path) # TODO REVERT TO ACTUAL SPARK DF!
+    # Get a list of all CSV files in the specified path
+    
+    import glob
+    file_paths = glob.glob(f"{local_file_path}*.csv")
+    # Read each CSV file and concatenate them into a single DataFrame
+    dfs = [pd.read_csv(file) for file in file_paths]
+    sparkDf = pd.concat(dfs, ignore_index=True)
 
     # Delete files from GCS
     for blob in blobs:

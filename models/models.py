@@ -10,6 +10,7 @@ from gensim import corpora, models
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 import shutil
+import time
 
 # Hard-coded variables
 modelDataset = "modelData"
@@ -71,6 +72,9 @@ def finalizedMLModels(spark, project_id, client):
     
     for store in [appleReview.head(50), googleReview.head(50)]:
 
+        # Record the start time
+        start_time = time.time()
+
         documents = store['content'].apply(preprocess_text)
         dictionary = corpora.Dictionary(documents)
         dictionary.filter_extremes(no_below=2, no_above=0.8)
@@ -90,6 +94,15 @@ def finalizedMLModels(spark, project_id, client):
         except:
             print("tfidf_corpus can't be converted into tfidf_df!")
 
+         # Record the end time
+        end_time = time.time()         
+        # Calculate and print the elapsed time in seconds
+        elapsed_time = end_time - start_time
+        print(f"Time taken for tfidf_corpus: {elapsed_time}")
+
+        # Record the start time
+        start_time = time.time()
+
         tdm = TfidfVectorizer(tokenizer = preprocess_text, min_df = 2, max_df = 0.7)
         tfidf_dtm = tdm.fit_transform(store['content'])
         print(store)
@@ -105,6 +118,11 @@ def finalizedMLModels(spark, project_id, client):
         except:
             print("tfidf_dtm can't be converted into tfidf_df!")
 
+         # Record the end time
+        end_time = time.time()         
+        # Calculate and print the elapsed time in seconds
+        elapsed_time = end_time - start_time
+        print(f"Time taken for tfidf_dtm: {elapsed_time}")
 
 
         

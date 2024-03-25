@@ -67,18 +67,17 @@ def finalizedMLModels(spark, project_id, client):
 
         return tokens
     
-    for store in [appleReview.head(50), googleReview.head(50)]:
+    for store in [appleReview.head(50)['userName'], googleReview.head(50)['content']]:
 
         # Record the start time
         start_time = time.time()
 
-        documents = store['content'].apply(preprocess_text)
+        documents = store.apply(preprocess_text)
         dictionary = corpora.Dictionary(documents)
         dictionary.filter_extremes(no_below=2, no_above=0.8)
         corpus = [dictionary.doc2bow(doc) for doc in documents]
         tfidf = models.TfidfModel(corpus)
         tfidf_corpus = tfidf[corpus]
-        print(store)
         print("tfidf_corpus:")
         print(tfidf_corpus)
 
@@ -101,8 +100,7 @@ def finalizedMLModels(spark, project_id, client):
         start_time = time.time()
 
         tdm = TfidfVectorizer(tokenizer = preprocess_text, min_df = 2, max_df = 0.7)
-        tfidf_dtm = tdm.fit_transform(store['content'])
-        print(store)
+        tfidf_dtm = tdm.fit_transform(store)
         print("tfidf_dtm:")
         print(tfidf_dtm)
 

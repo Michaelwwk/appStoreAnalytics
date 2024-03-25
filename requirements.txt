@@ -15,6 +15,5 @@ beautifulsoup4
 tqdm
 googletrans==4.0.0-rc1
 nltk
-string
 gensim
 scikit-learn

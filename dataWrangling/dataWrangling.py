@@ -3,19 +3,23 @@ from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf
-from pyspark.sql.types import ArrayType, StringType
-# from googletrans import Translator
+from pyspark.sql.types import ArrayType, StringType, BooleanType
+import nltk
+from nltk.corpus import words
+from nltk.tokenize import word_tokenize
+nltk.download('words')
+nltk.download('punkt')
 import ast
 
 
 # Hard-coded variables
-cleanDataset = "cleanData" # Schema
+cleanDataset = "cleanData" # Schema/Dataset
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
 cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
-trainTestdata = "trainTestData" # Schema
+trainTestdata = "trainTestData" # Schema/Dataset
 googleMain = "googleMain" # Table
 googleReview = "googleReview" # Table
 appleMain = "appleMain" # Table
@@ -161,20 +165,21 @@ def dataWrangling(spark, project_id, client):
         df = df.withColumn("content", remove_strings_udf(col("content")))
 
 
-        ### Translate function takes too long to run (>6hrs)
-        # def translate_text(text):
-        #     try:
-        #         translator = Translator()
-        #         translation = translator.translate(text, dest='en')
-        #         return translation.text
-        #     except Exception as e:
-        #         return str(e)
-        
-        # # Register the translation function as a UDF
-        # translate_udf = udf(translate_text)
 
-        # # Apply translation to the DataFrame
-        # df = df.withColumn("translated_text", translate_udf("content"))
+
+        ### Remove non-english words
+        # Function to remove non-English words
+        def remove_non_english(text):
+            english_words = set(token.lower() for token in words.words()) # lower cap
+            tokens = word_tokenize(text.lower()) # lower cap
+            english_tokens = [token for token in tokens if token in english_words]
+            return " ".join(english_tokens)
+        
+        # Define a UDF to apply the remove_non_english function to each row
+        remove_non_english_udf = udf(lambda text: remove_non_english(text), StringType())
+
+        # Apply the UDF to the DataFrame to remove non-English words
+        df = df.withColumn("cleaned_content", remove_non_english_udf(df["content"]))
 
         return df
     

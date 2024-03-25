@@ -170,19 +170,19 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        ### Detect English and Non English comments
-        # Function to detect language
-        def detect_language(text):
-            try:
-                return detect(text)
-            except:
-                return "unknown"
+        # ### Detect English and Non English comments
+        # # Function to detect language
+        # def detect_language(text):
+        #     try:
+        #         return detect(text)
+        #     except:
+        #         return "unknown"
             
-        # Define a UDF to apply language detection
-        detect_language_udf = spark.udf.register("detect_language_udf", detect_language)
+        # # Define a UDF to apply language detection
+        # detect_language_udf = spark.udf.register("detect_language_udf", detect_language)
 
-        # Apply language detection to the 'content' column
-        df = df.withColumn("language", detect_language_udf("content"))
+        # # Apply language detection to the 'content' column
+        # df = df.withColumn("language", detect_language_udf("content"))
 
         return df
     

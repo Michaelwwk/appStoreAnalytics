@@ -41,7 +41,7 @@ def dataWrangling(spark, project_id, client):
     def clean_data_googleMain(df):
 
         # Drop specific columns
-        columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'containsAds', 'updated']
+        columns_to_drop = ['descriptionHTML', 'sale', 'saleTime', 'originalPrice', 'saleText', 'developerId', 'developerAddress', 'containsAds', 'updated']
         df = df.drop(*columns_to_drop)
 
         # Remove specified strings from specified columns
@@ -98,7 +98,7 @@ def dataWrangling(spark, project_id, client):
     
         
         # Drop records where 'score' column is None
-        df = df.filter((col("score") != '0') & (~col("score") != 'nan') & (col("score") != 'None'))
+        # df = df.filter((col("score") != '0') & (~col("score") != 'nan') & (col("score") != 'None'))
 
         # Drop records where 'ratings' column has a value of 0, nan or None
         df = df.filter((col("ratings") != '0') & (~col("ratings") != 'nan') & (col("ratings") != 'None'))

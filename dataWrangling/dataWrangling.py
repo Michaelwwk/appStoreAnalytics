@@ -66,10 +66,15 @@ def dataWrangling(spark, project_id, client):
 
         # Convert categories list dictionary into list
         # Define the extract_names_udf function as a UDF
+
         def extract_names_udf(data):
             elements = ast.literal_eval(data)
-            names = [item['name'] for item in elements] 
-            return names
+            return list(map(lambda item: item['name'], elements))
+
+        # def extract_names_udf(data):
+        #     elements = ast.literal_eval(data)
+        #     names = [item['name'] for item in elements] 
+        #     return names
         
         extract_names = udf(extract_names_udf, ArrayType(StringType()))
         

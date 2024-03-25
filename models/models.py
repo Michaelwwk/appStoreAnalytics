@@ -26,6 +26,9 @@ def finalizedMLModels(spark, project_id, client):
     appleReview = read_gbq(spark, trainTestDataset, modelAppleleReview_table_name)
     googleReview = read_gbq(spark, trainTestDataset, modelGoogleReview_table_name)
 
+    appleReview = appleReview.toPandas()
+    googleReview = googleReview.toPandas()
+
     def preprocess_text(tokens):
 
         # variable "tokens" being a list of words/tokens/characters

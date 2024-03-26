@@ -65,7 +65,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         # print('Date & time updated.')
     else:        
         AppleScraped_table_name = appleScraped_table_name
-        AppleReview_table_name = appleReview_table_name
+        AppleReview_table_name = 'appleReview_TEST'
         GoogleScraped_table_name = googleScraped_table_name
         GoogleReview_table_name = googleReview_table_name
         table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]

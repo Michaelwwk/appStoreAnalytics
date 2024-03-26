@@ -11,6 +11,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 import shutil
 import time
+import nltk
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('punkt')
+import spacy
+nlp = spacy.load("en_core_web_sm")
 
 # Hard-coded variables
 modelDataset = "modelData"
@@ -44,26 +50,26 @@ def finalizedMLModels(spark, project_id, client):
     except:
         pass
 
-    def preprocess_text(tokens):
+    filter_list = ["would", "could", "left", "right", "a.m.", "p.m.", "'s", "! ! !", "...", ":", ";", "n't",
+              "game", "games", "play", "fun", "much", "one", "great", "perfect", "time", "year", "lot", "thing", "etc",
+              "hour", "hours", "way", "ways", "everything", "anything", "thing", "things", "review", "reviews", "year", "years",
+              "feel", "feels", "thing", "nothing", "problem", "end", "begin", "kind", "piece", "work", "call", "anyone",
+              "minute", "minutes", "waste", "crap", "garbage", "masterpiece"]
 
+    def preprocess_text(tokens):
+        
         # variable "tokens" being a list of words/tokens/characters
+        tokens = nlp(tokens)
         # Convert all characters to lower case
         tokens = [t.lower() for t in tokens]
-        # Remove Punctuations (.,)
+        # Remove Stopwords and filtered words
+        tokens = [t for t in tokens if t not in stopwords.words('english') + filter_list]
+        # Remove Punctuations
         tokens = [t for t in tokens if t not in string.punctuation]
-        # Remove Stopwords (I, you, our, we)
-        stop = stopwords.words('english')
-        tokens = [t for t in tokens if t not in stop]
         # Remove Numbers/Numerics
         tokens = [t for t in tokens if not t.isnumeric()]
-        # Remove from filtered list, to manually include
-        filter_list = ["’", "“", "”", "would", "could", "'s", "left", "right", "a.m.", "p.m."]
-        tokens = [t for t in tokens if ':' not in t and t not in filter_list]
-
-        # Lemmatization - Reduce words to base form/lemma
-        #nltk.download('omw-1.4')
-        wnl = nltk.WordNetLemmatizer()
-        tokens = [ wnl.lemmatize(t) for t in tokens ] 
+        # Lemmatize
+        tokens = [nltk.WordNetLemmatizer().lemmatize(w) for w in tokens]
 
         return tokens
     
@@ -82,7 +88,7 @@ def finalizedMLModels(spark, project_id, client):
         print(tfidf_corpus)
 
         try:
-            n_components = 1000  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
+            n_components = 10  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
             svd = TruncatedSVD(n_components=n_components)
             tfidf_reduced = svd.fit_transform(tfidf_corpus)
             tfidf_df = pd.DataFrame(tfidf_reduced, columns=[f'component_{i}' for i in range(n_components)])
@@ -105,7 +111,7 @@ def finalizedMLModels(spark, project_id, client):
         print(tfidf_dtm)
 
         try:
-            n_components = 1000  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
+            n_components = 10  # This no. must be the same or smaller than the no. of rows!! Typically set between 100 to 300
             svd = TruncatedSVD(n_components=n_components)
             tfidf_reduced = svd.fit_transform(tfidf_dtm)
             tfidf_df = pd.DataFrame(tfidf_reduced, columns=[f'component_{i}' for i in range(n_components)])

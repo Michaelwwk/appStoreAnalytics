@@ -13,23 +13,8 @@ pyarrow
 requests
 beautifulsoup4
 tqdm
-
-# Language Detection Dependencies
-# 0. Generic
 nltk
-
-# 1. Polyglot
-polyglot
-pyicu==2.3.1
-pycld2
-morfessor
-
-# 2. Langdetect 👍
 langdetect
-
-# 3. Gcld3 (Google Compact Language Detector 3)
 gcld3
-
-# 4. spaCy
 spacy
 spacy-language-detection

@@ -20,7 +20,7 @@ nltk
 
 # 1. Polyglot
 polyglot
-pyicu
+pyicu==2.3.1
 pycld2
 morfessor
 

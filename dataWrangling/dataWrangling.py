@@ -231,10 +231,10 @@ def dataWrangling(spark, project_id, client):
         return df
     
 
-    # Assuming 'df' is your DataFrame and 'n' is the number of records you want to sample
-    n = 50000  # Set the number of records to sample
-    sparkDf = sparkDf.sample(False, fraction=n/sparkDf.count())
+    # Filter only language_langdetect = 'en'
+    df = df.filter(df['language_langdetect'] == 'en')
 
+    
 
     cleaned_sparkDf = clean_data_googleReview(sparkDf)
 

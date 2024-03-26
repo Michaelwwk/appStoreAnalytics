@@ -64,14 +64,15 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         # dateTime(spark, project_id, client)
         # print('Date & time updated.')
     else:        
-        AppleScraped_table_name = appleScraped_table_name
+        # AppleScraped_table_name = appleScraped_table_name
         AppleReview_table_name = 'appleReview_TEST'
-        GoogleScraped_table_name = googleScraped_table_name
-        GoogleReview_table_name = googleReview_table_name
-        table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
+        # GoogleScraped_table_name = googleScraped_table_name
+        # GoogleReview_table_name = googleReview_table_name
+        # table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
+        table_names = [AppleReview_table_name]
         for table_name in table_names:
             trainTest_db_path = f"{project_id}.{trainTestDataset}.{table_name}"
-            sparkDf = read_gbq(spark, rawDataset, table_name)
+            sparkDf = read_gbq(spark, rawDataset, 'appleReview')
             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
             to_gbq(sparkDf, trainTestDataset, table_name)
         print('Train/ test data transfer step completed. Train/ test tables updated.')

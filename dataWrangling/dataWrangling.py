@@ -228,11 +228,13 @@ def dataWrangling(spark, project_id, client):
         # Apply language detection to the 'content' column
         df = df.withColumn("language_gcld3", detect_language_udf("content"))
 
+        # Filter only language_langdetect = 'en'
+        df = df.filter(df['language_langdetect'] == 'en')
+
         return df
     
 
-    # Filter only language_langdetect = 'en'
-    df = df.filter(df['language_langdetect'] == 'en')
+    
 
     
 

@@ -256,7 +256,7 @@ def dataWrangling(spark, project_id, client):
 
     # Assuming 'df' is your DataFrame and 'n' is the number of records you want to sample
     n = 500  # Set the number of records to sample
-    sparkDf = sparkDf.sample(False, fraction=n/df.count())
+    sparkDf = sparkDf.sample(False, fraction=n/sparkDf.count())
 
 
     cleaned_sparkDf = clean_data_googleReview(sparkDf)

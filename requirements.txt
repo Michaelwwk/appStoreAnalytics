@@ -20,9 +20,9 @@ nltk
 
 # 1. Polyglot
 polyglot
-icu
 pyicu
 pycld2
+morfessor
 
 # 2. Langdetect 👍
 langdetect

@@ -14,14 +14,14 @@ from pyspark.sql.types import ArrayType, StringType, BooleanType
     # nltk.download('words')
     # nltk.download('punkt')
 
-# 1. Polyglot
-from polyglot.detect import Detector
+# # 1. Polyglot
+# from polyglot.detect import Detector
 
 # 2. Langdetect 👍
 from langdetect import detect
 
-# 3. Gcld3 (Google Compact Language Detector 3)
-import gcld3
+# # 3. Gcld3 (Google Compact Language Detector 3)
+# import gcld3
 
 
 
@@ -183,19 +183,19 @@ def dataWrangling(spark, project_id, client):
         # Use across all Spark session:               detect_language_udf = spark.udf.register("detect_language_udf", detect_language_function)
         # Use on current Dataframe and spark session: detect_language_udf = udf(detect_language_function, StringType())
 
-        # 1. Polyglot
-        def detect_language_polyglot(text):
-            try:
-                detector = Detector(text)
-                return detector.language.code
-            except:
-                return "unknown"
+        # # 1. Polyglot
+        # def detect_language_polyglot(text):
+        #     try:
+        #         detector = Detector(text)
+        #         return detector.language.code
+        #     except:
+        #         return "unknown"
 
-        # Define a UDF to apply language detection
-        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_polyglot)
+        # # Define a UDF to apply language detection
+        # detect_language_udf = spark.udf.register("detect_language_udf", detect_language_polyglot)
 
-        # Apply language detection to the 'content' column
-        df = df.withColumn("language_ployglot", detect_language_udf("content"))
+        # # Apply language detection to the 'content' column
+        # df = df.withColumn("language_ployglot", detect_language_udf("content"))
 
 
         # 2. Langdetect
@@ -212,21 +212,21 @@ def dataWrangling(spark, project_id, client):
         df = df.withColumn("language_langdetect", detect_language_udf("content"))
 
 
-        # 3. gcld3
-        def detect_language_gcld3(text):
-            try:
-                detector = gcld3.NNetLanguageIdentifier(min_num_bytes=0, max_num_bytes=1000)
-                result = detector.FindLanguage(text=text)
-                lang_detected = result.language
-                return lang_detected
-            except:
-                return "unknown"
+        # # 3. gcld3
+        # def detect_language_gcld3(text):
+        #     try:
+        #         detector = gcld3.NNetLanguageIdentifier(min_num_bytes=0, max_num_bytes=1000)
+        #         result = detector.FindLanguage(text=text)
+        #         lang_detected = result.language
+        #         return lang_detected
+        #     except:
+        #         return "unknown"
 
-        # Define a UDF to apply language detection
-        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_gcld3)
+        # # Define a UDF to apply language detection
+        # detect_language_udf = spark.udf.register("detect_language_udf", detect_language_gcld3)
 
-        # Apply language detection to the 'content' column
-        df = df.withColumn("language_gcld3", detect_language_udf("content"))
+        # # Apply language detection to the 'content' column
+        # df = df.withColumn("language_gcld3", detect_language_udf("content"))
 
         # Filter only language_langdetect = 'en'
         df = df.filter(df['language_langdetect'] == 'en')

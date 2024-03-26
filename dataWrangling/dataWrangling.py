@@ -15,7 +15,7 @@ from pyspark.sql.types import ArrayType, StringType, BooleanType
     # nltk.download('punkt')
 
 # 1. Polyglot
-from polyglot.detect import Detector
+# from polyglot.detect import Detector
 
 # 2. Langdetect 👍
 from langdetect import detect
@@ -185,19 +185,19 @@ def dataWrangling(spark, project_id, client):
         # Use across all Spark session:               detect_language_udf = spark.udf.register("detect_language_udf", detect_language_function)
         # Use on current Dataframe and spark session: detect_language_udf = udf(detect_language_function, StringType())
 
-        # 1. Polyglot
-        def detect_language_polyglot(text):
-            try:
-                detector = Detector(text)
-                return detector.language.code
-            except:
-                return "unknown"
+        # # 1. Polyglot
+        # def detect_language_polyglot(text):
+        #     try:
+        #         detector = Detector(text)
+        #         return detector.language.code
+        #     except:
+        #         return "unknown"
 
-        # Define a UDF to apply language detection
-        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_polyglot)
+        # # Define a UDF to apply language detection
+        # detect_language_udf = spark.udf.register("detect_language_udf", detect_language_polyglot)
 
-        # Apply language detection to the 'content' column
-        df = df.withColumn("language_ployglot", detect_language_udf("content"))
+        # # Apply language detection to the 'content' column
+        # df = df.withColumn("language_ployglot", detect_language_udf("content"))
 
 
         # 2. Langdetect

@@ -20,5 +20,3 @@ pycld2
 morfessor
 langdetect
 gcld3
-spacy
-spacy-language-detection

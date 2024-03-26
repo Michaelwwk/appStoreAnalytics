@@ -23,9 +23,7 @@ from langdetect import detect
 # 3. Gcld3 (Google Compact Language Detector 3)
 import gcld3
 
-# 4. spaCy
-import spacy
-import spacy.cli
+
 
 
 
@@ -230,32 +228,11 @@ def dataWrangling(spark, project_id, client):
         # Apply language detection to the 'content' column
         df = df.withColumn("language_gcld3", detect_language_udf("content"))
 
-
-        # 4. spaCy
-        # Download the English language model
-        spacy.cli.download("en_core_web_sm")
-
-        # Define the language detection function
-        def detect_language_spacy(text):
-            try:
-                nlp = spacy.load("en_core_web_sm")
-                doc = nlp(text)
-                detected_language = doc._.language['language']
-                return detected_language
-            except:
-                return "unknown"
-
-        # Define a UDF to apply language detection
-        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_spacy)
-
-        # Apply language detection to the 'content' column
-        df = df.withColumn("language_spacy", detect_language_udf("content"))
-
         return df
     
 
     # Assuming 'df' is your DataFrame and 'n' is the number of records you want to sample
-    n = 500  # Set the number of records to sample
+    n = 50000  # Set the number of records to sample
     sparkDf = sparkDf.sample(False, fraction=n/sparkDf.count())
 
 

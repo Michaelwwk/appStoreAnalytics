@@ -1,17 +1,32 @@
 from functools import reduce
 from common import read_gbq, to_gbq
+import ast
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf
 from pyspark.sql.types import ArrayType, StringType, BooleanType
-# import nltk
-# from nltk.corpus import words
-# from nltk.tokenize import word_tokenize
-# nltk.download('words')
-# nltk.download('punkt')
+
+# Language Detection Packages
+# 0. Generic
+    # import nltk
+    # from nltk.corpus import words
+    # from nltk.tokenize import word_tokenize
+    # nltk.download('words')
+    # nltk.download('punkt')
+
+# 1. Polyglot
+from polyglot.detect import Detector
+
+# 2. Langdetect 👍
 from langdetect import detect
+
+# 3. Gcld3 (Google Compact Language Detector 3)
+import gcld3
+
+# 4. spaCy
+import spacy
 import spacy.cli
-import ast
+
 
 
 # Hard-coded variables
@@ -154,12 +169,7 @@ def dataWrangling(spark, project_id, client):
         # Remove specific strings from specific columns
 
         strings_to_remove = ["<b>"]
-
-        # def remove_strings(content, strings_to_remove):
-        #     for s in strings_to_remove:
-        #         content = content.replace(s, "")
-        #     return content
-        
+     
         def remove_strings(content, strings_to_remove):
             return reduce(lambda acc, s: acc.replace(s, ""), strings_to_remove, content)
 
@@ -170,45 +180,85 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        # ### Detect English and Non English comments
-        # # Function to detect language
-        # def detect_language(text):
-        #     try:
-        #         return detect(text)
-        #     except:
-        #         return "unknown"
-            
-        # # Define a UDF to apply language detection
-        # detect_language_udf = spark.udf.register("detect_language_udf", detect_language)
+        ### Language Detection Section
 
-        # # Apply language detection to the 'content' column
-        # df = df.withColumn("language", detect_language_udf("content"))
+        # Use across all Spark session:               detect_language_udf = spark.udf.register("detect_language_udf", detect_language_function)
+        # Use on current Dataframe and spark session: detect_language_udf = udf(detect_language_function, StringType())
 
-        # Function to detect language using Spacy
-        # Load spaCy language detection model
-
-        # Download the English language model
-        spacy.cli.download("en_core_web_sm")
-
-        # Load spaCy language detection model
-        nlp = spacy.load("en_core_web_sm")
-
-        # Define the language detection function
-        def detect_language(text):
+        # 1. Polyglot
+        def detect_language_polyglot(text):
             try:
-                doc = nlp(text)
-                return doc.lang_
+                detector = Detector(text)
+                return detector.language.code
             except:
                 return "unknown"
 
-        # Register the language detection function as a Spark UDF
-        detect_language_udf = udf(detect_language, StringType())
+        # Define a UDF to apply language detection
+        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_polyglot)
 
         # Apply language detection to the 'content' column
-        df = df.withColumn("language", detect_language_udf("content"))
+        df = df.withColumn("language_ployglot", detect_language_udf("content"))
+
+
+        # 2. Langdetect
+        def detect_language_langdetect(text):
+            try:
+                return detect(text)
+            except:
+                return "unknown"
+            
+        # Define a UDF to apply language detection
+        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_langdetect)
+
+        # Apply language detection to the 'content' column
+        df = df.withColumn("language_langdetect", detect_language_udf("content"))
+
+
+        # 3. gcld3
+        def detect_language_gcld3(text):
+            try:
+                detector = gcld3.NNetLanguageIdentifier(min_num_bytes=0, max_num_bytes=1000)
+                result = detector.FindLanguage(text=text)
+                lang_detected = result.language
+                return lang_detected
+            except:
+                return "unknown"
+
+        # Define a UDF to apply language detection
+        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_gcld3)
+
+        # Apply language detection to the 'content' column
+        df = df.withColumn("language_gcld3", detect_language_udf("content"))
+
+
+        # 4. spaCy
+        # Download the English language model
+        spacy.cli.download("en_core_web_sm")
+
+        # Define the language detection function
+        def detect_language_spacy(text):
+            try:
+                nlp = spacy.load("en_core_web_sm")
+                doc = nlp(text)
+                detected_language = doc._.language['language']
+                return detected_language
+            except:
+                return "unknown"
+
+        # Define a UDF to apply language detection
+        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_spacy)
+
+        # Apply language detection to the 'content' column
+        df = df.withColumn("language_spacy", detect_language_udf("content"))
 
         return df
     
+
+    # Assuming 'df' is your DataFrame and 'n' is the number of records you want to sample
+    n = 500  # Set the number of records to sample
+    sparkDf = sparkDf.sample(False, fraction=n/df.count())
+
+
     cleaned_sparkDf = clean_data_googleReview(sparkDf)
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)

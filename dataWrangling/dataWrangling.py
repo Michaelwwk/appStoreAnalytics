@@ -15,7 +15,7 @@ from pyspark.sql.types import ArrayType, StringType, BooleanType
     # nltk.download('punkt')
 
 # 1. Polyglot
-# from polyglot.detect import Detector
+from polyglot.detect import Detector
 
 # 2. Langdetect 👍
 from langdetect import detect

@@ -92,7 +92,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     return sparkDf
 
 def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
-           folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = False): # 'WRITE_APPEND' if want to append values instead!
+           folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!
 
     if sparkdf == True:
         
@@ -111,7 +111,7 @@ def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
 
     if allDataTypes == False:
         df = df.astype(str) # all columns will be string
-        
+
     job_config = bigquery.LoadJobConfig(write_disposition=mergeType)
     load_job = client.load_table_from_dataframe(
         df,

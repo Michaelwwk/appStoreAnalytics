@@ -242,11 +242,11 @@ def dataWrangling(spark, project_id, client):
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
 
-print('Table created successfully')
+    print('Table created successfully')
 
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
 
-print('Table sent to GBQ successfully')
+    print('Table sent to GBQ successfully')
 
 
 """

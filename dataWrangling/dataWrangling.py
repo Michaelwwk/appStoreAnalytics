@@ -29,8 +29,8 @@ from langdetect import detect
 
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema/Dataset
-cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
-cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
+cleanGoogleMainScraped_table_name = 'cleanGoogleMain_TEST' # Table # TODO AMMEND TO TEST FOR RUN TIME
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview_TEST' # Table # TODO AMMEND TO TEST FOR RUN TIME
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 

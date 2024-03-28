@@ -4,7 +4,7 @@ from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_tab
 
 # Hard-coded variables
 modelDataset = "modelData"
-modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
+modelGoogleScraped_table_name = 'modelGoogleMain_TEST' # TODO CHANGE PATH # TODO AMMEND TO TEST FOR RUN TIME
 
 # TODO Follow this template when scripting!!
 def finalizedMLModels(spark, project_id, client):

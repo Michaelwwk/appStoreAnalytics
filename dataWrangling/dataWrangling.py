@@ -34,7 +34,7 @@ cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
-trainTestdata = "trainTestData" # Schema/Dataset
+trainTestdata = "rawData" # Schema/Dataset # TODO AMMEND TO TEST FOR RUN TIME
 googleMain = "googleMain" # Table
 googleReview = "googleReview" # Table
 appleMain = "appleMain" # Table

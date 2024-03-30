@@ -3,7 +3,7 @@ from common import read_gbq, to_gbq
 import ast
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
-from pyspark.sql.functions import col, regexp_replace, split, expr, udf
+from pyspark.sql.functions import col, regexp_replace, split, expr, udf, when
 from pyspark.sql.types import ArrayType, StructType, StructField, FloatType, StringType
 
 # Language Detection Packages
@@ -120,35 +120,13 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        # Define a function to extract minimum price
-        def extract_min_price(price_string):
-            if price_string is None or price_string == 'None':
-                return None
-            else:
-                match = re.match(r'\$([\d.]+)', price_string)
-                if match:
-                    return float(match.group(1))
-                else:
-                    return None
+        # Splitting the column based on ' - ' and ' per item' and selecting the appropriate elements
+        df = df.withColumn('price_range', split(col('inAppProductPrice'), ' - '))
+        df = df.withColumn('min_inAppProductPrice', when(col('price_range').getItem(0).contains('$'), col('price_range').getItem(0).substr(2, 4)).otherwise(None))
+        df = df.withColumn('max_inAppProductPrice', when(col('price_range').getItem(1).contains('$'), col('price_range').getItem(1).substr(2, 4)).otherwise(None))
 
-        # Define a function to extract maximum price
-        def extract_max_price(price_string):
-            if price_string is None or price_string == 'None':
-                return None
-            else:
-                match = re.match(r'\$\d+\.\d+ - \$([\d.]+)', price_string)
-                if match:
-                    return float(match.group(1))
-                else:
-                    return None
-
-        # User defined functions for extracting min and max prices
-        extract_min_price_udf = udf(extract_min_price, FloatType())
-        extract_max_price_udf = udf(extract_max_price, FloatType())
-
-        # Extract min and max prices into separate columns
-        df = df.withColumn('min_inAppProductPrice', extract_min_price_udf('inAppProductPrice'))
-        df = df.withColumn('max_inAppProductPrice', extract_max_price_udf('inAppProductPrice'))
+        # Dropping the intermediate column and displaying the DataFrame
+        df = df.drop('price_range')
 
 
 

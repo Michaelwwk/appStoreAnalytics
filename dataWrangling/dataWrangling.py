@@ -4,7 +4,7 @@ import ast
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf
-from pyspark.sql.types import StructType, StructField, FloatType
+from pyspark.sql.types import ArrayType, StructType, StructField, FloatType, StringType
 
 # Language Detection Packages
 # 0. Generic

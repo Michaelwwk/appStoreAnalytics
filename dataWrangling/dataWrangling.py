@@ -124,8 +124,8 @@ def dataWrangling(spark, project_id, client):
             if price_str is None:
                 return None, None
             prices = str(price_str).replace(' per item', '').split(' - ')
-            min_price = float(prices[0].replace('$', '')) if len(prices) > 0 else None
-            max_price = float(prices[1].replace('$', '')) if len(prices) > 1 else None
+            min_price = str(prices[0].replace('$', '')) if len(prices) > 0 else None
+            max_price = str(prices[1].replace('$', '')) if len(prices) > 1 else None
             return min_price, max_price
 
         # Register the UDF

@@ -120,7 +120,6 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        # Define a UDF to extract minimum and maximum values
         def extract_prices(price_str):
             if price_str is None:
                 return None, None
@@ -129,19 +128,13 @@ def dataWrangling(spark, project_id, client):
             max_price = float(prices[1].replace('$', '')) if len(prices) > 1 else None
             return min_price, max_price
 
-        # Define the schema for the UDF return type
-        return_type = StructType([
-            StructField("min", FloatType(), True),
-            StructField("max", FloatType(), True)
-        ])
-
         # Register the UDF
-        extract_prices_udf = udf(extract_prices, returnType=return_type)
+        extract_prices_udf = udf(extract_prices)
 
         # Apply the UDF to create new columns
         df = df.withColumn('extracted_prices', extract_prices_udf(df['inAppProductPrice']))
-        df = df.withColumn('min_inAppProductPrice', df['extracted_prices'].getField('min')) \
-            .withColumn('max_inAppProductPrice', df['extracted_prices'].getField('max')) \
+        df = df.withColumn('min_inAppProductPrice', split(df['extracted_prices'], ',').getItem(0)) \
+            .withColumn('max_inAppProductPrice', split(df['extracted_prices'], ',').getItem(1)) \
             .drop('extracted_prices')
 
 

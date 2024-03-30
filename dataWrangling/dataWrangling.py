@@ -122,13 +122,13 @@ def dataWrangling(spark, project_id, client):
             if price_str is None:
                 return None, None
             # Extract minimum and maximum prices using regular expressions
-            prices = price_str.replace(' per item', '').split(' - ')
+            prices = str(price_str).replace(' per item', '').split(' - ')
             min_price = float(prices[0].replace('$', '')) if len(prices) > 0 else None
             max_price = float(prices[1].replace('$', '')) if len(prices) > 1 else None
             return min_price, max_price
 
         # Apply the function to create new columns
-        df['min_inAppProductPrice'], df['max_inAppProductPrice'] = zip(*df['inAppProductPrice'].map(extract_prices))
+        df['min_inAppProductPrice'], df['max_inAppProductPrice'] = zip(*df['inAppProductPrice'].apply(extract_prices))
 
 
         # Split 'histogram' column into 5 columns

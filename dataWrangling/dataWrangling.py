@@ -3,7 +3,7 @@ from common import read_gbq, to_gbq
 import ast
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
-from pyspark.sql.functions import col, regexp_replace, split, expr, udf
+from pyspark.sql.functions import col, regexp_replace, split, expr, udf, functions
 from pyspark.sql.types import ArrayType, StringType, BooleanType
 
 # Language Detection Packages
@@ -117,18 +117,29 @@ def dataWrangling(spark, project_id, client):
         df = df.filter((col("minInstalls") != 0) & (col("minInstalls") != 'None'))
                     #    & (~col("minInstalls") != 'nan') & (col("minInstalls") != 'None'))
         
-        # Define a function to extract minimum and maximum values
+
+
+
+        # Define a UDF to extract minimum and maximum values
         def extract_prices(price_str):
             if price_str is None:
                 return None, None
-            # Extract minimum and maximum prices using regular expressions
             prices = str(price_str).replace(' per item', '').split(' - ')
             min_price = float(prices[0].replace('$', '')) if len(prices) > 0 else None
             max_price = float(prices[1].replace('$', '')) if len(prices) > 1 else None
             return min_price, max_price
 
-        # Apply the function to create new columns
-        df['min_inAppProductPrice'], df['max_inAppProductPrice'] = zip(*df['inAppProductPrice'].apply(extract_prices))
+        # Register the UDF
+        extract_prices_udf = functions.udf(extract_prices, returnType='struct<float, float>')
+
+        # Apply the UDF to create new columns
+        df = df.withColumn('min_inAppProductPrice', extract_prices_udf(df['inAppProductPrice']).getField('col1')) \
+            .withColumn('max_inAppProductPrice', extract_prices_udf(df['inAppProductPrice']).getField('col2'))
+
+
+
+
+
 
 
         # Split 'histogram' column into 5 columns

@@ -120,22 +120,36 @@ def dataWrangling(spark, project_id, client):
 
 
 
-        def extract_prices(price_str):
-            if price_str is None:
-                return None, None
-            prices = str(price_str).replace(' per item', '').split(' - ')
-            min_price = str(prices[0].replace('$', '')) if len(prices) > 0 else None
-            max_price = str(prices[1].replace('$', '')) if len(prices) > 1 else None
-            return min_price, max_price
+        # Define a function to extract minimum price
+        def extract_min_price(price_string):
+            if price_string is None or price_string == 'None':
+                return None
+            else:
+                match = re.match(r'\$([\d.]+)', price_string)
+                if match:
+                    return float(match.group(1))
+                else:
+                    return None
 
-        # Register the UDF
-        extract_prices_udf = udf(extract_prices)
+        # Define a function to extract maximum price
+        def extract_max_price(price_string):
+            if price_string is None or price_string == 'None':
+                return None
+            else:
+                match = re.match(r'\$\d+\.\d+ - \$([\d.]+)', price_string)
+                if match:
+                    return float(match.group(1))
+                else:
+                    return None
 
-        # Apply the UDF to create new columns
-        df = df.withColumn('extracted_prices', extract_prices_udf(df['inAppProductPrice']))
-        df = df.withColumn('min_inAppProductPrice', split(df['extracted_prices'], ',').getItem(0)) \
-            .withColumn('max_inAppProductPrice', split(df['extracted_prices'], ',').getItem(1)) \
-            .drop('extracted_prices')
+        # User defined functions for extracting min and max prices
+        extract_min_price_udf = udf(extract_min_price, FloatType())
+        extract_max_price_udf = udf(extract_max_price, FloatType())
+
+        # Extract min and max prices into separate columns
+        df = df.withColumn('min_inAppProductPrice', extract_min_price_udf('inAppProductPrice'))
+        df = df.withColumn('max_inAppProductPrice', extract_max_price_udf('inAppProductPrice'))
+
 
 
 

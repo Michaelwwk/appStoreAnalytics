@@ -3,8 +3,7 @@ from common import read_gbq, to_gbq
 import ast
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
-from pyspark.sql.functions import col, regexp_replace, split, expr, udf, functions
-from pyspark.sql.types import ArrayType, StringType, BooleanType
+from pyspark.sql.functions import col, regexp_replace, split, expr, udf
 
 # Language Detection Packages
 # 0. Generic

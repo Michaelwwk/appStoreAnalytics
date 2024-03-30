@@ -120,10 +120,15 @@ def dataWrangling(spark, project_id, client):
 
 
 
+        # # Splitting the column based on ' - ' and ' per item' and selecting the appropriate elements
+        # df = df.withColumn('price_range', split(col('inAppProductPrice'), ' - '))
+        # df = df.withColumn('min_inAppProductPrice', when(col('price_range').getItem(0).contains('$'), col('price_range').getItem(0).substr(2, 4)).otherwise(None))
+        # df = df.withColumn('max_inAppProductPrice', when(col('price_range').getItem(1).contains('$'), col('price_range').getItem(1).substr(2, 4)).otherwise(None))
+
         # Splitting the column based on ' - ' and ' per item' and selecting the appropriate elements
         df = df.withColumn('price_range', split(col('inAppProductPrice'), ' - '))
-        df = df.withColumn('min_inAppProductPrice', when(col('price_range').getItem(0).contains('$'), col('price_range').getItem(0).substr(2, 4)).otherwise(None))
-        df = df.withColumn('max_inAppProductPrice', when(col('price_range').getItem(1).contains('$'), col('price_range').getItem(1).substr(2, 4)).otherwise(None))
+        df = df.withColumn('min_inAppProductPrice', when(col('price_range').getItem(0).contains('$'), regexp_replace(col('price_range').getItem(0), '\\$', '').substr(1, 5)).otherwise(None))
+        df = df.withColumn('max_inAppProductPrice', when(col('price_range').getItem(1).contains('$'), regexp_replace(col('price_range').getItem(1), '\\$', '').substr(1, 5)).otherwise(None))
 
         # Dropping the intermediate column and displaying the DataFrame
         df = df.drop('price_range')

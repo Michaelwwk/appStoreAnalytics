@@ -130,7 +130,7 @@ def dataWrangling(spark, project_id, client):
             return min_price, max_price
 
         # Register the UDF
-        extract_prices_udf = functions.udf(extract_prices, returnType='struct<float, float>')
+        extract_prices_udf = udf(extract_prices, returnType='struct<float, float>')
 
         # Apply the UDF to create new columns
         df = df.withColumn('min_inAppProductPrice', extract_prices_udf(df['inAppProductPrice']).getField('col1')) \

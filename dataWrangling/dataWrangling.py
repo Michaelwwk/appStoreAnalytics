@@ -25,8 +25,6 @@ from langdetect import detect
 
 
 
-
-
 # Hard-coded variables
 cleanDataset = "cleanData" # Schema/Dataset
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
@@ -118,6 +116,19 @@ def dataWrangling(spark, project_id, client):
         # Drop records where 'minInstalls' column is None
         df = df.filter((col("minInstalls") != 0) & (col("minInstalls") != 'None'))
                     #    & (~col("minInstalls") != 'nan') & (col("minInstalls") != 'None'))
+        
+        # Define a function to extract minimum and maximum values
+        def extract_prices(price_str):
+            if price_str is None:
+                return None, None
+            # Extract minimum and maximum prices using regular expressions
+            prices = price_str.replace(' per item', '').split(' - ')
+            min_price = float(prices[0].replace('$', '')) if len(prices) > 0 else None
+            max_price = float(prices[1].replace('$', '')) if len(prices) > 1 else None
+            return min_price, max_price
+
+        # Apply the function to create new columns
+        df['min_inAppProductPrice'], df['max_inAppProductPrice'] = zip(*df['inAppProductPrice'].map(extract_prices))
 
 
         # Split 'histogram' column into 5 columns

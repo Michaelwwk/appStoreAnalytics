@@ -73,7 +73,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
             trainTest_db_path = f"{project_id}.{trainTestDataset}.{table_name}"
             sparkDf = read_gbq(spark, rawDataset, table_name)
             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
-            to_gbq(sparkDf, trainTestDataset, table_name)
+            to_gbq(sparkDf, trainTestDataset, table_name, allDataTypes = False)
         print('Train/ test data transfer step completed. Train/ test tables updated.')
         
     # Stop Spark session

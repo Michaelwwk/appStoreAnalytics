@@ -44,52 +44,74 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
+################################################Original read_gbq
+# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+#              project_id=project_id, folder_path=folder_path):
+
+#     bucket_name = "nusebac_storage"
+#     file_name = f"{GBQtable}.csv"
+
+#     # Construct the full table reference path
+#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+#     local_file_path = f"{folder_path}/{file_name}"
+
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+
+#     # Export BigQuery table to GCS
+#     destination_uri = f'gs://{bucket_name}/{file_name}*'
+#     job_config = bigquery.ExtractJobConfig()
+#     job = client.extract_table(
+#         table_ref,
+#         destination_uri,
+#         location="US",
+#         job_config=job_config
+#     )
+#     job.result()
+
+#     # Download the files
+#     client = storage.Client()
+#     bucket = client.bucket(bucket_name)
+#     blobs = list(bucket.list_blobs(prefix=file_name))  # Convert iterator to list
+
+#     for blob in blobs:
+#         # Download each file
+#         local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
+#         blob.download_to_filename(local_file_name)
+
+#     # Read CSV files into PySpark DataFrame
+#     sparkDf = spark.read.format("csv") \
+#         .option("inferSchema", "true") \
+#         .option("header", "true") \
+#         .option("multiline", "true") \
+#         .option("escape", "\"") \
+#         .csv(f"{local_file_path}*")  # Use wildcard to read all files
+
+#     # Delete files from GCS
+#     for blob in blobs:
+#         blob.delete()
+
+#     return sparkDf
+
+
+
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
              project_id=project_id, folder_path=folder_path):
 
-    bucket_name = "nusebac_storage"
-    file_name = f"{GBQtable}.csv"
-
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    local_file_path = f"{folder_path}/{file_name}"
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    # Execute a SQL query against the BigQuery table
+    query = f"SELECT * FROM `{table_ref}`"
+    df = client.query(query).to_dataframe()
 
-    # Export BigQuery table to GCS
-    destination_uri = f'gs://{bucket_name}/{file_name}*'
-    job_config = bigquery.ExtractJobConfig()
-    job = client.extract_table(
-        table_ref,
-        destination_uri,
-        location="US",
-        job_config=job_config
-    )
-    job.result()
-
-    # Download the files
-    client = storage.Client()
-    bucket = client.bucket(bucket_name)
-    blobs = list(bucket.list_blobs(prefix=file_name))  # Convert iterator to list
-
-    for blob in blobs:
-        # Download each file
-        local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
-        blob.download_to_filename(local_file_name)
-
-    # Read CSV files into PySpark DataFrame
-    sparkDf = spark.read.format("csv") \
-        .option("inferSchema", "true") \
-        .option("header", "true") \
-        .option("multiline", "true") \
-        .option("escape", "\"") \
-        .csv(f"{local_file_path}*")  # Use wildcard to read all files
-
-    # Delete files from GCS
-    for blob in blobs:
-        blob.delete()
-
+    # Convert the Pandas DataFrame to a PySpark DataFrame
+    sparkDf = spark.createDataFrame(df)
     return sparkDf
+
+
+
+
+
 
 def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!

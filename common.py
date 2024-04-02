@@ -4,6 +4,11 @@ import json
 import shutil
 from google.cloud import bigquery, storage
 
+from google.cloud import bigquery
+from google.cloud.bigquery_storage_v1 import BigQueryReadClient
+from google.cloud.bigquery_storage_v1 import types
+from google.protobuf.internal.well_known_types import Timestamp
+
 # Configurations
 folder_path = os.getcwd().replace("\\", "/")
 googleAPI_dict = json.loads(os.environ["GOOGLEAPI"])
@@ -94,8 +99,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 ######################################## GBQ -> DF
-# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-#              project_id=project_id):
+# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id):
     
 #     # Construct the full table reference path
 #     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
@@ -116,44 +120,47 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 
-####################################### Chunk Test
+####################################### Big Query Storage Read
 
-
-def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, chunksize=10000):
-
+def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, snapshot_millis=0):
+    
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+    # Define the table to read
+    table = f"projects/bigquery-public-data/datasets/{GBQdataset}/tables/{GBQtable}"
     
-    # Set Google Cloud credentials environment variable
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    # Create a BigQueryReadClient instance
+    client = BigQueryReadClient()
 
-    # Construct a BigQuery client object if not provided
-    if client is None:
-        client = bigquery.Client()
-        
-    # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}`"
+    # Create a ReadSession request
+    requested_session = types.ReadSession()
+    requested_session.table = table_ref
+    requested_session.data_format = types.DataFormat.AVRO
 
-    # Initialize an empty list to store DataFrame chunks
-    df_chunks = []
+    # Set a snapshot time if specified
+    if snapshot_millis > 0:
+        snapshot_time = Timestamp()
+        snapshot_time.FromMilliseconds(snapshot_millis)
+        requested_session.table_modifiers.snapshot_time = snapshot_time
 
-    # Execute the query and iterate over rows in chunks
-    query_job = client.query(query)
-    for i, rows in enumerate(query_job.result().pages):
-        df = pd.DataFrame(data=[list(row.values()) for row in rows], columns=list(rows[0].keys()))
-        df_chunks.append(df)
+    # Create the read session
+    parent = f"projects/{project_id}"
+    session = client.create_read_session(parent=parent, read_session=requested_session, max_stream_count=1)
+    reader = client.read_rows(session.streams[0].name)
 
-        # Check if we have reached the chunk size or the end of data
-        if i + 1 == chunksize:
-            break
+    # Initialize lists to store data
+    df_data = []
 
-    # Concatenate all DataFrame chunks into a single DataFrame
-    df = pd.concat(df_chunks)
+    # Iterate over rows and append to data list
+    for row in reader.rows(session):
+        df_data.append(row)
 
-    # Convert the Pandas DataFrame to a PySpark DataFrame
-    sparkDf = spark.createDataFrame(df)
-    
+    # Create Spark DataFrame
+    schema = reader.get_schema().to_arrow_schema()  # Use schema from reader
+    sparkDf = spark.createDataFrame(df_data, schema=schema)
+
     return sparkDf
+
 
 
 

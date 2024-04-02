@@ -95,11 +95,10 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 ######################################## GBQ -> DF
 # def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-#              project_id=project_id, folder_path=folder_path):
+#              project_id=project_id):
     
 #     # Construct the full table reference path
 #     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-#     # local_file_path = f"{folder_path}/{file_name}"
     
 #     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
@@ -120,7 +119,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 ####################################### Chunk Test
 
 
-def read_gbq(spark, GBQdataset, GBQtable, googleAPI_json_path, project_id, client=client, chunksize=10000):
+def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, chunksize=10000):
 
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"

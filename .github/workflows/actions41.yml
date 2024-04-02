@@ -11,12 +11,12 @@ jobs:
     steps:
       ##################### New
       - name: Set Node.js Heap Size
-      
-        run: export NODE_OPTIONS="--max_old_space_size=SIZE"
+
+        # run: export NODE_OPTIONS="--max_old_space_size=SIZE"
         # run: export NODE_OPTIONS="--max_old_space_size=4096"
-        # env:
-        #   NODE_OPTIONS: "--max_old_space_size=4096"
-        # run: npm start
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+        run: npm start
 
 
 

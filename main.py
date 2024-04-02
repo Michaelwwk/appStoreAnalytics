@@ -2,6 +2,7 @@ import sys
 import time
 import os
 import shutil
+import pandas as pd
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle \
@@ -59,7 +60,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     .master("local") \
     .appName("appStoreAnalytics") \
     .config("spark.ui.port", "4050") \
-    .config("spark.driver.memory", "16g").config("spark.executor.memory", "16g").getOrCreate()
+    .config("spark.driver.memory", "64g").config("spark.executor.memory", "64g").getOrCreate()
     
     if trainTest == False:
         # Run main functions

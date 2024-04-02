@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest # ubuntu-latest # windows-latest
     steps:
+      ##################### New
+      - name: Set Node.js Heap Size
+        run: export NODE_OPTIONS="--max_old_space_size=4096"
 
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content to github runner
@@ -30,12 +33,6 @@ jobs:
       #     echo "$GOOGLE_APPLICATION_CREDENTIALS" > "$HOME"/gcp_key.json
       #     gcloud auth activate-service-account --key-file="$HOME"/gcp_key.json
           
-      ################################################### Set Java Heap Space
-      - name: Set Java Heap Space
-        run: export JAVA_OPTS='-Xmx8g'
-
-
-
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}

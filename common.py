@@ -113,7 +113,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path, page_size=1000):
+             project_id=project_id, folder_path=folder_path, page_size=10000):
     
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
@@ -124,14 +124,16 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     # Initialize an empty list to store dataframes
     dfs = []
     
-    # Initialize the page token
-    page_token = None
+    # Initialize the page offset
+    page_offset = 0
     
     # Loop to fetch data in batches
     while True:
-        # Fetch data using pagination
-        query_job = client.list_rows(table_ref, max_results=page_size, page_token=page_token)
-        df = query_job.to_dataframe()
+        # Construct the SQL query with pagination
+        query = f"SELECT * FROM `{table_ref}` LIMIT {page_size} OFFSET {page_offset}"
+        
+        # Execute the SQL query against the BigQuery table
+        df = client.query(query).to_dataframe()
         
         # Check if dataframe is empty
         if df.empty:
@@ -141,11 +143,11 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
         # Append dataframe to the list
         dfs.append(df)
         
-        # Print the page token
-        print("Page Token:", page_token)
+        # Print the page offset
+        print("Page Offset:", page_offset)
         
-        # Update page token for the next iteration
-        page_token = query_job.next_page_token
+        # Update page offset for the next iteration
+        page_offset += page_size
     
     # Concatenate all dataframes
     combined_df = pd.concat(dfs)

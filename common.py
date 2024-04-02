@@ -5,9 +5,7 @@ import shutil
 from google.cloud import bigquery, storage
 
 from google.cloud import bigquery
-# from google.cloud.bigquery_storage_v1 import BigQueryReadClient
-# from google.cloud.bigquery_storage_v1 import types
-from google.cloud.bigquery_storage import BigQueryReadClient, types
+from google.cloud.bigquery_storage import BigQueryReadClient, types, DataFormat
 from google.protobuf.internal.well_known_types import Timestamp
 
 # Configurations
@@ -143,7 +141,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     requested_session.table = table_ref_tr
     # requested_session.data_format = DataFormat.AVRO
     # Set the data format to AVRO
-    requested_session.data_format = types.DataFormat.AVRO
+    requested_session.data_format = DataFormat.AVRO
     
 
     # Set a snapshot time if specified

@@ -130,15 +130,22 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     # Construct a BigQuery client object if not provided
     if client is None:
         client = bigquery.Client()
+        
+    # Execute a SQL query against the BigQuery table
+    query = f"SELECT * FROM `{table_ref}`"
 
     # Initialize an empty list to store DataFrame chunks
     df_chunks = []
 
-    # Execute a SQL query against the BigQuery table and read data in chunks
-    query = f"SELECT * FROM `{table_ref}`"
-    for chunk in client.query(query).to_dataframe(chunksize=chunksize):
-        df_chunks.append(chunk)
-        print("Chunk appended")
+    # Execute the query and iterate over rows in chunks
+    query_job = client.query(query)
+    for i, rows in enumerate(query_job.result().pages):
+        df = pd.DataFrame(data=[list(row.values()) for row in rows], columns=list(rows[0].keys()))
+        df_chunks.append(df)
+
+        # Check if we have reached the chunk size or the end of data
+        if i + 1 == chunksize:
+            break
 
     # Concatenate all DataFrame chunks into a single DataFrame
     df = pd.concat(df_chunks)

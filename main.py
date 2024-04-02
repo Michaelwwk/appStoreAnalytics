@@ -48,8 +48,43 @@ for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of Y
         currentGoogleSubDf += 1
 
 ### wrangling, ML, DateTime, TrainTest ###
+
+########################################################Original        
+# def wranglingMLDateTime_TrainTest(trainTest = False):
+
+#     # Start Spark session
+#     spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+    
+#     if trainTest == False:
+#         # Run main functions
+#         dataWrangling(spark, project_id, client)
+#         print('Data wrangling step completed. Clean tables updated.')
+#         time.sleep(30)
+#         finalizedMLModels(spark, project_id, client)
+#         print('ML step completed. Model tables updated.')
+#         dateTime(spark, project_id, client)
+#         print('Date & time updated.')
+#     else:        
+#         AppleScraped_table_name = appleScraped_table_name
+#         AppleReview_table_name = appleReview_table_name
+#         GoogleScraped_table_name = googleScraped_table_name
+#         GoogleReview_table_name = googleReview_table_name
+#         table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
+#         for table_name in table_names:
+#             trainTest_db_path = f"{project_id}.{trainTestDataset}.{table_name}"
+#             sparkDf = read_gbq(spark, rawDataset, table_name)
+#             client.create_table(bigquery.Table(trainTest_db_path), exists_ok = True)
+#             to_gbq(sparkDf, trainTestDataset, table_name, allDataTypes = False)
+#         print('Train/ test data transfer step completed. Train/ test tables updated.')
         
+#     # Stop Spark session
+#     spark.stop()
+
+
 def wranglingMLDateTime_TrainTest(trainTest = False):
+
+    # Set maximum heap size for Spark session
+    os.environ['PYSPARK_SUBMIT_ARGS'] = '--driver-memory 4g --executor-memory 4g pyspark-shell'
 
     # Start Spark session
     spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
@@ -78,6 +113,13 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         
     # Stop Spark session
     spark.stop()
+
+
+
+
+
+
+
 
 def create_wranglingMLDateTime_TrainTest(trainTest = False):
     return lambda: wranglingMLDateTime_TrainTest(trainTest)

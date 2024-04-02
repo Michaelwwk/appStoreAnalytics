@@ -2,11 +2,14 @@ import pandas as pd
 import os
 import json
 import shutil
-from google.cloud import bigquery, storage
+from google.cloud import bigquery
 
 from google.cloud import bigquery
 from google.cloud.bigquery_storage import BigQueryReadClient, types, DataFormat
 from google.protobuf.internal.well_known_types import Timestamp
+
+from google.cloud import bigquery_storage
+from google.cloud.bigquery_storage import types
 
 # Configurations
 folder_path = os.getcwd().replace("\\", "/")
@@ -124,54 +127,43 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, snapshot_millis=0):
     
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-    
-    # Construct the full table reference path
-    table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
 
-    # Define the table to read
-    table_ref_tr = f"projects/{project_id}/datasets/{GBQdataset}/tables/{GBQtable}"
-
-
-    
     # Create a BigQueryReadClient instance
-    client = BigQueryReadClient()
+    bqstorageclient = bigquery_storage.BigQueryReadClient()
+    
+    # Define the table to read
+    table = f"projects/{project_id}/datasets/{GBQdataset}/tables/{GBQtable}"
 
-    # Create a ReadSession request
+    parent = "projects/{}".format(project_id)
+    
     requested_session = types.ReadSession(
-        table=table_ref_tr,
+        table=table,
         # Avro is also supported, but the Arrow data format is optimized to
         # work well with column-oriented data structures such as pandas
         # DataFrames.
         data_format=types.DataFormat.ARROW
     )
-    read_session = client.create_read_session(
+    read_session = bqstorageclient.create_read_session(
         parent=parent,
         read_session=requested_session,
         max_stream_count=1,
     )
-    
 
-    # Set a snapshot time if specified
-    if snapshot_millis > 0:
-        snapshot_time = Timestamp()
-        snapshot_time.FromMilliseconds(snapshot_millis)
-        requested_session.table_modifiers.snapshot_time = snapshot_time
+    # This example reads from only a single stream. Read from multiple streams
+    # to fetch data faster. Note that the session may not contain any streams
+    # if there are no rows to read.
+    stream = read_session.streams[0]
+    reader = bqstorageclient.read_rows(stream.name)
 
-    # Create the read session
-    parent = f"projects/{project_id}"
-    session = client.create_read_session(parent=parent, read_session=requested_session, max_stream_count=1)
-    reader = client.read_rows(session.streams[0].name)
+    # Parse all Arrow blocks and create a dataframe.
+    frames = []
+    for message in reader.rows().pages:
+        frames.append(message.to_dataframe())
+    dataframe = pd.concat(frames)
 
-    # Initialize lists to store data
-    df_data = []
-
-    # Iterate over rows and append to data list
-    for row in reader.rows(session):
-        df_data.append(row)
 
     # Create Spark DataFrame
-    schema = reader.get_schema().to_arrow_schema()  # Use schema from reader
-    sparkDf = spark.createDataFrame(df_data, schema=schema)
+    sparkDf = spark.createDataFrame(dataframe)
 
     return sparkDf
 

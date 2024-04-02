@@ -53,7 +53,15 @@ for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of Y
 def wranglingMLDateTime_TrainTest(trainTest = False):
 
     # Start Spark session
-    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+    # spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+
+    spark = SparkSession.builder \
+    .master("local") \
+    .appName("appStoreAnalytics") \
+    .config("spark.ui.port", "4050") \
+    .config("spark.driver.memory", "4g") \  
+    .config("spark.executor.memory", "4g") \ 
+    .getOrCreate()
     
     if trainTest == False:
         # Run main functions

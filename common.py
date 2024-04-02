@@ -93,27 +93,63 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 #     return sparkDf
 
 
-####################################################################################################
-def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path):
+######################################## GBQ -> DF
+# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+#              project_id=project_id, folder_path=folder_path):
     
+#     # Construct the full table reference path
+#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+#     # local_file_path = f"{folder_path}/{file_name}"
+    
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+
+#     # Construct a BigQuery client object.
+#     client = bigquery.Client()
+
+#     # Execute a SQL query against the BigQuery table
+#     query = f"SELECT * FROM `{table_ref}` limit 100000"
+
+#     df = client.query(query).to_dataframe()
+
+#     # Convert the Pandas DataFrame to a PySpark DataFrame
+#     sparkDf = spark.createDataFrame(df)
+#     return sparkDf
+
+
+
+####################################### Chunk Test
+
+
+def read_gbq_chunks(spark, GBQdataset, GBQtable, googleAPI_json_path, project_id, client=client, chunksize=10000):
+
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    # local_file_path = f"{folder_path}/{file_name}"
     
+    # Set Google Cloud credentials environment variable
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-    # Construct a BigQuery client object.
-    client = bigquery.Client()
+    # Construct a BigQuery client object if not provided
+    if client is None:
+        client = bigquery.Client()
 
-    # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}` limit 100000"
+    # Initialize an empty list to store DataFrame chunks
+    df_chunks = []
 
-    df = client.query(query).to_dataframe()
+    # Execute a SQL query against the BigQuery table and read data in chunks
+    query = f"SELECT * FROM `{table_ref}`"
+    for chunk in client.query(query).to_dataframe(chunksize=chunksize):
+        df_chunks.append(chunk)
+        print("Chunk appended")
+
+    # Concatenate all DataFrame chunks into a single DataFrame
+    df = pd.concat(df_chunks)
 
     # Convert the Pandas DataFrame to a PySpark DataFrame
     sparkDf = spark.createDataFrame(df)
+    
     return sparkDf
+
+
 
 
 

@@ -113,27 +113,44 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path, page_size=10000):
+             project_id=project_id, folder_path=folder_path, page_size=1000):
     
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-    
+    # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
     
+    # Set the environment variable for Google Cloud credentials
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    
+    # Initialize an empty list to store dataframes
     dfs = []
+    
+    # Initialize the page token
     page_token = None
     
+    # Loop to fetch data in batches
     while True:
+        # Fetch data using pagination
         query_job = client.list_rows(table_ref, max_results=page_size, page_token=page_token)
         df = query_job.to_dataframe()
         
+        # Check if dataframe is empty
         if df.empty:
+            print("Done")
             break
         
+        # Append dataframe to the list
         dfs.append(df)
-        print("Done")
+        
+        # Print the page token
+        print("Page Token:", page_token)
+        
+        # Update page token for the next iteration
         page_token = query_job.next_page_token
     
+    # Concatenate all dataframes
     combined_df = pd.concat(dfs)
+    
+    # Convert Pandas DataFrame to PySpark DataFrame
     sparkDf = spark.createDataFrame(combined_df)
     
     return sparkDf

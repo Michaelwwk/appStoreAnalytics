@@ -11,9 +11,14 @@ jobs:
     steps:
       ##################### New
       - name: Set Node.js Heap Size
+      
         run: export NODE_OPTIONS="--max_old_space_size=SIZE"
         # run: export NODE_OPTIONS="--max_old_space_size=4096"
-        npm start
+        # env:
+        #   NODE_OPTIONS: "--max_old_space_size=4096"
+        # run: npm start
+
+
 
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content to github runner

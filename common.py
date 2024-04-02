@@ -7,7 +7,6 @@ from google.cloud import bigquery, storage
 from google.cloud import bigquery
 from google.cloud.bigquery_storage_v1 import BigQueryReadClient
 from google.cloud.bigquery_storage_v1 import types
-from google.cloud.bigquery_storage_v1.types import DataFormat
 from google.protobuf.internal.well_known_types import Timestamp
 
 # Configurations

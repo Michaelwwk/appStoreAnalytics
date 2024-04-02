@@ -84,7 +84,8 @@ for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of Y
 def wranglingMLDateTime_TrainTest(trainTest = False):
 
     # Set maximum heap size for Spark session
-    os.environ['PYSPARK_SUBMIT_ARGS'] = '--driver-memory 4g --executor-memory 4g pyspark-shell'
+    os.environ['PYSPARK_SUBMIT_ARGS'] = '--driver-memory 8g --executor-memory 8g pyspark-shell'
+
 
     # Start Spark session
     spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()

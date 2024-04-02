@@ -14,9 +14,5 @@ requests
 beautifulsoup4
 tqdm
 nltk
-polyglot
-pyicu
-pycld2
-morfessor
 langdetect
-gcld3
+

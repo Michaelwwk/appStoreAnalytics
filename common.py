@@ -130,6 +130,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
             break
         
         dfs.append(df)
+        print("Done " + page_token)
         page_token = query_job.next_page_token
     
     combined_df = pd.concat(dfs)

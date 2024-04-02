@@ -124,10 +124,14 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, snapshot_millis=0):
     
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
     # Define the table to read
     table = f"projects/bigquery-public-data/datasets/{GBQdataset}/tables/{GBQtable}"
+
+
     
     # Create a BigQueryReadClient instance
     client = BigQueryReadClient()

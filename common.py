@@ -128,8 +128,9 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+
     # Define the table to read
-    table = f"projects/bigquery-public-data/datasets/{GBQdataset}/tables/{GBQtable}"
+    table_ref_tr = f"projects/{project_id}/datasets/{GBQdataset}/tables/{GBQtable}"
 
 
     
@@ -138,7 +139,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
 
     # Create a ReadSession request
     requested_session = types.ReadSession()
-    requested_session.table = table_ref
+    requested_session.table = table_ref_tr
     # requested_session.data_format = types.DataFormat.AVRO
 
     # Set a snapshot time if specified

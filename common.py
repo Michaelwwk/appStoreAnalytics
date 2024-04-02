@@ -137,11 +137,18 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     client = BigQueryReadClient()
 
     # Create a ReadSession request
-    requested_session = types.ReadSession()
-    requested_session.table = table_ref_tr
-    # requested_session.data_format = DataFormat.AVRO
-    # Set the data format to AVRO
-    requested_session.data_format = DataFormat.AVRO
+    requested_session = types.ReadSession(
+        table=table_ref_tr,
+        # Avro is also supported, but the Arrow data format is optimized to
+        # work well with column-oriented data structures such as pandas
+        # DataFrames.
+        data_format=types.DataFormat.ARROW
+    )
+    read_session = client.create_read_session(
+        parent=parent,
+        read_session=requested_session,
+        max_stream_count=1,
+    )
     
 
     # Set a snapshot time if specified

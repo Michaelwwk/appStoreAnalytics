@@ -1,8 +1,9 @@
 pandas
 numpy
 google-cloud-bigquery
+google-cloud-bigquery-storage
+apache-beam[gcp] 
 google-cloud-storage
-apache-beam[gcp]
 pandas-gbq
 datetime
 pytz

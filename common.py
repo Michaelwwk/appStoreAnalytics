@@ -140,7 +140,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     # Create a ReadSession request
     requested_session = types.ReadSession()
     requested_session.table = table_ref_tr
-    # requested_session.data_format = types.DataFormat.AVRO
+    requested_session.data_format = types.DataFormat.AVRO
 
     # Set a snapshot time if specified
     if snapshot_millis > 0:

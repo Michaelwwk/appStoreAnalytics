@@ -14,6 +14,7 @@ from models.models import finalizedMLModels
 from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
+
 # Hard-coded variables (impt!)
 appleMaxSlice = 26 # No. of parts to slice Apple df into
 googleMaxSlice = 14 # No. of parts to slice Google df into

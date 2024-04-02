@@ -94,50 +94,48 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 ####################################################################################################
-def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path):
-    
-    # Construct the full table reference path
-    table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    # local_file_path = f"{folder_path}/{file_name}"
-    
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-    # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}` limit 10000"
-    df = client.query(query).to_dataframe()
-
-    # Convert the Pandas DataFrame to a PySpark DataFrame
-    sparkDf = spark.createDataFrame(df)
-    return sparkDf
-
-
 # def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-#              project_id=project_id, folder_path=folder_path, batch_size=10000):
+#              project_id=project_id, folder_path=folder_path):
     
 #     # Construct the full table reference path
 #     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+#     # local_file_path = f"{folder_path}/{file_name}"
+    
 #     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-#     # Execute a SQL query against the BigQuery table in batches
-#     query = f"SELECT * FROM `{table_ref}`"
-#     dfs = []
-#     offset = 0
-#     while True:
-#         query_batch = f"{query} LIMIT {batch_size} OFFSET {offset}"
-#         df = client.query(query_batch).to_dataframe()
-#         if df.empty:
-#             break
-#         dfs.append(df)
-#         offset += batch_size
-
-#     # Concatenate all dataframes
-#     df = pd.concat(dfs)
+#     # Execute a SQL query against the BigQuery table
+#     query = f"SELECT * FROM `{table_ref}` limit 10000"
+#     df = client.query(query).to_dataframe()
 
 #     # Convert the Pandas DataFrame to a PySpark DataFrame
 #     sparkDf = spark.createDataFrame(df)
-    
 #     return sparkDf
+
+
+def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+             project_id=project_id, folder_path=folder_path, page_size=10000):
+    
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+    
+    table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+    
+    dfs = []
+    page_token = None
+    
+    while True:
+        query_job = client.list_rows(table_ref, max_results=page_size, page_token=page_token)
+        df = query_job.to_dataframe()
+        
+        if df.empty:
+            break
+        
+        dfs.append(df)
+        page_token = query_job.next_page_token
+    
+    combined_df = pd.concat(dfs)
+    sparkDf = spark.createDataFrame(combined_df)
+    
+    return sparkDf
 
 
 

@@ -107,7 +107,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     client = bigquery.Client()
 
     # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}` limit 1000000"
+    query = f"SELECT * FROM `{table_ref}` limit 10000"
 
     df = client.query(query).to_dataframe()
 

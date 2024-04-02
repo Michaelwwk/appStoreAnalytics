@@ -99,7 +99,7 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    local_file_path = f"{folder_path}/{file_name}"
+    # local_file_path = f"{folder_path}/{file_name}"
     
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 

@@ -93,24 +93,45 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 #     return sparkDf
 
 
+####################################################################################################
+# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+#              project_id=project_id, folder_path=folder_path):
+    
+#     # Construct the full table reference path
+#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+#     # local_file_path = f"{folder_path}/{file_name}"
+    
+#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
+
+#     # Execute a SQL query against the BigQuery table
+#     query = f"SELECT * FROM `{table_ref}`"
+#     df = client.query(query).to_dataframe()
+
+#     # Convert the Pandas DataFrame to a PySpark DataFrame
+#     sparkDf = spark.createDataFrame(df)
+#     return sparkDf
+
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path):
+             project_id=project_id, folder_path=folder_path, batch_size=10000):
     
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    # local_file_path = f"{folder_path}/{file_name}"
-    
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-    # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}`"
-    df = client.query(query).to_dataframe()
+    # Execute a SQL query against the BigQuery table in batches
+    query = f"SELECT * FROM `{table_ref}` limit 1000000"
+    dfs = []
+    for chunk in pd.read_gbq(query, chunksize=batch_size, dialect='standard'):
+        dfs.append(chunk)
+
+    # Concatenate all dataframes
+    df = pd.concat(dfs)
 
     # Convert the Pandas DataFrame to a PySpark DataFrame
     sparkDf = spark.createDataFrame(df)
+    
     return sparkDf
-
 
 
 

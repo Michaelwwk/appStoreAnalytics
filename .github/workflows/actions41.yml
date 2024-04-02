@@ -11,12 +11,33 @@ jobs:
     steps:
       ##################### New
       - name: Set Node.js Heap Size
-
-        # run: export NODE_OPTIONS="--max_old_space_size=SIZE"
-        # run: export NODE_OPTIONS="--max_old_space_size=4096"
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
+        run: echo "Node.js heap size set"
+
+
+
+      - name: Set working directory
+        run: cd appStoreAnalytics # Change directory to where your package.json file is located
+        working-directory: ./appStoreAnalytics
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14' # Change this to your Node.js version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Execute npm start
         run: npm start
+
+
+
+
+
+
+        
 
 
 

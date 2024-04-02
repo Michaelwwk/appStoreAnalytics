@@ -2,7 +2,7 @@ pandas
 numpy
 google-cloud-bigquery
 google-cloud-bigquery-storage
-apache-beam[gcp] ==2.41.0
+apache-beam[gcp]
 google-cloud-storage
 pandas-gbq
 datetime

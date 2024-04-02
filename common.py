@@ -5,7 +5,7 @@ import shutil
 from google.cloud import bigquery
 
 from google.cloud import bigquery
-from google.cloud.bigquery_storage import BigQueryReadClient, types, DataFormat
+from google.cloud.bigquery_storage import BigQueryReadClient, types
 from google.protobuf.internal.well_known_types import Timestamp
 
 from google.cloud import bigquery_storage

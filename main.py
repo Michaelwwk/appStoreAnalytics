@@ -59,7 +59,7 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
     .master("local") \
     .appName("appStoreAnalytics") \
     .config("spark.ui.port", "4050") \
-    .config("spark.driver.memory", "4g").config("spark.executor.memory", "4g").getOrCreate()
+    .config("spark.driver.memory", "16g").config("spark.executor.memory", "16g").getOrCreate()
     
     if trainTest == False:
         # Run main functions

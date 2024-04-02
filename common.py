@@ -96,12 +96,15 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
              project_id=project_id, folder_path=folder_path):
-
+    
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+    local_file_path = f"{folder_path}/{file_name}"
+    
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
     # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}`"
+    query = f"SELECT * FROM `{table_ref}` limit 5000"
     df = client.query(query).to_dataframe()
 
     # Convert the Pandas DataFrame to a PySpark DataFrame

@@ -30,6 +30,12 @@ jobs:
       #     echo "$GOOGLE_APPLICATION_CREDENTIALS" > "$HOME"/gcp_key.json
       #     gcloud auth activate-service-account --key-file="$HOME"/gcp_key.json
           
+      ################################################### Set Java Heap Space
+      - name: Set Java Heap Space
+        run: export JAVA_OPTS='-Xmx8g'
+
+
+
       - name: execute py script
         env:
           GOOGLEAPI: ${{secrets.GOOGLEAPI}}

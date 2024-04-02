@@ -103,8 +103,12 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
     
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
+    # Construct a BigQuery client object.
+    client = bigquery.Client()
+
     # Execute a SQL query against the BigQuery table
-    query = f"SELECT * FROM `{table_ref}` limit 1000000"
+    query = f"SELECT * FROM `{table_ref}` limit 1000"
+
     df = client.query(query).to_dataframe()
 
     # Convert the Pandas DataFrame to a PySpark DataFrame

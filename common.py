@@ -94,67 +94,21 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
 
 ####################################################################################################
-# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-#              project_id=project_id, folder_path=folder_path):
-    
-#     # Construct the full table reference path
-#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-#     # local_file_path = f"{folder_path}/{file_name}"
-    
-#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-#     # Execute a SQL query against the BigQuery table
-#     query = f"SELECT * FROM `{table_ref}` limit 10000"
-#     df = client.query(query).to_dataframe()
-
-#     # Convert the Pandas DataFrame to a PySpark DataFrame
-#     sparkDf = spark.createDataFrame(df)
-#     return sparkDf
-
-
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path, page_size=10000):
+             project_id=project_id, folder_path=folder_path):
     
     # Construct the full table reference path
     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+    # local_file_path = f"{folder_path}/{file_name}"
     
-    # Set the environment variable for Google Cloud credentials
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-    
-    # Initialize an empty list to store dataframes
-    dfs = []
-    
-    # Initialize the page offset
-    page_offset = 0
-    
-    # Loop to fetch data in batches
-    while True:
-        # Construct the SQL query with pagination
-        query = f"SELECT * FROM `{table_ref}` LIMIT {page_size} OFFSET {page_offset}"
-        
-        # Execute the SQL query against the BigQuery table
-        df = client.query(query).to_dataframe()
-        
-        # Check if dataframe is empty
-        if df.empty:
-            print("Done")
-            break
-        
-        # Append dataframe to the list
-        dfs.append(df)
-        
-        # Print the page offset
-        print("Page Offset:", page_offset)
-        
-        # Update page offset for the next iteration
-        page_offset += page_size
-    
-    # Concatenate all dataframes
-    combined_df = pd.concat(dfs)
-    
-    # Convert Pandas DataFrame to PySpark DataFrame
-    sparkDf = spark.createDataFrame(combined_df)
-    
+
+    # Execute a SQL query against the BigQuery table
+    query = f"SELECT * FROM `{table_ref}` limit 1000000"
+    df = client.query(query).to_dataframe()
+
+    # Convert the Pandas DataFrame to a PySpark DataFrame
+    sparkDf = spark.createDataFrame(df)
     return sparkDf
 
 

@@ -26,26 +26,29 @@ from langdetect import detect
 
 
 # Hard-coded variables
-cleanDataset = "cleanData" # Schema/Dataset
+cleanDataset = "dev_cleanData" # Schema/Dataset
 cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
 cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
-trainTestdata = "trainTestData" # Schema/Dataset
 googleMain = "googleMain" # Table
 googleReview = "googleReview" # Table
 appleMain = "appleMain" # Table
 appleReview = "appleReview" # Table
 
 # TODO Follow this template when scripting!!
-def dataWrangling(spark, project_id, client):
+
+def appleDataWrangling(spark, project_id, client):
+    return
+
+def googleDataWrangling(spark, project_id, client):
 
     # googleMain
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleMainScraped_table_name}" # Schema + Table
 
-    sparkDf = read_gbq(spark, trainTestdata, googleMain)
+    sparkDf = read_gbq(spark, rawDataset, googleMain)
     # print(sparkDf.show())
     print(sparkDf.count())
 
@@ -163,7 +166,7 @@ def dataWrangling(spark, project_id, client):
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
 
-    sparkDf = read_gbq(spark, trainTestdata, googleReview)
+    sparkDf = read_gbq(spark, rawDataset, googleReview)
     # print(sparkDf.show())
     print(sparkDf.count())
 
@@ -252,11 +255,6 @@ def dataWrangling(spark, project_id, client):
         df = df.filter(df['language_langdetect'] == 'en')
 
         return df
-    
-
-    
-
-    
 
     cleaned_sparkDf = clean_data_googleReview(sparkDf)
 
@@ -267,7 +265,6 @@ def dataWrangling(spark, project_id, client):
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
 
     print('Table sent to GBQ successfully')
-
 
 """
 TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc

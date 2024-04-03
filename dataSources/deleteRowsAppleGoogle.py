@@ -1,5 +1,5 @@
 # Hard-coded variables (raw data)
-rawDataset = "rawData"
+rawDataset = "prod_rawData"
 appleScraped_table_name = 'appleMain' # TODO CHANGE PATH
 googleScraped_table_name = 'googleMain' # TODO CHANGE PATH
 appleReview_table_name = 'appleReview' # TODO CHANGE PATH

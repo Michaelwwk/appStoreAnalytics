@@ -2,14 +2,7 @@ import pandas as pd
 import os
 import json
 import shutil
-from google.cloud import bigquery
-
-from google.cloud import bigquery
-from google.cloud.bigquery_storage import BigQueryReadClient, types
-from google.protobuf.internal.well_known_types import Timestamp
-
-from google.cloud import bigquery_storage
-from google.cloud.bigquery_storage import types
+from google.cloud import bigquery, storage
 
 # Configurations
 folder_path = os.getcwd().replace("\\", "/")
@@ -51,131 +44,52 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 
     return small_df
 
-################################################Original read_gbq
-# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-#              project_id=project_id, folder_path=folder_path):
+def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
+             project_id=project_id, folder_path=folder_path):
 
-#     bucket_name = "nusebac_storage"
-#     file_name = f"{GBQtable}.csv"
+    bucket_name = "nusebac_storage"
+    file_name = f"{GBQtable}.csv"
 
-#     # Construct the full table reference path
-#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-#     local_file_path = f"{folder_path}/{file_name}"
+    # Construct the full table reference path
+    table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
+    local_file_path = f"{folder_path}/{file_name}"
 
-#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-#     # Export BigQuery table to GCS
-#     destination_uri = f'gs://{bucket_name}/{file_name}*'
-#     job_config = bigquery.ExtractJobConfig()
-#     job = client.extract_table(
-#         table_ref,
-#         destination_uri,
-#         location="US",
-#         job_config=job_config
-#     )
-#     job.result()
-
-#     # Download the files
-#     client = storage.Client()
-#     bucket = client.bucket(bucket_name)
-#     blobs = list(bucket.list_blobs(prefix=file_name))  # Convert iterator to list
-
-#     for blob in blobs:
-#         # Download each file
-#         local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
-#         blob.download_to_filename(local_file_name)
-
-#     # Read CSV files into PySpark DataFrame
-#     sparkDf = spark.read.format("csv") \
-#         .option("inferSchema", "true") \
-#         .option("header", "true") \
-#         .option("multiline", "true") \
-#         .option("escape", "\"") \
-#         .csv(f"{local_file_path}*")  # Use wildcard to read all files
-
-#     # Delete files from GCS
-#     for blob in blobs:
-#         blob.delete()
-
-#     return sparkDf
-
-
-######################################## GBQ -> DF
-# def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id):
-    
-#     # Construct the full table reference path
-#     table_ref = f"{project_id}.{GBQdataset}.{GBQtable}"
-    
-#     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
-
-#     # Construct a BigQuery client object.
-#     client = bigquery.Client()
-
-#     # Execute a SQL query against the BigQuery table
-#     query = f"SELECT * FROM `{table_ref}` limit 100000"
-
-#     df = client.query(query).to_dataframe()
-
-#     # Convert the Pandas DataFrame to a PySpark DataFrame
-#     sparkDf = spark.createDataFrame(df)
-#     return sparkDf
-
-
-
-####################################### Big Query Storage Read
-
-def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path, project_id=project_id, snapshot_millis=0):
-    
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = googleAPI_json_path
 
-    # Create a BigQueryReadClient instance
-    bqstorageclient = bigquery_storage.BigQueryReadClient()
-    
-    # Define the table to read
-    table = f"projects/{project_id}/datasets/{GBQdataset}/tables/{GBQtable}"
-
-    parent = "projects/{}".format(project_id)
-    
-    requested_session = types.ReadSession(
-        table=table,
-        # Avro is also supported, but the Arrow data format is optimized to
-        # work well with column-oriented data structures such as pandas
-        # DataFrames.
-        data_format=types.DataFormat.ARROW
+    # Export BigQuery table to GCS
+    destination_uri = f'gs://{bucket_name}/{file_name}*'
+    job_config = bigquery.ExtractJobConfig()
+    job = client.extract_table(
+        table_ref,
+        destination_uri,
+        location="US",
+        job_config=job_config
     )
-    read_session = bqstorageclient.create_read_session(
-        parent=parent,
-        read_session=requested_session,
-        max_stream_count=1,
-    )
+    job.result()
 
-    # This example reads from only a single stream. Read from multiple streams
-    # to fetch data faster. Note that the session may not contain any streams
-    # if there are no rows to read.
-    stream = read_session.streams[0]
-    reader = bqstorageclient.read_rows(stream.name)
+    # Download the files
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blobs = list(bucket.list_blobs(prefix=file_name))  # Convert iterator to list
 
-    # Parse all Arrow blocks and create a dataframe.
-    frames = []
-    for message in reader.rows().pages:
-        frames.append(message.to_dataframe())
-    dataframe = pd.concat(frames)
+    for blob in blobs:
+        # Download each file
+        local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
+        blob.download_to_filename(local_file_name)
 
+    # Read CSV files into PySpark DataFrame
+    sparkDf = spark.read.format("csv") \
+        .option("inferSchema", "true") \
+        .option("header", "true") \
+        .option("multiline", "true") \
+        .option("escape", "\"") \
+        .csv(f"{local_file_path}*")  # Use wildcard to read all files
 
-    # Create Spark DataFrame
-    sparkDf = spark.createDataFrame(dataframe)
+    # Delete files from GCS
+    for blob in blobs:
+        blob.delete()
 
     return sparkDf
-
-
-
-
-
-
-
-
-
-
 
 def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!

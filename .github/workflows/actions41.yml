@@ -9,11 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest # ubuntu-latest # windows-latest
     steps:
-      ##################### New
-      - name: Set Node.js Heap Size
-        run: export NODE_OPTIONS="--max_old_space_size=65536" #65536 32768
-
-
 
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content to github runner

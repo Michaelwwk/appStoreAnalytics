@@ -2,7 +2,6 @@ import sys
 import time
 import os
 import shutil
-import pandas as pd
 from pyspark.sql import SparkSession
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle \
@@ -13,7 +12,6 @@ from dataWrangling.dataWrangling import dataWrangling
 from models.models import finalizedMLModels
 from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
-
 
 # Hard-coded variables (impt!)
 appleMaxSlice = 26 # No. of parts to slice Apple df into
@@ -50,18 +48,11 @@ for action_no in range(1, appleMaxSlice + googleMaxSlice + 1): # full range of Y
         currentGoogleSubDf += 1
 
 ### wrangling, ML, DateTime, TrainTest ###
-
-########################################################Original        
+        
 def wranglingMLDateTime_TrainTest(trainTest = False):
 
     # Start Spark session
-    # spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
-
-    spark = SparkSession.builder \
-    .master("local") \
-    .appName("appStoreAnalytics") \
-    .config("spark.ui.port", "4050") \
-    .config("spark.driver.memory", "64g").config("spark.executor.memory", "64g").getOrCreate()
+    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
     
     if trainTest == False:
         # Run main functions
@@ -87,10 +78,6 @@ def wranglingMLDateTime_TrainTest(trainTest = False):
         
     # Stop Spark session
     spark.stop()
-
-
-
-
 
 def create_wranglingMLDateTime_TrainTest(trainTest = False):
     return lambda: wranglingMLDateTime_TrainTest(trainTest)

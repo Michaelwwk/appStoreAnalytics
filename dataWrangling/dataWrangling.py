@@ -32,6 +32,7 @@ cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
 cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
 cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
 
+rawDataset = "dev_rawData"
 googleMain = "googleMain" # Table
 googleReview = "googleReview" # Table
 appleMain = "appleMain" # Table

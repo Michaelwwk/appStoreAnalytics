@@ -1,6 +1,7 @@
 from functools import reduce
 from common import read_gbq, to_gbq
 import ast
+import time
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf, when
@@ -171,6 +172,7 @@ def googleDataWrangling(spark, project_id, client):
     # print(sparkDf.show())
     print(sparkDf.count())
 
+    time.sleep(30)
     ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     # print(sparkDf.show())
     print(ref_appid_sparkDf.count())

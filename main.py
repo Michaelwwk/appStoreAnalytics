@@ -89,10 +89,10 @@ def wranglingMLDateTime_devRawData(devRawData = False, appleWrangling = False, g
             dateTime(spark, project_id, client)
             print('Date & time updated.')
     else:        
-        AppleScraped_table_name = appleScraped_table_name
-        AppleReview_table_name = appleReview_table_name
-        GoogleScraped_table_name = googleScraped_table_name
-        GoogleReview_table_name = googleReview_table_name
+        AppleScraped_table_name = "test1" #appleScraped_table_name
+        AppleReview_table_name = "test2" #appleReview_table_name
+        GoogleScraped_table_name = "test3" #googleScraped_table_name
+        GoogleReview_table_name = "test4" #googleReview_table_name
         table_names = [AppleScraped_table_name, AppleReview_table_name, GoogleScraped_table_name, GoogleReview_table_name]
         for table_name in table_names:
             devRawData_db_path = f"{project_id}.{dev_rawDataset}.{table_name}"

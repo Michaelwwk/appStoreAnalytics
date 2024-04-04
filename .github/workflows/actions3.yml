@@ -1,4 +1,4 @@
-name: Apple Data Ingestion (3)
+name: (03) Apple Data Ingestion
 
 on:
   schedule:

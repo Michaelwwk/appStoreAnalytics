@@ -12,6 +12,7 @@ app_store_scraper
 findspark
 pyspark
 pyarrow
+fastparquet
 requests
 beautifulsoup4
 tqdm

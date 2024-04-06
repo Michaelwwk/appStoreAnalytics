@@ -257,6 +257,8 @@ def googleDataWrangling(spark, project_id, client):
         # Filter only language_langdetect = 'en'
         df = df.filter(df['language_langdetect'] == 'en')
 
+    ########################### Wudi to insert text#################################
+        
         return df
 
     cleaned_sparkDf = clean_data_googleReview(sparkDf)

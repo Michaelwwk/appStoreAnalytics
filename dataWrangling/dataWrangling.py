@@ -288,8 +288,8 @@ def googleDataWrangling(spark, project_id, client):
         pipeline = Pipeline(stages=[tokenizer, stopwords_remover, hashingTF, idf])
         TA_pipeline = pipeline.fit(df)
 
-        #transformed_data holds the result of applying this pipeline to original DataFrame english_googleReview_sparkDF, performing tokenization, stop word removal
-        transformed_data = TA_pipeline.transform(df)
+        #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
+        df = TA_pipeline.transform(df)
         
     ########################### TA - End #################################
         return df

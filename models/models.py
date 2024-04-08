@@ -1,12 +1,12 @@
 import os
-# import nltk
-# nltk.download('punkt')
+import nltk
 from common import read_gbq, to_gbq
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
 from google.cloud import bigquery
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
 from pyspark.sql.functions import split, lower, concat, col
+nltk.download('punkt')
 
 # Hard-coded variables
 modelDataset = "dev_modelData"
@@ -27,10 +27,10 @@ def googleClassificationModel(spark, project_id, client):
     client.create_table(bigquery.Table(modelGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)
 
-def appleRecommenderModel(spark, project_id, client):
+def appleRecommendationModel(spark, project_id, client):
     return
 
-def googleRecommenderModel(spark, project_id, client):
+def googleRecommendationModel(spark, project_id, client):
 
     modelGoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 

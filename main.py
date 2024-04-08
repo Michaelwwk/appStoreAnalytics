@@ -9,7 +9,7 @@ import rawDataset, appleScraped_table_name, googleScraped_table_name, appleRevie
 from dataSources.dataIngestionApple import dataIngestionApple
 from dataSources.dataIngestionGoogle import dataIngestionGoogle
 from dataWrangling.dataWrangling import appleDataWrangling, googleDataWrangling
-from models.models import appleClassificationModel, googleClassificationModel, appleRecommenderModel, googleRecommenderModel
+from models.models import appleClassificationModel, googleClassificationModel, appleRecommendationModel, googleRecommendationModel
 from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
@@ -20,8 +20,8 @@ appleWrangling_actionNo = 41
 googleWrangling_actionNo = 42
 appleClassificationModel_actionNo = 43
 googleClassificationModel_actionNo = 44
-appleRecommenderModel_actionNo = 45
-googleRecommenderModel_actionNo = 46
+appleRecommendationModel_actionNo = 45
+googleRecommendationModel_actionNo = 46
 dateTime_actionNo = 47
 dev_rawDataset_actionNo = 48 # YAML action no. for dev_rawData AND total no. of YAML files (dev_rawData always set as last YAML file!)
 dev_rawDataset = "dev_rawData"
@@ -79,11 +79,11 @@ def wranglingMLDateTime_devRawData(devRawData = False, appleWrangling = False, g
             print('Google Classification Model step completed. Google Classification Model tables updated.')
         if appleRecModel == True:
             time.sleep(30)
-            appleRecommenderModel(spark, project_id, client)
+            appleRecommendationModel(spark, project_id, client)
             print('Apple Recommender Model step completed. Apple Recommender Model tables updated.')
         if googleRecModel == True:
             time.sleep(30)
-            googleRecommenderModel(spark, project_id, client)
+            googleRecommendationModel(spark, project_id, client)
             print('Google Recommender Model step completed. Google Recommender Model tables updated.')
         if dateAndTime == True:
             dateTime(spark, project_id, client)
@@ -115,8 +115,8 @@ main_dict[appleWrangling_actionNo] = create_wranglingMLDateTime_devRawData(apple
 main_dict[googleWrangling_actionNo] = create_wranglingMLDateTime_devRawData(googleWrangling = True)
 main_dict[appleClassificationModel_actionNo] = create_wranglingMLDateTime_devRawData(appleClassModel = True)
 main_dict[googleClassificationModel_actionNo] = create_wranglingMLDateTime_devRawData(googleClassModel = True)
-main_dict[appleRecommenderModel_actionNo] = create_wranglingMLDateTime_devRawData(appleRecModel = True)
-main_dict[googleRecommenderModel_actionNo] = create_wranglingMLDateTime_devRawData(googleRecModel = True)
+main_dict[appleRecommendationModel_actionNo] = create_wranglingMLDateTime_devRawData(appleRecModel = True)
+main_dict[googleRecommendationModel_actionNo] = create_wranglingMLDateTime_devRawData(googleRecModel = True)
 main_dict[dateTime_actionNo] = create_wranglingMLDateTime_devRawData(dateAndTime = True)
 main_dict[dev_rawDataset_actionNo] = create_wranglingMLDateTime_devRawData(devRawData = True)
 

@@ -6,6 +6,10 @@ from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf, when
 from pyspark.sql.types import ArrayType, StructType, StructField, FloatType, StringType
+from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF
+from pyspark.sql.functions import col, udf
+from pyspark.ml import Pipeline
+
 
 # Language Detection Packages
 # 0. Generic
@@ -257,6 +261,37 @@ def googleDataWrangling(spark, project_id, client):
         # Filter only language_langdetect = 'en'
         df = df.filter(df['language_langdetect'] == 'en')
 
+    ########################### Wudi to insert text#################################
+    ########################### TA - Start [Wudi]#################################
+        #Remove stopwords
+        custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
+    "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
+    "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
+    "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
+    "actually", "the", "and", "to", "i", "app", "a", "of", "not", "it", "this", "is", "in", "your", "you", "very", "but", "for", "are", "they", "time", "have", "no", "please", "with", "so", "that", "bad",
+    "app","will","ok","u","please","great","i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your" "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself",
+    "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these",
+    "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do",
+    "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
+    "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
+    "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
+    "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+
+        # Create TA Pipeline
+        tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
+        stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
+        hashingTF = HashingTF(inputCol=stopwords_remover.getOutputCol(), outputCol="rawFeatures", numFeatures=10000)
+        idf= IDF(inputCol=hashingTF.getOutputCol(), outputCol="features")
+
+        pipeline = Pipeline(stages=[tokenizer, stopwords_remover, hashingTF, idf])
+        TA_pipeline = pipeline.fit(df)
+
+        #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
+        df = TA_pipeline.transform(df)
+        
+    ########################### TA - End #################################
         return df
 
     cleaned_sparkDf = clean_data_googleReview(sparkDf)

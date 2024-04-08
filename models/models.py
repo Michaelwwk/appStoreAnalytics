@@ -5,7 +5,7 @@ from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_tab
 from google.cloud import bigquery
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
-from pyspark.sql.functions import split, lower, concat, col
+from pyspark.sql.functions import split, lower, concat, col, lit
 nltk.download('punkt')
 
 # Hard-coded variables
@@ -37,10 +37,10 @@ def googleRecommendationModel(spark, project_id, client):
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     sparkDf = sparkDf.limit(10000)
 
-    # Create "text" and "text_tokens" columns
-    sparkDf = sparkDf.withColumn('text', concat(col('title'), col('description'), col('summary')))
+    # Create "text" column by concatenating title, description, and summary
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
+    # Tokenize the text and store it in the "text_tokens" column
     sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
-
     # Select only the "text_tokens" column and collect it into a list
     text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
 

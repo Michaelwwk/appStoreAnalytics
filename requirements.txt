@@ -21,3 +21,4 @@ langdetect
 gensim
 gspread
 oauth2client
+google-auth

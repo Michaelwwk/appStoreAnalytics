@@ -35,7 +35,7 @@ def googleRecommendationModel(spark, project_id, client):
     modelGoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
 
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(100)
+    sparkDf = sparkDf.limit(10000)
 
     # Create "text" and "text_tokens" columns
     sparkDf = sparkDf.withColumn('text', concat(col('title'), col('description'), col('summary')))
@@ -72,10 +72,13 @@ def googleRecommendationModel(spark, project_id, client):
     results = model.docvecs.most_similar(positive=[test_vec],topn=5)
 
     #check the results. Do they make sense?
-    for i, d in results:
-        print(f"Score:\n{d}\n")
-        print(f"Title:\n{sparkDf['title'][i]}\n")
-        print(f"Details:\n{sparkDf['text'][i]}")
+    for i, (doc_id, similarity_score) in enumerate(results):
+        title = sparkDf.select("title").collect()[doc_id][0]
+        text = sparkDf.select("text").collect()[doc_id][0]
+        print(f"Result {i+1}:\n")
+        print(f"Score:\n{similarity_score}\n")
+        print(f"Title:\n{title}\n")
+        print(f"Details:\n{text}\n")
         print("-" * 50)
 
 

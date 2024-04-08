@@ -3,8 +3,8 @@ import nltk
 import pandas as pd
 from common import read_gbq, to_gbq, googleAPI_json_path
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
+from google.cloud import bigquery, gspread, ServiceAccountCredentials
 import gspread
-from google.cloud import bigquery
 from oauth2client.service_account import ServiceAccountCredentials
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize

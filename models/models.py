@@ -38,11 +38,11 @@ def googleRecommenderModel(spark, project_id, client):
     sparkDf = sparkDf.limit(100)
 
     # Create "text" and "text_tokens" columns
-    googleMain_sparkDF = googleMain_sparkDF.withColumn('text', concat(col('title'), col('description'), col('summary')))
-    googleMain_sparkDF = googleMain_sparkDF.withColumn("text_tokens", split(lower("text"), "\s+"))
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), col('description'), col('summary')))
+    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
 
     # Select only the "text_tokens" column and collect it into a list
-    text_tokens = googleMain_sparkDF.select("text_tokens").rdd.flatMap(lambda x: x).collect()
+    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
 
     # Load data into model
     tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]

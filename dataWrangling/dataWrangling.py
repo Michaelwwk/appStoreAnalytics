@@ -45,9 +45,148 @@ appleReview = "appleReview" # Table
 
 # TODO Follow this template when scripting!!
 
-def appleDataWrangling(spark, project_id, client):
+# Apple functions
+def remove_string_from_column_apple(column, string):
+    return regexp_replace(col(column), string, "")
+
+def helper_apple(df, string, column):
+    return df.withColumn(column, remove_string_from_column_apple(column, string))
+
+def remove_strings_from_df_apple(df, column, strings):
+    return reduce(lambda acc, string: helper_apple(acc, string, column), strings, df)
+
+def remove_strings_from_columns_apple(df, strings_to_remove):
+    return reduce(lambda acc, column: remove_strings_from_df_apple(acc, column, strings_to_remove[column]), strings_to_remove, df)
+
+def remove_strings_apple(content, strings_to_remove):
+    return reduce(lambda acc, s: acc.replace(s, ""), strings_to_remove, content)
+
+def detect_language_langdetect_apple(text):
+    try:
+        return detect(text)
+    except:
+        return "unknown"
+
+
+# Apple Data Wrangling
+def clean_data_appleMain(df):
+    # Drop specific columns
+    columns_to_drop = ['operatingSystem', 'authorurl']
+    df = df.drop(*columns_to_drop)
+
+    # Remove specified strings from specified columns
+    strings_to_remove = {
+    'description': ['<b>']
+    }
+    
+    df = remove_strings_from_columns_apple(df, strings_to_remove)
+    
+    # Transform star_ratings column
+    # Remove characters not needed [, ], (, ), ', %
+    df = df.withColumn('cleaned_star_ratings', regexp_replace('star_ratings', r"[(|)|'|\]|\[|%]", ""))
+    
+    splitCol = split(df['cleaned_star_ratings'], ',')
+    
+    df = df.withColumn('5Star', splitCol.getItem(1).cast('int')) \
+        .withColumn('4Star', splitCol.getItem(3).cast('int')) \
+            .withColumn('3Star', splitCol.getItem(5).cast('int')) \
+                .withColumn('2Star', splitCol.getItem(7).cast('int')) \
+                    .withColumn('1Star', splitCol.getItem(9).cast('int'))
+                    
+    df = df.drop('star_ratings').drop('cleaned_star_ratings')
+    
+    # Remove &amp; in applicationCategory
+    df = df.withColumn('applicationCategory', regexp_replace('applicationCategory', r"&amp;", "&"))
+    
+    # Drop records where 'ratingValue' column has a value of nan
+    df = df.filter((col("ratingValue") != 'nan'))
+    
+    return df
+
+def clean_data_appleReview(spark, df, ref_appid_sparkDf):
+    # Drop specific columns
+    # No columns to drop
+    
+    # Filter rows where there is a mismatch in data with header columns
+    df = df.filter((col("developerResponseId") == 'nan') & (col("developerResponseBody") == 'nan') & (col("developerResponseModified") == 'nan'))
+    
+    # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
+    df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
+    
+    # Drop duplicates
+    df = df.dropDuplicates(['id'])
+
+    # Remove specific strings from specific columns
+    # Running into an error - commenting out first.
+    strings_to_remove = ["<b>"]
+    
+    remove_strings_udf = udf(lambda x: remove_strings_apple(x, strings_to_remove), StringType())
+    
+    df = df.withColumn("review", remove_strings_udf(col("review")))
+    
+    # 2. Langdetect
+    # Define a UDF to apply language detection
+    detect_language_udf = spark.udf.register("detect_language_udf", detect_language_langdetect_apple)
+    
+    # Apply language detection to the 'content' column
+    df = df.withColumn("language_langdetect", detect_language_udf("review"))
+
+    # Filter only language_langdetect = 'en'
+    df = df.filter(df['language_langdetect'] == 'en')
+
+    return df
+
+def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None, sparkRvDf = None):
+    #################################################### appleMain
+    if not local: 
+        cleanAppleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanAppleMainScraped_table_name}" # Schema + Table
+        sparkDf = read_gbq(spark, rawDataset, appleMain)  # reinstate at production
+        
+        print(sparkDf.count())
+    
+    # Code section for cleaning googleMain data
+    cleaned_sparkDf = clean_data_appleMain(sparkDf)
+    
+    if not local: 
+        client.create_table(bigquery.Table(cleanAppleScraped_db_path), exists_ok = True)
+        to_gbq(cleaned_sparkDf, cleanDataset, cleanAppleMainScraped_table_name)  # reinstate at production
+    
+    #################################################### appleReview
+    if not local: 
+        cleanAppleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanAppleReviewScraped_table_name}" # Schema + Table
+        sparkDf = read_gbq(spark, rawDataset, appleReview)  # reinstate at production
+        
+    else: 
+        sparkDf = sparkRvDf
+    
+    print(sparkDf.count())
+
+    time.sleep(30)
+    
+    if not local: 
+        ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)  # reinstate at production
+        pass
+    else: 
+        ref_appid_sparkDf = cleaned_sparkDf
+        
+    # print(sparkDf.show())
+    print(ref_appid_sparkDf.count())
+
+    # Code section for cleaning googleMain data
+    cleaned_sparkDf = clean_data_appleReview(spark, sparkDf, ref_appid_sparkDf)
+
+    client.create_table(bigquery.Table(cleanAppleScraped_db_path), exists_ok = True)  # reinstate at production
+
+    print('Table created successfully')
+
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanAppleReviewScraped_table_name)  # reinstate at production
+
+    print('Table sent to GBQ successfully')
+    
     return
 
+
+# Google Data Wrangling
 def googleDataWrangling(spark, project_id, client):
 
     # googleMain

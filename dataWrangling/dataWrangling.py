@@ -263,7 +263,7 @@ def googleDataWrangling(spark, project_id, client):
 
     ########################### Wudi to insert text#################################
     ########################### TA - Start [Wudi]#################################
-        #Removel stopwords
+        #Remove stopwords
         custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
     "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
     "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",

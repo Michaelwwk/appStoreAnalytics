@@ -54,7 +54,7 @@ def googleRecommendationModel(spark, project_id, client):
 
     #The model can be saved for future usage
     folder_path = os.getcwd().replace("\\", "/")
-    googleRecModelFile_path = f"{folder_path}/googleRecModel.model"
+    googleRecModelFile_path = f"{folder_path}/models/googleRecModel.model"
     model.save(googleRecModelFile_path)
     
 

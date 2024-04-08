@@ -34,6 +34,7 @@ def googleRecommendationModel(spark, project_id, client):
 
     modelGoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
+    sparkDf = sparkDf.limit(10000)
 
     # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))

@@ -71,6 +71,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     googleRecModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
     model.save(googleRecModelFile_path)
     print(f"{apple_google} recommendation model created.")
+    
     # TO DELETE (END) #
 
 

@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 import os
 import json
 import shutil
@@ -79,21 +80,21 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
 
     if sparkDf == True:
         # Read CSV files into PySpark DataFrame
-        sparkDf = spark.read.format("csv") \
+        df = spark.read.format("csv") \
             .option("inferSchema", "true") \
             .option("header", "true") \
             .option("multiline", "true") \
             .option("escape", "\"") \
             .csv(f"{local_file_path}*")  # Use wildcard to read all files
     else:
-        pass
-
+        # Read CSV files into Pandas DataFrame
+        df = pd.concat((pd.read_csv(f) for f in glob.glob(f"{local_file_path}*")), ignore_index=True)
 
     # Delete files from GCS
     for blob in blobs:
         blob.delete()
 
-    return sparkDf
+    return df
 
 def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!

@@ -49,17 +49,17 @@ def googleClassificationModel(spark, project_id, client):
     client.create_table(bigquery.Table(modelGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)
 
-def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
+def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_tokens):
 
     folder_path = os.getcwd().replace("\\", "/")
     recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
 
     # TO DELETE (START) #
 
-    # Tokenize the text and store it in the "text_tokens" column
-    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
-    # Select only the "text_tokens" column and collect it into a list
-    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
+    # # Tokenize the text and store it in the "text_tokens" column
+    # sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
+    # # Select only the "text_tokens" column and collect it into a list
+    # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
 
     # Load data into model
     tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
@@ -148,13 +148,15 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
-    sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
-    sparkDf = sparkDf.limit(1000000)
+    pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
+    sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = True)
 
     # Create "text" column by concatenating title, description, and summary
-    sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
+    # sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
+    textonly = pandasDf['name'] + ' ' + pandasDf['description']
+    text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
-    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')
+    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens)
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)
@@ -162,8 +164,7 @@ def appleRecommendationModel(spark, project_id, client):
 def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(1000000)
+    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False)
 
     # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))

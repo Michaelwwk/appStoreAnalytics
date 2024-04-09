@@ -1,6 +1,5 @@
 import os
 import nltk
-import pandas as pd
 from common import read_gbq, to_gbq, googleAPI_json_path
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
 from google.cloud import bigquery
@@ -51,6 +50,8 @@ def googleClassificationModel(spark, project_id, client):
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
+    # TO DELETE (START) #
+
     # Tokenize the text and store it in the "text_tokens" column
     sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
     # Select only the "text_tokens" column and collect it into a list
@@ -69,8 +70,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     googleRecModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
     model.save(googleRecModelFile_path)
 
-
-
+    # TO DELETE (END) #
 
 
     newApplications_df = spark.createDataFrame(data)

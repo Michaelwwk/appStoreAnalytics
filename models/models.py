@@ -121,7 +121,11 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
-            title = sparkDf.select("title").collect()[doc_id][0]
+            
+            if apple_google == "apple":
+                title = sparkDf.select("name").collect()[doc_id][0]
+            else:
+                title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
             text = sparkDf.select("text").collect()[doc_id][0]
             print(f"[Result {i+1}]\n")

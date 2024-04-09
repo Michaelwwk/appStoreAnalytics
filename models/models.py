@@ -51,6 +51,9 @@ def googleClassificationModel(spark, project_id, client):
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
+    folder_path = os.getcwd().replace("\\", "/")
+    recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
+
     # TO DELETE (START) #
 
     # Tokenize the text and store it in the "text_tokens" column
@@ -67,13 +70,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
 
     #The model can be saved for future usage
-    folder_path = os.getcwd().replace("\\", "/")
-    googleRecModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
-    model.save(googleRecModelFile_path)
+    model.save(recModelFile_path)
     print(f"{apple_google} recommendation model created.")
-    
-    # TO DELETE (END) #
 
+    # TO DELETE (END) #
 
     newApplications_df = spark.createDataFrame(data)
     newApplications_df = newApplications_df.filter(
@@ -107,7 +107,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     newApplications_df = tokenizer.transform(newApplications_df)
 
     # Load saved doc2vec model
-    model= Doc2Vec.load(googleRecModelFile_path)
+    model= Doc2Vec.load(recModelFile_path)
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():

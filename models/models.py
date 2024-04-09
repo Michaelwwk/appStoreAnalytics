@@ -8,7 +8,9 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
-from pyspark.sql.functions import split, lower, concat, col, lit
+from pyspark.sql.functions import split, lower, concat, concat_ws, col, lit
+from pyspark.ml.feature import Tokenizer
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 nltk.download('punkt')
 
 # Hard-coded variables
@@ -28,7 +30,6 @@ sheet_url = 'https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_N
 spreadsheet = gspread_client.open_by_url(sheet_url)
 worksheet = spreadsheet.sheet1
 data = worksheet.get_all_records()
-newApplications_df = pd.DataFrame(data)
 
 # TODO Follow this template when scripting!!
 def appleClassificationModel(spark, project_id, client):
@@ -74,31 +75,71 @@ def googleRecommendationModel(spark, project_id, client):
     googleRecModelFile_path = f"{folder_path}/models/googleRecModel.model"
     model.save(googleRecModelFile_path)
 
-    df = pd.DataFrame(columns = ["newApp", "appRank", "appName", "appId", "appScore"])
 
-    for index, series in newApplications_df.iterrows():
 
-        newData = series['What is the name of your new application?'] + ' ' + \
-        series['Please provide a description for your application.'] + ' ' + \
-        series['Please provide a short summary for your application.']
 
-        test_doc = word_tokenize(newData.lower())
-        test_vec = model.infer_vector(test_doc)
+
+    newApplications_df = spark.createDataFrame(data)
+    newApplications_df = newApplications_df.filter \
+                        (newApplications_df["Will you be publishing your application to Apple App Store, Google Play Store, or both?"] == "Google Play Store")
+
+    # Define the schema
+    schema = StructType([
+        StructField("newApp", StringType(), nullable=True),
+        StructField("appRank", StringType(), nullable=True),
+        StructField("appName", StringType(), nullable=True),
+        StructField("appId", StringType(), nullable=True),
+        StructField("appScore", DoubleType(), nullable=True)
+    ])
+
+    # Create an empty DataFrame with the specified schema
+    df = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
+
+    # Concatenate the columns into a single column "text"
+    newApplications_df = newApplications_df.withColumn(
+        "text",
+        concat_ws(" ", 
+                lower(col("What is the name of your new application?")), 
+                lower(col("`Please provide a description for your application.`")), 
+                lower(col("`Please provide a short summary for your application.`")))
+    )
+
+    # Tokenize the text column
+    tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
+    newApplications_df = tokenizer.transform(newApplications_df)
+
+    # Load saved doc2vec model
+    model= Doc2Vec.load(googleRecModelFile_path)
+
+    # Iterate over each row and compute similarity scores
+    for row in newApplications_df.collect():
+        test_vec = model.infer_vector(row["text_tokens"])
         results = model.docvecs.most_similar(positive=[test_vec], topn=5)
-
-        #check the results. Do they make sense?
+        print("Original:")
+        print(f"Title: {row['What is the name of your new application?']}")
+        print(f"Description: {row['Please provide a description for your application.']}")
+        print(f"Summary: {row['Please provide a short summary for your application.']}")
+        print("-" * 50)
+        
+        # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
             title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
             text = sparkDf.select("text").collect()[doc_id][0]
-            row = [series['What is the name of your new application?'], i+1, title, id, similarity_score]
-            df.loc[len(df)] = row
-
             print(f"Result {i+1}:\n")
             print(f"Score:\n{similarity_score}\n")
             print(f"Title:\n{title}\n")
             print(f"Details:\n{text}\n")
             print("-" * 50)
+            
+            # Create a new row
+            new_row = (row["What is the name of your new application?"], str(i+1), title, id, similarity_score)
+            
+            # Append the row to the DataFrame
+            df = df.union(spark.createDataFrame([new_row], schema=schema))
+
+    # Filter out the empty row
+    df = df.filter(df.newApp.isNotNull())
 
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
-    to_gbq(sparkDf, modelDataset, googleRecommendationModel_table_name)
+    to_gbq(df, modelDataset, googleRecommendationModel_table_name)

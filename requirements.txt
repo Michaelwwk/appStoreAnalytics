@@ -18,3 +18,8 @@ beautifulsoup4
 tqdm
 nltk
 langdetect
+gensim
+pygsheets
+# gspread
+# oauth2client
+# google-auth

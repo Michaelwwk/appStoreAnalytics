@@ -69,12 +69,13 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     folder_path = os.getcwd().replace("\\", "/")
     googleRecModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
     model.save(googleRecModelFile_path)
-
+    print(f"{apple_google} recommendation model created.")
     # TO DELETE (END) #
 
 
     newApplications_df = spark.createDataFrame(data)
-    newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store | newApplications_df[appStore] == 'Both')
+    newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store)
+    # newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store | newApplications_df[appStore] == 'Both')
 
     # Define the schema
     schema = StructType([

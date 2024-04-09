@@ -174,8 +174,11 @@ def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False) # TODO to delete!
+    pandasDf = pandasDf.head(1000)
     print("Google pandasDf loaded.") # TODO to delete!
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
+    sparkDf = sparkDf.limit(1000)
+
     print("Google sparkDf loaded.")
 
     # Combine 'title', 'description', and 'summary' columns into a single column 'textonly'

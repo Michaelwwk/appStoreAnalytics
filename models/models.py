@@ -51,7 +51,7 @@ def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(20000)
+    sparkDf = sparkDf.limit(10000000)
 
     # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
@@ -113,7 +113,7 @@ def googleRecommendationModel(spark, project_id, client):
     for row in newApplications_df.collect():
         test_vec = model.infer_vector(row["text_tokens"])
         results = model.docvecs.most_similar(positive=[test_vec], topn=5)
-        print("Original:")
+        print("[Original]\n")
         print(f"Title: {row['What is the name of your new application?']}")
         print(f"Description: {row['Please provide a description for your application.']}")
         print(f"Summary: {row['Please provide a short summary for your application.']}")
@@ -124,7 +124,7 @@ def googleRecommendationModel(spark, project_id, client):
             title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
             text = sparkDf.select("text").collect()[doc_id][0]
-            print(f"Result {i+1}:\n")
+            print(f"[Result {i+1}]\n")
             print(f"Score:\n{similarity_score}\n")
             print(f"Title:\n{title}\n")
             print(f"Details:\n{text}\n")

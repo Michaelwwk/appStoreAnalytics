@@ -1,7 +1,7 @@
 import os
 import nltk
 from common import read_gbq, to_gbq, googleAPI_json_path
-from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
+from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
 import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -13,9 +13,10 @@ nltk.download('punkt')
 
 # Hard-coded variables
 modelDataset = "dev_modelData"
+modelAppleScraped_table_name = 'modelAppleMain'
 modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
-googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
+googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
 appName = "What is the name of your new application?"
 appDescription = "Please provide a description for your application."
@@ -74,8 +75,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
 
     newApplications_df = spark.createDataFrame(data)
-    newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store)
-    # newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store | newApplications_df[appStore] == 'Both')
+    newApplications_df = newApplications_df.filter(
+    (newApplications_df[appStore] == apple_google_store) |
+    (newApplications_df[appStore] == "Both")
+    )
 
     # Define the schema
     schema = StructType([
@@ -140,7 +143,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
+    sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     sparkDf = sparkDf.limit(10000)
 
     # Create "text" column by concatenating title, description, and summary

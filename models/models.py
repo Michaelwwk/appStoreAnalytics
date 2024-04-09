@@ -13,8 +13,8 @@ nltk.download('punkt')
 
 # Hard-coded variables
 modelDataset = "dev_modelData"
-modelAppleScraped_table_name = 'modelAppleMain'
-modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
+modelAppleScraped_table_name = 'modelAppleMain' # TODO just for example!
+modelGoogleScraped_table_name = 'modelGoogleMain' # TODO just for example!
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
@@ -49,29 +49,33 @@ def googleClassificationModel(spark, project_id, client):
     client.create_table(bigquery.Table(modelGoogleScraped_db_path), exists_ok = True)
     to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)
 
-def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
+def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_tokens): # TODO remove text_tokens parameter!
 
     folder_path = os.getcwd().replace("\\", "/")
     recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
 
     # TO DELETE (START) #
 
-    # Tokenize the text and store it in the "text_tokens" column
-    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
-    # Select only the "text_tokens" column and collect it into a list
-    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
+    # # Tokenize the text and store it in the "text_tokens" column
+    # sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
+    # # Select only the "text_tokens" column and collect it into a list
+    # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
 
     # Load data into model
+    print("Loading data into model ..")
     tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
     model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
     model.build_vocab(tagged_data)
+    print("Data loaded into model.")
 
     # Train the model using our data
+    print("Training model ..")
     model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
+    print("Model trained!")
 
     #The model can be saved for future usage
     model.save(recModelFile_path)
-    print(f"{apple_google} recommendation model created.")
+    print(f"{apple_google} recommendation model saved.")
 
     # TO DELETE (END) #
 
@@ -148,13 +152,20 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
+    pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False) # TODO to delete!
+    print("Apple pandasDf loaded.") # TODO to delete!
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
-    sparkDf = sparkDf
+    print("Apple sparkDf loaded.")
 
-    # Create "text" column by concatenating title, description, and summary
+    # Combine 'name' and 'description' columns into a single column 'textonly'
+    pandasDf['textonly'] = pandasDf['name'] + ' ' + pandasDf['description'] # TODO to delete!
+    # Handle missing values by replacing them with empty strings
+    textonly = pandasDf['textonly'].fillna('') # TODO to delete!
+    # Tokenize the text in the 'textonly' column
+    text_tokens = [word_tokenize(t.lower()) for t in textonly] # TODO to delete!
+
     sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
-
-    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')
+    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)
@@ -162,13 +173,20 @@ def appleRecommendationModel(spark, project_id, client):
 def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
+    pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False) # TODO to delete!
+    print("Google pandasDf loaded.") # TODO to delete!
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf
+    print("Google sparkDf loaded.")
 
-    # Create "text" column by concatenating title, description, and summary
+    # Combine 'title', 'description', and 'summary' columns into a single column 'textonly'
+    pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + ' ' + pandasDf['summary'] # TODO to delete!
+    # Handle missing values by replacing them with empty strings
+    textonly = pandasDf['textonly'].fillna('') # TODO to delete!
+    # Tokenize the text in the 'textonly' column
+    text_tokens = [word_tokenize(t.lower()) for t in textonly] # TODO to delete!
+
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
-
-    df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store')
+    df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, googleRecommendationModel_table_name)

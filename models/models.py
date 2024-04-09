@@ -4,8 +4,7 @@ import pandas as pd
 from common import read_gbq, to_gbq, googleAPI_json_path
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
 from google.cloud import bigquery
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
 from pyspark.sql.functions import split, lower, concat, concat_ws, col, lit
@@ -22,8 +21,7 @@ googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
 # Authenticate with Google Sheets API using the service account key
-credentials = ServiceAccountCredentials.from_json_keyfile_name(googleAPI_json_path, scope)
-gspread_client = gspread.authorize(credentials)
+gspread_client = pygsheets.authorize(service_file = googleAPI_json_path)
 
 # Read Google Sheet
 sheet_url = 'https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0'

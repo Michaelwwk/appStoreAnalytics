@@ -19,6 +19,7 @@ tqdm
 nltk
 langdetect
 gensim
-gspread
-oauth2client
-google-auth
+pygsheets
+# gspread
+# oauth2client
+# google-auth

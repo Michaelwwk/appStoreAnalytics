@@ -153,7 +153,7 @@ def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
-    print("Apple pandaDf loaded.")
+    print("Apple pandasDf loaded.")
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     print("Apple sparkDf loaded.")
 
@@ -171,7 +171,7 @@ def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False)
-    print("Google pandaDf loaded.")
+    print("Google pandasDf loaded.")
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     print("Google sparkDf loaded.")
 

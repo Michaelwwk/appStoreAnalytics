@@ -121,7 +121,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
-            
+
             if apple_google == "apple":
                 title = sparkDf.select("name").collect()[doc_id][0]
             else:
@@ -149,7 +149,7 @@ def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
-    sparkDf = sparkDf.limit(10000)
+    sparkDf = sparkDf.limit(1000000)
 
     # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
@@ -163,7 +163,7 @@ def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(10000)
+    sparkDf = sparkDf.limit(1000000)
 
     # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))

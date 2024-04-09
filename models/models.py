@@ -79,75 +79,75 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
 
     # TO DELETE (END) #
 
-    newApplications_df = spark.createDataFrame(data)
-    newApplications_df = newApplications_df.filter(
-    (newApplications_df[appStore] == apple_google_store) |
-    (newApplications_df[appStore] == "Both")
-    )
+    # newApplications_df = spark.createDataFrame(data)
+    # newApplications_df = newApplications_df.filter(
+    # (newApplications_df[appStore] == apple_google_store) |
+    # (newApplications_df[appStore] == "Both")
+    # )
 
-    # Define the schema
-    schema = StructType([
-        StructField("newApp", StringType(), nullable=True),
-        StructField("appRank", StringType(), nullable=True),
-        StructField("appName", StringType(), nullable=True),
-        StructField("appId", StringType(), nullable=True),
-        StructField("appScore", DoubleType(), nullable=True)
-    ])
+    # # Define the schema
+    # schema = StructType([
+    #     StructField("newApp", StringType(), nullable=True),
+    #     StructField("appRank", StringType(), nullable=True),
+    #     StructField("appName", StringType(), nullable=True),
+    #     StructField("appId", StringType(), nullable=True),
+    #     StructField("appScore", DoubleType(), nullable=True)
+    # ])
 
-    # Create an empty DataFrame with the specified schema
-    df = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
+    # # Create an empty DataFrame with the specified schema
+    # df = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
 
-    # Concatenate the columns into a single column "text"
-    newApplications_df = newApplications_df.withColumn(
-        "text",
-        concat_ws(" ", 
-                lower(col(appName)), 
-                lower(col(f"`{appDescription}`")), 
-                lower(col(f"`{appSummary}`")))
-    )
+    # # Concatenate the columns into a single column "text"
+    # newApplications_df = newApplications_df.withColumn(
+    #     "text",
+    #     concat_ws(" ", 
+    #             lower(col(appName)), 
+    #             lower(col(f"`{appDescription}`")), 
+    #             lower(col(f"`{appSummary}`")))
+    # )
 
-    # Tokenize the text column
-    tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
-    newApplications_df = tokenizer.transform(newApplications_df)
+    # # Tokenize the text column
+    # tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
+    # newApplications_df = tokenizer.transform(newApplications_df)
 
-    # Load saved doc2vec model
-    model= Doc2Vec.load(recModelFile_path)
+    # # Load saved doc2vec model
+    # model= Doc2Vec.load(recModelFile_path)
 
-    # Iterate over each row and compute similarity scores
-    for row in newApplications_df.collect():
-        test_vec = model.infer_vector(row["text_tokens"])
-        results = model.docvecs.most_similar(positive=[test_vec], topn=5)
-        print("[Original]\n")
-        print(f"Title: {row[appName]}")
-        print(f"Description: {row[appDescription]}")
-        print(f"Summary: {row[appSummary]}")
-        print("-" * 50)
+    # # Iterate over each row and compute similarity scores
+    # for row in newApplications_df.collect():
+    #     test_vec = model.infer_vector(row["text_tokens"])
+    #     results = model.docvecs.most_similar(positive=[test_vec], topn=5)
+    #     print("[Original]\n")
+    #     print(f"Title: {row[appName]}")
+    #     print(f"Description: {row[appDescription]}")
+    #     print(f"Summary: {row[appSummary]}")
+    #     print("-" * 50)
         
-        # Iterate over the results and append rows to the DataFrame
-        for i, (doc_id, similarity_score) in enumerate(results):
+    #     # Iterate over the results and append rows to the DataFrame
+    #     for i, (doc_id, similarity_score) in enumerate(results):
 
-            if apple_google == "apple":
-                title = sparkDf.select("name").collect()[doc_id][0]
-            else:
-                title = sparkDf.select("title").collect()[doc_id][0]
-            id = sparkDf.select("appId").collect()[doc_id][0]
-            text = sparkDf.select("text").collect()[doc_id][0]
-            print(f"[Result {i+1}]\n")
-            print(f"Score:\n{similarity_score}\n")
-            print(f"Title:\n{title}\n")
-            print(f"Details:\n{text}\n")
-            print("-" * 50)
+    #         if apple_google == "apple":
+    #             title = sparkDf.select("name").collect()[doc_id][0]
+    #         else:
+    #             title = sparkDf.select("title").collect()[doc_id][0]
+    #         id = sparkDf.select("appId").collect()[doc_id][0]
+    #         text = sparkDf.select("text").collect()[doc_id][0]
+    #         print(f"[Result {i+1}]\n")
+    #         print(f"Score:\n{similarity_score}\n")
+    #         print(f"Title:\n{title}\n")
+    #         print(f"Details:\n{text}\n")
+    #         print("-" * 50)
             
-            # Create a new row
-            new_row = (row[appName], str(i+1), title, id, similarity_score)
+    #         # Create a new row
+    #         new_row = (row[appName], str(i+1), title, id, similarity_score)
             
-            # Append the row to the DataFrame
-            df = df.union(spark.createDataFrame([new_row], schema=schema))
+    #         # Append the row to the DataFrame
+    #         df = df.union(spark.createDataFrame([new_row], schema=schema))
 
-    # Filter out the empty row
-    df = df.filter(df.newApp.isNotNull())
+    # # Filter out the empty row
+    # df = df.filter(df.newApp.isNotNull())
 
-    return df
+    # return df
 
 def appleRecommendationModel(spark, project_id, client):
 
@@ -178,7 +178,6 @@ def googleRecommendationModel(spark, project_id, client):
     print("Google pandasDf loaded.") # TODO to delete!
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     sparkDf = sparkDf.limit(1000)
-
     print("Google sparkDf loaded.")
 
     # Combine 'title', 'description', and 'summary' columns into a single column 'textonly'
@@ -189,7 +188,8 @@ def googleRecommendationModel(spark, project_id, client):
     text_tokens = [word_tokenize(t.lower()) for t in textonly] # TODO to delete!
 
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
-    df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
-    
-    client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
-    to_gbq(df, modelDataset, googleRecommendationModel_table_name)
+    # df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
+    recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
+
+    # client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
+    # to_gbq(df, modelDataset, googleRecommendationModel_table_name)

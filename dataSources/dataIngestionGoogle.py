@@ -187,8 +187,8 @@ def dataIngestionGoogle(client, project_id, noOfSlices = 1, subDf = 1):
     client.create_table(bigquery.Table(googleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False, allDataTypes = False)
-    to_gbq(google_reviews, rawDataset, googleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False, allDataTypes = False)
+    to_gbq(google_main, rawDataset, googleScraped_table_name, mergeType = 'WRITE_APPEND', sparkDf = False, allDataTypes = False)
+    to_gbq(google_reviews, rawDataset, googleReview_table_name, mergeType = 'WRITE_APPEND', sparkDf = False, allDataTypes = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
 
     # Completion log

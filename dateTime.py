@@ -36,5 +36,5 @@ def dateTime(spark, project_id, client):
     client.create_table(bigquery.Table(dateTime_db_path), exists_ok = True)
 
     # Push data into DB table
-    load_job = to_gbq(dateTime_df, dateTimeDataset, dateTime_table_name, mergeType = 'WRITE_APPEND', sparkdf = False, allDataTypes = False)
+    load_job = to_gbq(dateTime_df, dateTimeDataset, dateTime_table_name, mergeType = 'WRITE_APPEND', sparkDf = False, allDataTypes = False)
     load_job.result()

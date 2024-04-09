@@ -344,8 +344,8 @@ df_list[index] length: {len(df_list[index])}")
     client.create_table(bigquery.Table(appleReview_db_path), exists_ok = True)
 
     # Push data into DB
-    to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkdf = False, allDataTypes = False)
-    to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkdf = False, allDataTypes = False)
+    to_gbq(apple_main, rawDataset, appleScraped_table_name, mergeType = 'WRITE_APPEND', sparkDf = False, allDataTypes = False)
+    to_gbq(apple_reviews, rawDataset, appleReview_table_name, mergeType = 'WRITE_APPEND', sparkDf = False, allDataTypes = False)
     # ^ this raw table will have duplicates; drop the duplicates before pushing to clean table!!
 
     # Completion log

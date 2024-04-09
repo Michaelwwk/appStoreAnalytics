@@ -96,10 +96,10 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
 
     return df
 
-def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
+def to_gbq(dataframe, GBQdataset, GBQtable, sparkDf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!
 
-    if sparkdf == True:
+    if sparkDf == True:
         
         local_file_path = f"{folder_path}/{GBQdataset}.{GBQtable}.parquet"
 

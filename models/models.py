@@ -13,8 +13,8 @@ nltk.download('punkt')
 
 # Hard-coded variables
 modelDataset = "dev_modelData"
-modelAppleScraped_table_name = 'modelAppleMain'
-modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
+modelAppleScraped_table_name = 'modelAppleMain' # TODO just for example!
+modelGoogleScraped_table_name = 'modelGoogleMain' # TODO just for example!
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
@@ -164,6 +164,7 @@ def appleRecommendationModel(spark, project_id, client):
     # Tokenize the text in the 'textonly' column
     text_tokens = [word_tokenize(t.lower()) for t in textonly] # TODO to delete!
 
+    sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
@@ -184,6 +185,7 @@ def googleRecommendationModel(spark, project_id, client):
     # Tokenize the text in the 'textonly' column
     text_tokens = [word_tokenize(t.lower()) for t in textonly] # TODO to delete!
 
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
     df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens) # TODO remove text_tokens parameter!
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)

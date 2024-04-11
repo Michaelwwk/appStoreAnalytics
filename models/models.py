@@ -25,7 +25,7 @@ appName = "What is the name of your new application?"
 appDescription = "Please provide a description for your application."
 appSummary = "Please provide a short summary for your application."
 appStore = "Will you be publishing your application to Apple App Store, Google Play Store, or both?"
-genre = "What genre will your application fall under?"
+appGenre = "What genre will your application fall under?"
 
 # Define the scope of the Google Sheets API
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -119,7 +119,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         test_vec = model.infer_vector(row["text_tokens"])
         results = model.docvecs.most_similar(positive=[test_vec], topn=5)
         print("[Original]\n")
-        print(f"Genre: {row[genre]}")
+        print(f"Genre: {row[appGenre]}")
         print(f"App Name: {row[appName]}")
         print(f"Description: {row[appDescription]}")
         if apple_google == 'google':
@@ -145,7 +145,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
             print("-" * 50)
             
             # Create a new row
-            new_row = (row[appName], row[genre], str(i+1), title, id, similarity_score)
+            new_row = (row[appName], row[appGenre], str(i+1), title, id, similarity_score)
             
             # Append the row to the DataFrame
             df = df.union(spark.createDataFrame([new_row], schema=schema))

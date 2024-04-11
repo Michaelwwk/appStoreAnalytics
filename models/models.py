@@ -121,9 +121,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         print("[Original]\n")
         print(f"Genre: {row[appGenre]}")
         print(f"App Name: {row[appName]}")
-        print(f"Description: {row[appDescription]}")
-        if apple_google == 'google':
-            print(f"Summary: {row[appSummary]}")
+        # print(f"Description: {row[appDescription]}")
+        # if apple_google == 'google':
+        #     print(f"Summary: {row[appSummary]}")
         print("-" * 50)
         
         # Iterate over the results and append rows to the DataFrame
@@ -131,16 +131,16 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
             genre = sparkDf.select("genre").collect()[doc_id][0]
             title = sparkDf.select("title").collect()[doc_id][0]
-            description = sparkDf.select("description").collect()[doc_id][0]
-            summary = sparkDf.select("summary").collect()[doc_id][0]
+            # description = sparkDf.select("description").collect()[doc_id][0]
+            # summary = sparkDf.select("summary").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
 
             print(f"[Result {i+1}]\n")
             print(f"Genre:\n{genre}\n")
             print(f"App Name:\n{title}\n")
-            print(f"Description:\n{description}\n")
-            if apple_google == 'google':
-                print(f"Summary:\n{summary}\n")
+            # print(f"Description:\n{description}\n")
+            # if apple_google == 'google':
+            #     print(f"Summary:\n{summary}\n")
             print(f"Score:\n{similarity_score}\n")
             print("-" * 50)
             

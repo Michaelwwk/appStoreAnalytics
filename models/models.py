@@ -67,6 +67,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         path_dict[index] = recModelFile_path
         index += 1
 
+    # Filter for relevant rows in new applications dataset
     newApplications_df = spark.createDataFrame(data)
     newApplications_df = newApplications_df.filter(
     (newApplications_df[appStore] == apple_google_store) |

@@ -25,6 +25,7 @@ appName = "What is the name of your new application?"
 appDescription = "Please provide a description for your application."
 appSummary = "Please provide a short summary for your application."
 appStore = "Will you be publishing your application to Apple App Store, Google Play Store, or both?"
+genre = "What genre will your application fall under?"
 
 # Define the scope of the Google Sheets API
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -77,6 +78,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     # Define the schema
     schema = StructType([
         StructField("newApp", StringType(), nullable=True),
+        StructField("newAppGenre", StringType(), nullable=True),
         StructField("appRank", StringType(), nullable=True),
         StructField("appName", StringType(), nullable=True),
         StructField("appId", StringType(), nullable=True),
@@ -117,7 +119,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         test_vec = model.infer_vector(row["text_tokens"])
         results = model.docvecs.most_similar(positive=[test_vec], topn=5)
         print("[Original]\n")
-        print(f"Title: {row[appName]}")
+        print(f"Genre: {row[genre]}")
+        print(f"App Name: {row[appName]}")
         print(f"Description: {row[appDescription]}")
         if apple_google == 'google':
             print(f"Summary: {row[appSummary]}")
@@ -126,17 +129,23 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
 
+            genre = sparkDf.select("genre").collect()[doc_id][0]
             title = sparkDf.select("title").collect()[doc_id][0]
+            description = sparkDf.select("description").collect()[doc_id][0]
+            summary = sparkDf.select("summary").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
-            # text = sparkDf.select("text").collect()[doc_id][0]
+
             print(f"[Result {i+1}]\n")
+            print(f"Genre:\n{genre}\n")
+            print(f"App Name:\n{title}\n")
+            print(f"Description:\n{description}\n")
+            if apple_google == 'google':
+                print(f"Summary:\n{summary}\n")
             print(f"Score:\n{similarity_score}\n")
-            print(f"Title:\n{title}\n")
-            # print(f"Details:\n{text}\n")
             print("-" * 50)
             
             # Create a new row
-            new_row = (row[appName], str(i+1), title, id, similarity_score)
+            new_row = (row[appName], row[genre], str(i+1), title, id, similarity_score)
             
             # Append the row to the DataFrame
             df = df.union(spark.createDataFrame([new_row], schema=schema))

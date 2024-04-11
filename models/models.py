@@ -73,13 +73,23 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     df = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
 
     # Concatenate the columns into a single column "text"
-    newApplications_df = newApplications_df.withColumn(
-        "text",
-        concat_ws(" ", 
-                lower(col(appName)), 
-                lower(col(f"`{appDescription}`")), 
-                lower(col(f"`{appSummary}`")))
-    )
+
+    if apple_google == 'google':
+        newApplications_df = newApplications_df.withColumn(
+            "text",
+            concat_ws(" ", 
+                    lower(col(appName)), 
+                    lower(col(f"`{appDescription}`")), 
+                    lower(col(f"`{appSummary}`")))
+        )
+    else:
+        newApplications_df = newApplications_df.withColumn(
+            "text",
+            concat_ws(" ", 
+                    lower(col(appName)), 
+                    lower(col(f"`{appDescription}`")) 
+                    )
+        )
 
     # Tokenize the text column
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
@@ -95,16 +105,14 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         print("[Original]\n")
         print(f"Title: {row[appName]}")
         print(f"Description: {row[appDescription]}")
-        print(f"Summary: {row[appSummary]}")
+        if apple_google == 'google':
+            print(f"Summary: {row[appSummary]}")
         print("-" * 50)
         
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
 
-            if apple_google == "apple":
-                title = sparkDf.select("name").collect()[doc_id][0]
-            else:
-                title = sparkDf.select("title").collect()[doc_id][0]
+            title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
             text = sparkDf.select("text").collect()[doc_id][0]
             print(f"[Result {i+1}]\n")
@@ -130,7 +138,7 @@ def appleRecommendationModel(spark, project_id, client):
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     print("Apple sparkDf loaded.")
 
-    sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)

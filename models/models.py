@@ -2,9 +2,10 @@ import os
 import nltk
 import gzip
 import pickle
-from common import read_gbq, to_gbq, googleAPI_json_path
+from common import read_gbq, to_gbq, googleAPI_json_path, bucket_name
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
+from google.cloud import storage
 import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
@@ -53,55 +54,18 @@ def googleClassificationModel(spark, project_id, client):
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
+    # Read data from GCS & download to local
     folder_path = os.getcwd().replace("\\", "/")
-
-
-
-
-
-
-
-    # Import libraries
-    from google.cloud import storage
-
-    # Replace with your bucket name
-    bucket_name = "nusebac_storage"
-
-    # Replace with the path to your model file in GCS
-    model_file_path = f'gs://{bucket_name}/{apple_google}RecModel.model'
-
-    # Create a GCS client
-    client = storage.Client()
-
-    # Get a reference to the model directory (assuming the model files are in the same directory)
-    model_dir = os.path.dirname(model_file_path)
-
-    # List all blobs in the directory
-    blobs = client.bucket(bucket_name).list_blobs(prefix=model_dir)
-
+    blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
     path_dict = {}
     index = 0
     for blob in blobs:
-        # Extract filename from the blob object
         filename = os.path.basename(blob.name)
-
-        # Construct a local file path with a descriptive name
         recModelFile_path = os.path.join(folder_path, filename)
-
-        # Download the blob to the local file path
         blob.download_to_filename(recModelFile_path)
         print(f"Downloaded: {filename} to {recModelFile_path}")
-
         path_dict[index] = recModelFile_path
         index += 1
-
-        
-
-
-
-
-
-
 
     newApplications_df = spark.createDataFrame(data)
     newApplications_df = newApplications_df.filter(

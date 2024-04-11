@@ -59,11 +59,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
 
 
-    
+
 
     # Import libraries
     from google.cloud import storage
-    import os
 
     # Replace with your bucket name
     bucket_name = "nusebac_storage"

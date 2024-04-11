@@ -99,23 +99,23 @@ def clean_data_appleMain(df):
     df = df.withColumn('applicationCategory', regexp_replace('applicationCategory', r"&amp;", "&"))
     
     # Add new columns that aligns with googleMain
-    df = df.withColumn('summary', lit(None).cast(StringType())) \
-        .withColumn('installs', lit(None).cast(StringType())) \
-            .withColumn('minInstalls', lit(None).cast(StringType())) \
-                .withColumn('realInstalls', lit(None).cast(StringType())) \
-                    .withColumn('ratings', lit(None).cast(StringType())) \
-                        .withColumn('free', lit(None).cast(StringType())) \
-                            .withColumn('offersIAP', lit(None).cast(StringType())) \
-                                .withColumn('inAppProductPrice', lit(None).cast(StringType())) \
-                                    .withColumn('genreId', lit(None).cast(StringType())) \
-                                        .withColumn('contentRating', lit(None).cast(StringType())) \
-                                            .withColumn('contentRatingDescription', lit(None).cast(StringType())) \
-                                                .withColumn('adSupported', lit(None).cast(StringType())) \
-                                                    .withColumn('lastUpdatedOn', lit(None).cast(StringType())) \
-                                                        .withColumn('version', lit(None).cast(StringType())) \
-                                                            .withColumn('categories_list', lit(None).cast(StringType())) \
-                                                                .withColumn('min_inAppProductPrice', lit(None).cast(StringType())) \
-                                                                    .withColumn('max_inAppProductPrice', lit(None).cast(StringType()))
+    df = df.withColumn('summary', lit(None)) \
+        .withColumn('installs', lit(None)) \
+            .withColumn('minInstalls', lit(None)) \
+                .withColumn('realInstalls', lit(None)) \
+                    .withColumn('ratings', lit(None)) \
+                        .withColumn('free', lit(None)) \
+                            .withColumn('offersIAP', lit(None)) \
+                                .withColumn('inAppProductPrice', lit(None)) \
+                                    .withColumn('genreId', lit(None)) \
+                                        .withColumn('contentRating', lit(None)) \
+                                            .withColumn('contentRatingDescription', lit(None)) \
+                                                .withColumn('adSupported', lit(None)) \
+                                                    .withColumn('lastUpdatedOn', lit(None)) \
+                                                        .withColumn('version', lit(None)) \
+                                                            .withColumn('categories_list', lit(None)) \
+                                                                .withColumn('min_inAppProductPrice', lit(None)) \
+                                                                    .withColumn('max_inAppProductPrice', lit(None))
     
     # Change and arrange column names to align with googleMain
     df = df.selectExpr('name as title', 

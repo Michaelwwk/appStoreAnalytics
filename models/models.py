@@ -54,7 +54,49 @@ def googleClassificationModel(spark, project_id, client):
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
     folder_path = os.getcwd().replace("\\", "/")
-    recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.pkl.gz"
+
+    # Import libraries
+    from google.cloud import storage
+    import os
+
+    # Replace with your bucket name
+    bucket_name = "nusebac_storage"
+
+    # Replace with the path to your model file in GCS
+    model_file_path = f'gs://{bucket_name}/googleRecModel.model'
+
+    # Create a GCS client
+    client = storage.Client()
+
+    # Get a reference to the model directory (assuming the model files are in the same directory)
+    model_dir = os.path.dirname(model_file_path)
+
+    # List all blobs in the directory
+    blobs = client.bucket(bucket_name).list_blobs(prefix=model_dir)
+
+    path_dict = {}
+    index = 0
+    for blob in blobs:
+        # Extract filename from the blob object
+        filename = os.path.basename(blob.name)
+
+        # Construct a local file path with a descriptive name
+        recModelFile_path = os.path.join(folder_path, filename)
+
+        # Download the blob to the local file path
+        blob.download_to_filename(recModelFile_path)
+        print(f"Downloaded: {filename} to {recModelFile_path}")
+
+        path_dict[index] = recModelFile_path
+        index += 1
+
+        
+
+
+
+
+
+
 
     newApplications_df = spark.createDataFrame(data)
     newApplications_df = newApplications_df.filter(
@@ -98,8 +140,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     newApplications_df = tokenizer.transform(newApplications_df)
 
     # Load saved doc2vec model
-    with gzip.open(recModelFile_path, 'rb') as f:
-        model = pickle.load(f)
+    model = Doc2Vec.load(path_dict[0])
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():

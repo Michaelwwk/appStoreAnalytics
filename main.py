@@ -60,8 +60,8 @@ def wranglingMLDateTime_devRawData(devRawData = False, appleWrangling = False, g
                                    appleRecModel = False, googleRecModel = False, dateAndTime = False):
 
     # Start Spark session
-    spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
-    # spark = SparkSession.builder.appName("appStoreAnalytics").config("spark.executor.memory", "8g").getOrCreate()
+    # spark = SparkSession.builder.master("local").appName("appStoreAnalytics").config('spark.ui.port', '4050').getOrCreate()
+    spark = SparkSession.builder.appName("appStoreAnalytics").config("spark.executor.memory", "8g").getOrCreate()
 
     if devRawData == False:
         if appleWrangling == True:

@@ -127,11 +127,11 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
             title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
-            text = sparkDf.select("text").collect()[doc_id][0]
+            # text = sparkDf.select("text").collect()[doc_id][0]
             print(f"[Result {i+1}]\n")
             print(f"Score:\n{similarity_score}\n")
             print(f"Title:\n{title}\n")
-            print(f"Details:\n{text}\n")
+            # print(f"Details:\n{text}\n")
             print("-" * 50)
             
             # Create a new row

@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 import os
 import json
 import shutil
@@ -45,7 +46,7 @@ def split_df(df, noOfSlices = 1, subDf = 1):
     return small_df
 
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
-             project_id=project_id, folder_path=folder_path):
+             project_id=project_id, folder_path=folder_path, sparkDf = True):
 
     bucket_name = "nusebac_storage"
     file_name = f"{GBQtable}.csv"
@@ -77,24 +78,28 @@ def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=goo
         local_file_name = f"{local_file_path}_{blob.name.split('/')[-1]}"
         blob.download_to_filename(local_file_name)
 
-    # Read CSV files into PySpark DataFrame
-    sparkDf = spark.read.format("csv") \
-        .option("inferSchema", "true") \
-        .option("header", "true") \
-        .option("multiline", "true") \
-        .option("escape", "\"") \
-        .csv(f"{local_file_path}*")  # Use wildcard to read all files
+    if sparkDf == True:
+        # Read CSV files into PySpark DataFrame
+        df = spark.read.format("csv") \
+            .option("inferSchema", "true") \
+            .option("header", "true") \
+            .option("multiline", "true") \
+            .option("escape", "\"") \
+            .csv(f"{local_file_path}*")  # Use wildcard to read all files
+    else:
+        # Read CSV files into Pandas DataFrame
+        df = pd.concat((pd.read_csv(f) for f in glob.glob(f"{local_file_path}*")), ignore_index=True)
 
     # Delete files from GCS
     for blob in blobs:
         blob.delete()
 
-    return sparkDf
+    return df
 
-def to_gbq(dataframe, GBQdataset, GBQtable, sparkdf = True, client = client,
+def to_gbq(dataframe, GBQdataset, GBQtable, sparkDf = True, client = client,
            folder_path = folder_path, mergeType = 'WRITE_TRUNCATE', allDataTypes = True): # 'WRITE_APPEND' if want to append values instead!
 
-    if sparkdf == True:
+    if sparkDf == True:
         
         local_file_path = f"{folder_path}/{GBQdataset}.{GBQtable}.parquet"
 

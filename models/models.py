@@ -1,7 +1,7 @@
 import os
 import nltk
 from common import read_gbq, to_gbq, googleAPI_json_path
-from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name
+from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
 import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -13,9 +13,10 @@ nltk.download('punkt')
 
 # Hard-coded variables
 modelDataset = "dev_modelData"
-modelGoogleScraped_table_name = 'modelGoogleMain' # TODO CHANGE PATH
-googleRecommendationModel_table_name = 'modelGoogleRecommendation'
+modelAppleScraped_table_name = 'modelAppleMain' # TODO just for example!
+modelGoogleScraped_table_name = 'modelGoogleMain' # TODO just for example!
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
+googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
 appName = "What is the name of your new application?"
 appDescription = "Please provide a description for your application."
@@ -50,31 +51,14 @@ def googleClassificationModel(spark, project_id, client):
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
-    # TO DELETE (START) #
-
-    # Tokenize the text and store it in the "text_tokens" column
-    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
-    # Select only the "text_tokens" column and collect it into a list
-    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
-
-    # Load data into model
-    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
-    model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
-    model.build_vocab(tagged_data)
-
-    # Train the model using our data
-    model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
-
-    #The model can be saved for future usage
     folder_path = os.getcwd().replace("\\", "/")
-    googleRecModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
-    model.save(googleRecModelFile_path)
-
-    # TO DELETE (END) #
-
+    recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
 
     newApplications_df = spark.createDataFrame(data)
-    newApplications_df = newApplications_df.filter(newApplications_df[appStore] == apple_google_store | newApplications_df[appStore] == 'Both')
+    newApplications_df = newApplications_df.filter(
+    (newApplications_df[appStore] == apple_google_store) |
+    (newApplications_df[appStore] == "Both")
+    )
 
     # Define the schema
     schema = StructType([
@@ -89,20 +73,30 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     df = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
 
     # Concatenate the columns into a single column "text"
-    newApplications_df = newApplications_df.withColumn(
-        "text",
-        concat_ws(" ", 
-                lower(col(appName)), 
-                lower(col(f"`{appDescription}`")), 
-                lower(col(f"`{appSummary}`")))
-    )
+
+    if apple_google == 'google':
+        newApplications_df = newApplications_df.withColumn(
+            "text",
+            concat_ws(" ", 
+                    lower(col(appName)), 
+                    lower(col(f"`{appDescription}`")), 
+                    lower(col(f"`{appSummary}`")))
+        )
+    else:
+        newApplications_df = newApplications_df.withColumn(
+            "text",
+            concat_ws(" ", 
+                    lower(col(appName)), 
+                    lower(col(f"`{appDescription}`")) 
+                    )
+        )
 
     # Tokenize the text column
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
     newApplications_df = tokenizer.transform(newApplications_df)
 
     # Load saved doc2vec model
-    model= Doc2Vec.load(googleRecModelFile_path)
+    model= Doc2Vec.load(recModelFile_path)
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():
@@ -111,11 +105,13 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         print("[Original]\n")
         print(f"Title: {row[appName]}")
         print(f"Description: {row[appDescription]}")
-        print(f"Summary: {row[appSummary]}")
+        if apple_google == 'google':
+            print(f"Summary: {row[appSummary]}")
         print("-" * 50)
         
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
+
             title = sparkDf.select("title").collect()[doc_id][0]
             id = sparkDf.select("appId").collect()[doc_id][0]
             text = sparkDf.select("text").collect()[doc_id][0]
@@ -139,12 +135,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(200000)
+    sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
+    print("Apple sparkDf loaded.")
 
-    # Create "text" column by concatenating title, description, and summary
-    sparkDf = sparkDf.withColumn('text', concat(col('name'), lit(' '), col('description')))
-
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
@@ -154,12 +148,10 @@ def googleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.limit(200000)
+    print("Google sparkDf loaded.")
 
-    # Create "text" column by concatenating title, description, and summary
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
-
     df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store')
-    
+
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, googleRecommendationModel_table_name)

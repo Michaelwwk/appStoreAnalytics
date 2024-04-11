@@ -1,5 +1,7 @@
 import os
 import nltk
+import gzip
+import pickle
 from common import read_gbq, to_gbq, googleAPI_json_path
 from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
@@ -52,7 +54,7 @@ def googleClassificationModel(spark, project_id, client):
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
     folder_path = os.getcwd().replace("\\", "/")
-    recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.model"
+    recModelFile_path = f"{folder_path}/models/{apple_google}RecModel.pkl.gz"
 
     newApplications_df = spark.createDataFrame(data)
     newApplications_df = newApplications_df.filter(
@@ -96,7 +98,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     newApplications_df = tokenizer.transform(newApplications_df)
 
     # Load saved doc2vec model
-    model= Doc2Vec.load(recModelFile_path)
+    with gzip.open(recModelFile_path, 'rb') as f:
+        model = pickle.load(f)
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():

@@ -55,6 +55,12 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
     folder_path = os.getcwd().replace("\\", "/")
 
+
+
+
+
+    
+
     # Import libraries
     from google.cloud import storage
     import os
@@ -63,7 +69,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     bucket_name = "nusebac_storage"
 
     # Replace with the path to your model file in GCS
-    model_file_path = f'gs://{bucket_name}/googleRecModel.model'
+    model_file_path = f'gs://{bucket_name}/{apple_google}RecModel.model'
 
     # Create a GCS client
     client = storage.Client()
@@ -173,6 +179,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
     # Filter out the empty row
     df = df.filter(df.newApp.isNotNull())
+
+    # Remove paths in local storage
+    for path in path_dict.values():
+        os.remove(path)
 
     return df
 

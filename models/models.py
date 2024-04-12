@@ -79,6 +79,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     schema = StructType([
         StructField("newApp", StringType(), nullable=True),
         StructField("newAppGenre", StringType(), nullable=True),
+        StructField("newAppDescription", StringType(), nullable=True),
         StructField("appRank", StringType(), nullable=True),
         StructField("appName", StringType(), nullable=True),
         StructField("appId", StringType(), nullable=True),
@@ -121,7 +122,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
         print("[Original]\n")
         print(f"Genre: {row[appGenre]}")
         print(f"App Name: {row[appName]}")
-        # print(f"Description: {row[appDescription]}")
+        print(f"Description: {row[appDescription]}")
         # if apple_google == 'google':
         #     print(f"Summary: {row[appSummary]}")
         print("-" * 50)
@@ -145,7 +146,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
             print("-" * 50)
             
             # Create a new row
-            new_row = (row[appName], row[appGenre], str(i+1), title, id, similarity_score)
+            new_row = (row[appName], row[appGenre], row[appDescription], str(i+1), title, id, similarity_score)
             
             # Append the row to the DataFrame
             df = df.union(spark.createDataFrame([new_row], schema=schema))

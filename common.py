@@ -13,6 +13,7 @@ with open(googleAPI_json_path, "w") as f:
     json.dump(googleAPI_dict, f)
 project_id =  googleAPI_dict["project_id"]
 client = bigquery.Client.from_service_account_json(googleAPI_json_path, project = project_id)
+bucket_name = "nusebac_storage"
 
 def split_df(df, noOfSlices = 1, subDf = 1):
 
@@ -48,7 +49,6 @@ def split_df(df, noOfSlices = 1, subDf = 1):
 def read_gbq(spark, GBQdataset, GBQtable, client=client, googleAPI_json_path=googleAPI_json_path,
              project_id=project_id, folder_path=folder_path, sparkDf = True):
 
-    bucket_name = "nusebac_storage"
     file_name = f"{GBQtable}.csv"
 
     # Construct the full table reference path

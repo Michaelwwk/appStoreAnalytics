@@ -474,10 +474,10 @@ def googleDataWrangling(spark, project_id, client):
         # Create TA Pipeline
         tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
         stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
-        hashingTF = HashingTF(inputCol=stopwords_remover.getOutputCol(), outputCol="rawFeatures", numFeatures=10000)
-        idf= IDF(inputCol=hashingTF.getOutputCol(), outputCol="features")
+       #hashingTF = HashingTF(inputCol=stopwords_remover.getOutputCol())
+       #idf= IDF(inputCol=hashingTF.getOutputCol())
 
-        pipeline = Pipeline(stages=[tokenizer, stopwords_remover, hashingTF, idf])
+        pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
         TA_pipeline = pipeline.fit(df)
 
         #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal

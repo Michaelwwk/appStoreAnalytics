@@ -7,7 +7,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Hard-coded variables
-dateTimeDataset = "dev_dateTimeData"
+dateTimeDataset = "prod_dateTimeData"
 dateTime_table_name = "dateTime"
 
 def dateTime(spark, project_id, client):

@@ -15,9 +15,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 nltk.download('punkt')
 
 # Hard-coded variables
-modelDataset = "dev_modelData"
-modelAppleScraped_table_name = 'modelAppleMain' # TODO just for example!
-modelGoogleScraped_table_name = 'modelGoogleMain' # TODO just for example!
+modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
@@ -38,20 +36,11 @@ spreadsheet = gspread_client.open_by_url(googleSheetURL)
 worksheet = spreadsheet.sheet1
 data = worksheet.get_all_records()
 
-# TODO Follow this template when scripting!!
 def appleClassificationModel(spark, project_id, client):
     return
 
 def googleClassificationModel(spark, project_id, client):
-    
-    modelGoogleScraped_db_path = f"{project_id}.{modelDataset}.{modelGoogleScraped_table_name}"
-
-    sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    # print(sparkDf.show())
-    print(sparkDf.count())
-
-    client.create_table(bigquery.Table(modelGoogleScraped_db_path), exists_ok = True)
-    to_gbq(sparkDf, modelDataset, modelGoogleScraped_table_name)
+    return
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 

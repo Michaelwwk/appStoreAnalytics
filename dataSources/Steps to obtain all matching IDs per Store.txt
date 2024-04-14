@@ -1,9 +1,0 @@
--- Steps to obtain all matching IDs only for 100% match during iteration (save about 50% run time):
-  -- 1. Chop already filtered DFs (~400k apps per store) into half (because our max runners set-up capacity per 6 hours is about 240k apps per store)
-  -- 2. Delete googleMain and appleMain tables in GBQ
-  -- 3. Per half df, run .py scripts to APPEND data (comment out deleteRowsAppleGoogle.py DELETE statements) to GBQ tables
-  -- 4. Run SQL statements below to get distinct app IDs per store:
-        SELECT distinct appId FROM `big-data-analytics-415801.rawData.googleMain`;
-        SELECT distinct appId FROM `big-data-analytics-415801.rawData.appleMain`;
-  -- 5. Export out the results to CSVs and load as pd.DataFrame in python
-  -- 6. Use these 2 DataFrames to iterate the API/ web scrapping functions instead (16 runners for Apple; 4 runners for Google)

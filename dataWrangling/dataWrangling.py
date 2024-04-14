@@ -1,7 +1,7 @@
-from functools import reduce
-from common import read_gbq, to_gbq
 import ast
 import time
+from functools import reduce
+from common import read_gbq, to_gbq
 from google.cloud import bigquery
 from dataSources.deleteRowsAppleGoogle import rawDataset, googleScraped_table_name
 from pyspark.sql.functions import col, regexp_replace, split, expr, udf, when, lit
@@ -9,7 +9,19 @@ from pyspark.sql.types import ArrayType, StructType, StructField, FloatType, Str
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF
 from pyspark.sql.functions import col, udf
 from pyspark.ml import Pipeline
+from langdetect import detect
 
+# Hard-coded variables
+cleanDataset = "prod_cleanData" # Schema/Dataset
+cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
+cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
+cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
+cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
+
+googleMain = "googleMain" # Table
+googleReview = "googleReview" # Table
+appleMain = "appleMain" # Table
+appleReview = "appleReview" # Table
 
 # Language Detection Packages
 # 0. Generic
@@ -22,180 +34,163 @@ from pyspark.ml import Pipeline
 # # 1. Polyglot
 # from polyglot.detect import Detector
 
-# 2. Langdetect 👍
-from langdetect import detect
+# 2. Langdetect (chosen method!)
+# from langdetect import detect
 
 # # 3. Gcld3 (Google Compact Language Detector 3)
 # import gcld3
 
-
-
-# Hard-coded variables
-cleanDataset = "dev_cleanData" # Schema/Dataset
-cleanGoogleMainScraped_table_name = 'cleanGoogleMain' # Table
-cleanGoogleReviewScraped_table_name = 'cleanGoogleReview' # Table
-cleanAppleMainScraped_table_name = 'cleanAppleMain' # Table
-cleanAppleReviewScraped_table_name = 'cleanAppleReview' # Table
-
-rawDataset = "dev_rawData"
-googleMain = "googleMain" # Table
-googleReview = "googleReview" # Table
-appleMain = "appleMain" # Table
-appleReview = "appleReview" # Table
-
-# TODO Follow this template when scripting!!
-
-# Apple functions
-def remove_string_from_column_apple(column, string):
-    return regexp_replace(col(column), string, "")
-
-def helper_apple(df, string, column):
-    return df.withColumn(column, remove_string_from_column_apple(column, string))
-
-def remove_strings_from_df_apple(df, column, strings):
-    return reduce(lambda acc, string: helper_apple(acc, string, column), strings, df)
-
-def remove_strings_from_columns_apple(df, strings_to_remove):
-    return reduce(lambda acc, column: remove_strings_from_df_apple(acc, column, strings_to_remove[column]), strings_to_remove, df)
-
-def remove_strings_apple(content, strings_to_remove):
-    return reduce(lambda acc, s: acc.replace(s, ""), strings_to_remove, content)
-
-def detect_language_langdetect_apple(text):
-    try:
-        return detect(text)
-    except:
-        return "unknown"
-
-
-# Apple Data Wrangling
-def clean_data_appleMain(df):
-    # Drop specific columns
-    columns_to_drop = ['operatingSystem', 'authorurl']
-    df = df.drop(*columns_to_drop)
-
-    # Remove specified strings from specified columns
-    strings_to_remove = {
-    'description': ['<b>']
-    }
-    
-    df = remove_strings_from_columns_apple(df, strings_to_remove)
-    
-    # Transform star_ratings column
-    # Remove characters not needed [, ], (, ), ', %
-    df = df.withColumn('cleaned_star_ratings', regexp_replace('star_ratings', r"[(|)|'|\]|\[|%]", ""))
-    
-    splitCol = split(df['cleaned_star_ratings'], ',')
-    
-    df = df.withColumn('5starrating_no', splitCol.getItem(1).cast('int')) \
-        .withColumn('4starrating_no', splitCol.getItem(3).cast('int')) \
-            .withColumn('3starrating_no', splitCol.getItem(5).cast('int')) \
-                .withColumn('2starrating_no', splitCol.getItem(7).cast('int')) \
-                    .withColumn('1starrating_no', splitCol.getItem(9).cast('int'))
-                    
-    df = df.drop('star_ratings').drop('cleaned_star_ratings')
-    
-    # Remove &amp; in applicationCategory
-    df = df.withColumn('applicationCategory', regexp_replace('applicationCategory', r"&amp;", "&"))
-    
-    # Add new columns that aligns with googleMain
-    df = df.withColumn('summary', lit(None)) \
-        .withColumn('installs', lit(None)) \
-            .withColumn('minInstalls', lit(None)) \
-                .withColumn('realInstalls', lit(None)) \
-                    .withColumn('ratings', lit(None)) \
-                        .withColumn('free', lit(None)) \
-                            .withColumn('offersIAP', lit(None)) \
-                                .withColumn('inAppProductPrice', lit(None)) \
-                                    .withColumn('genreId', lit(None)) \
-                                        .withColumn('contentRating', lit(None)) \
-                                            .withColumn('contentRatingDescription', lit(None)) \
-                                                .withColumn('adSupported', lit(None)) \
-                                                    .withColumn('lastUpdatedOn', lit(None)) \
-                                                        .withColumn('version', lit(None)) \
-                                                            .withColumn('categories_list', lit(None)) \
-                                                                .withColumn('min_inAppProductPrice', lit(None)) \
-                                                                    .withColumn('max_inAppProductPrice', lit(None))
-    
-    # Change and arrange column names to align with googleMain
-    df = df.selectExpr('name as title', 
-                       'description', 
-                       'summary', 'installs', 'minInstalls', 'realInstalls', 
-                       'ratingValue as score', 
-                       'ratings', 
-                       'reviewCount as reviews', 
-                       'price', 
-                       'free', 
-                       'priceCurrency as currency', 
-                       'offersIAP', 'inAppProductPrice', 
-                       'authorname as developer', 
-                       'applicationCategory as genre', 
-                       'genreId', 'contentRating', 'contentRatingDescription', 'adSupported', 
-                       'datePublished as released', 
-                       'lastUpdatedOn', 'version', 
-                       'appId', 
-                       'categories_list', 'min_inAppProductPrice', 'max_inAppProductPrice', 
-                       '1starrating_no', 
-                       '2starrating_no', 
-                       '3starrating_no', 
-                       '4starrating_no', 
-                       '5starrating_no')
-    
-    # Drop records where 'ratingValue' column has a value of nan
-    df = df.filter((col("ratingValue") != 'nan'))
-    
-    return df
-
-def clean_data_appleReview(spark, df, ref_appid_sparkDf):
-    # Drop specific columns
-    # No columns to drop
-    
-    # Filter rows where there is a mismatch in data with header columns
-    df = df.filter((col("developerResponseId") == 'nan') & (col("developerResponseBody") == 'nan') & (col("developerResponseModified") == 'nan'))
-    
-    # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
-    df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
-    
-    # Drop duplicates
-    df = df.dropDuplicates(['id'])
-    
-    # Rename and rearrnge columns to align with googleReview and drop type, offset, nBatch columns
-    df = df.selectExpr('appId', 
-                       'id as reviewId', 
-                       'userName', 
-                       'review as content', 
-                       'rating as score', 
-                       'date as at', 
-                       'developerResponseBody as replyContent',
-                       'isEdited', 'title', 'developerResponseId', 'developerResponseModified')
-
-    # Remove specific strings from specific columns
-    # Running into an error - commenting out first.
-    strings_to_remove = ["<b>"]
-    
-    remove_strings_udf = udf(lambda x: remove_strings_apple(x, strings_to_remove), StringType())
-    
-    df = df.withColumn("content", remove_strings_udf(col("content")))
-    
-    # 2. Langdetect
-    # Define a UDF to apply language detection
-    detect_language_udf = spark.udf.register("detect_language_udf", detect_language_langdetect_apple)
-    
-    # Apply language detection to the 'content' column
-    df = df.withColumn("language_langdetect", detect_language_udf("content"))
-
-    # Filter only language_langdetect = 'en'
-    df = df.filter(df['language_langdetect'] == 'en')
-
-    return df
-
 def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None, sparkRvDf = None):
+
+    # Apple functions
+    def remove_string_from_column_apple(column, string):
+        return regexp_replace(col(column), string, "")
+
+    def helper_apple(df, string, column):
+        return df.withColumn(column, remove_string_from_column_apple(column, string))
+
+    def remove_strings_from_df_apple(df, column, strings):
+        return reduce(lambda acc, string: helper_apple(acc, string, column), strings, df)
+
+    def remove_strings_from_columns_apple(df, strings_to_remove):
+        return reduce(lambda acc, column: remove_strings_from_df_apple(acc, column, strings_to_remove[column]), strings_to_remove, df)
+
+    def remove_strings_apple(content, strings_to_remove):
+        return reduce(lambda acc, s: acc.replace(s, ""), strings_to_remove, content)
+
+    def detect_language_langdetect_apple(text):
+        try:
+            return detect(text)
+        except:
+            return "unknown"
+
+    # Apple Data Wrangling
+    def clean_data_appleMain(df):
+        # Drop specific columns
+        columns_to_drop = ['operatingSystem', 'authorurl']
+        df = df.drop(*columns_to_drop)
+
+        # Remove specified strings from specified columns
+        strings_to_remove = {
+        'description': ['<b>']
+        }
+        
+        df = remove_strings_from_columns_apple(df, strings_to_remove)
+        
+        # Transform star_ratings column
+        # Remove characters not needed [, ], (, ), ', %
+        df = df.withColumn('cleaned_star_ratings', regexp_replace('star_ratings', r"[(|)|'|\]|\[|%]", ""))
+        
+        splitCol = split(df['cleaned_star_ratings'], ',')
+        
+        df = df.withColumn('5starrating_no', splitCol.getItem(1).cast('int')) \
+            .withColumn('4starrating_no', splitCol.getItem(3).cast('int')) \
+                .withColumn('3starrating_no', splitCol.getItem(5).cast('int')) \
+                    .withColumn('2starrating_no', splitCol.getItem(7).cast('int')) \
+                        .withColumn('1starrating_no', splitCol.getItem(9).cast('int'))
+                        
+        df = df.drop('star_ratings').drop('cleaned_star_ratings')
+        
+        # Remove &amp; in applicationCategory
+        df = df.withColumn('applicationCategory', regexp_replace('applicationCategory', r"&amp;", "&"))
+        
+        # Add new columns that aligns with googleMain
+        df = df.withColumn('summary', lit(None)) \
+            .withColumn('installs', lit(None)) \
+                .withColumn('minInstalls', lit(None)) \
+                    .withColumn('realInstalls', lit(None)) \
+                        .withColumn('ratings', lit(None)) \
+                            .withColumn('free', lit(None)) \
+                                .withColumn('offersIAP', lit(None)) \
+                                    .withColumn('inAppProductPrice', lit(None)) \
+                                        .withColumn('genreId', lit(None)) \
+                                            .withColumn('contentRating', lit(None)) \
+                                                .withColumn('contentRatingDescription', lit(None)) \
+                                                    .withColumn('adSupported', lit(None)) \
+                                                        .withColumn('lastUpdatedOn', lit(None)) \
+                                                            .withColumn('version', lit(None)) \
+                                                                .withColumn('categories_list', lit(None)) \
+                                                                    .withColumn('min_inAppProductPrice', lit(None)) \
+                                                                        .withColumn('max_inAppProductPrice', lit(None))
+        
+        # Change and arrange column names to align with googleMain
+        df = df.selectExpr('name as title', 
+                        'description', 
+                        'summary', 'installs', 'minInstalls', 'realInstalls', 
+                        'ratingValue as score', 
+                        'ratings', 
+                        'reviewCount as reviews', 
+                        'price', 
+                        'free', 
+                        'priceCurrency as currency', 
+                        'offersIAP', 'inAppProductPrice', 
+                        'authorname as developer', 
+                        'applicationCategory as genre', 
+                        'genreId', 'contentRating', 'contentRatingDescription', 'adSupported', 
+                        'datePublished as released', 
+                        'lastUpdatedOn', 'version', 
+                        'appId', 
+                        'categories_list', 'min_inAppProductPrice', 'max_inAppProductPrice', 
+                        '1starrating_no', 
+                        '2starrating_no', 
+                        '3starrating_no', 
+                        '4starrating_no', 
+                        '5starrating_no')
+        
+        # Drop records where 'ratingValue' column has a value of nan
+        df = df.filter((col("ratingValue") != 'nan'))
+        
+        return df
+
+    def clean_data_appleReview(spark, df, ref_appid_sparkDf):
+        # Drop specific columns
+        # No columns to drop
+        
+        # Filter rows where there is a mismatch in data with header columns
+        df = df.filter((col("developerResponseId") == 'nan') & (col("developerResponseBody") == 'nan') & (col("developerResponseModified") == 'nan'))
+        
+        # Filter only records where app_id in df is in ref_appid_sparkDf.select("app_Id").distinct()
+        df = df.join(ref_appid_sparkDf.select("appId").distinct(), "appId", "inner")
+        
+        # Drop duplicates
+        df = df.dropDuplicates(['id'])
+        
+        # Rename and rearrnge columns to align with googleReview and drop type, offset, nBatch columns
+        df = df.selectExpr('appId', 
+                        'id as reviewId', 
+                        'userName', 
+                        'review as content', 
+                        'rating as score', 
+                        'date as at', 
+                        'developerResponseBody as replyContent',
+                        'isEdited', 'title', 'developerResponseId', 'developerResponseModified')
+
+        # Remove specific strings from specific columns
+        # Running into an error - commenting out first.
+        strings_to_remove = ["<b>"]
+        
+        remove_strings_udf = udf(lambda x: remove_strings_apple(x, strings_to_remove), StringType())
+        
+        df = df.withColumn("content", remove_strings_udf(col("content")))
+        
+        # 2. Langdetect
+        # Define a UDF to apply language detection
+        detect_language_udf = spark.udf.register("detect_language_udf", detect_language_langdetect_apple)
+        
+        # Apply language detection to the 'content' column
+        df = df.withColumn("language_langdetect", detect_language_udf("content"))
+
+        # Filter only language_langdetect = 'en'
+        df = df.filter(df['language_langdetect'] == 'en')
+
+        return df
+
     #################################################### appleMain
     if not local: 
         cleanAppleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanAppleMainScraped_table_name}" # Schema + Table
         sparkDf = read_gbq(spark, rawDataset, appleMain)  # reinstate at production
         
-        print(sparkDf.count())
+        # print(sparkDf.count())
     
     # Code section for cleaning googleMain data
     cleaned_sparkDf = clean_data_appleMain(sparkDf)
@@ -212,7 +207,7 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
     else: 
         sparkDf = sparkRvDf
     
-    print(sparkDf.count())
+    # print(sparkDf.count())
 
     time.sleep(30)
     
@@ -223,20 +218,18 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         ref_appid_sparkDf = cleaned_sparkDf
         
     # print(sparkDf.show())
-    print(ref_appid_sparkDf.count())
+    # print(ref_appid_sparkDf.count())
 
     # Code section for cleaning googleMain data
     cleaned_sparkDf = clean_data_appleReview(spark, sparkDf, ref_appid_sparkDf)
 
     client.create_table(bigquery.Table(cleanAppleScraped_db_path), exists_ok = True)  # reinstate at production
 
-    print('Table created successfully')
+    # print('Table created successfully')
 
     to_gbq(cleaned_sparkDf, cleanDataset, cleanAppleReviewScraped_table_name)  # reinstate at production
 
-    print('Table sent to GBQ successfully')
-    
-    return
+    # print('Table sent to GBQ successfully')
 
 
 # Google Data Wrangling
@@ -248,7 +241,7 @@ def googleDataWrangling(spark, project_id, client):
 
     sparkDf = read_gbq(spark, rawDataset, googleMain)
     # print(sparkDf.show())
-    print(sparkDf.count())
+    # print(sparkDf.count())
 
     # Code section for cleaning googleMain data
     def clean_data_googleMain(df):
@@ -285,10 +278,6 @@ def googleDataWrangling(spark, project_id, client):
 
         df = remove_strings_from_columns(df, strings_to_remove)
 
-
-
-
-
         # Convert categories list dictionary into list
         # Define the extract_names_udf function as a UDF (Purely Functional Programming)
 
@@ -318,9 +307,6 @@ def googleDataWrangling(spark, project_id, client):
         df = df.filter((col("minInstalls") != 0) & (col("minInstalls") != 'None'))
                     #    & (~col("minInstalls") != 'nan') & (col("minInstalls") != 'None'))
         
-
-
-
         # # Splitting the column based on ' - ' and ' per item' and selecting the appropriate elements
         # df = df.withColumn('price_range', split(col('inAppProductPrice'), ' - '))
         # df = df.withColumn('min_inAppProductPrice', when(col('price_range').getItem(0).contains('$'), col('price_range').getItem(0).substr(2, 4)).otherwise(None))
@@ -333,13 +319,6 @@ def googleDataWrangling(spark, project_id, client):
 
         # Dropping the intermediate column and displaying the DataFrame
         df = df.drop('price_range')
-
-
-
-
-
-
-
 
         # Split 'histogram' column into 5 columns
         df = df.withColumn("histogram", expr("substring(histogram, 2, length(histogram) - 2)")) # Remove brackets []
@@ -358,20 +337,18 @@ def googleDataWrangling(spark, project_id, client):
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleMainScraped_table_name)
 
-
-
     #################################################### googleReview
     
     cleanGoogleScraped_db_path = f"{project_id}.{cleanDataset}.{cleanGoogleReviewScraped_table_name}" # Schema + Table
 
     sparkDf = read_gbq(spark, rawDataset, googleReview)
     # print(sparkDf.show())
-    print(sparkDf.count())
+    # print(sparkDf.count())
 
     time.sleep(30)
     ref_appid_sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     # print(sparkDf.show())
-    print(ref_appid_sparkDf.count())
+    # print(ref_appid_sparkDf.count())
 
     # Code section for cleaning googleMain data
     def clean_data_googleReview(df):
@@ -397,9 +374,6 @@ def googleDataWrangling(spark, project_id, client):
 
         df = df.withColumn("content", remove_strings_udf(col("content")))
 
-
-
-
         ### Language Detection Section
 
         # Use across all Spark session:               detect_language_udf = spark.udf.register("detect_language_udf", detect_language_function)
@@ -418,7 +392,6 @@ def googleDataWrangling(spark, project_id, client):
 
         # # Apply language detection to the 'content' column
         # df = df.withColumn("language_ployglot", detect_language_udf("content"))
-
 
         # 2. Langdetect
         def detect_language_langdetect(text):
@@ -457,19 +430,19 @@ def googleDataWrangling(spark, project_id, client):
     ########################### TA - Start [Wudi]#################################
         #Remove stopwords
         custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
-    "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
-    "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
-    "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
-    "actually", "the", "and", "to", "i", "app", "a", "of", "not", "it", "this", "is", "in", "your", "you", "very", "but", "for", "are", "they", "time", "have", "no", "please", "with", "so", "that", "bad",
-    "app","will","ok","u","please","great","i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your" "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself",
-    "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these",
-    "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do",
-    "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
-    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
-    "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
-    "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
-    "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
-    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+        "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
+        "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
+        "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
+        "actually", "the", "and", "to", "i", "app", "a", "of", "not", "it", "this", "is", "in", "your", "you", "very", "but", "for", "are", "they", "time", "have", "no", "please", "with", "so", "that", "bad",
+        "app","will","ok","u","please","great","i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your" "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself",
+        "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these",
+        "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do",
+        "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+        "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
+        "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
+        "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
+        "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+        "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
 
         # Create TA Pipeline
         tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
@@ -490,11 +463,11 @@ def googleDataWrangling(spark, project_id, client):
 
     client.create_table(bigquery.Table(cleanGoogleScraped_db_path), exists_ok = True)
 
-    print('Table created successfully')
+    # print('Table created successfully')
 
     to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
 
-    print('Table sent to GBQ successfully')
+    # print('Table sent to GBQ successfully')
 
 """
 TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comment ID, date, etc

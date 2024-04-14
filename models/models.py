@@ -3,7 +3,7 @@ import nltk
 import gzip
 import pickle
 from common import read_gbq, to_gbq, googleAPI_json_path, bucket_name
-from dataWrangling.dataWrangling import cleanDataset, cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
+from dataWrangling.dataWrangling import cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
 from google.cloud import storage
 import pygsheets
@@ -15,6 +15,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 nltk.download('punkt')
 
 # Hard-coded variables
+cleanDataset = "dev_cleanData"
 modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'

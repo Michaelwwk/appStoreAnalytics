@@ -187,6 +187,32 @@ def clean_data_appleReview(spark, df, ref_appid_sparkDf):
     # Filter only language_langdetect = 'en'
     df = df.filter(df['language_langdetect'] == 'en')
 
+    #TA
+    custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
+    "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
+    "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
+    "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
+    "actually", "the", "and", "to", "i", "app", "a", "of", "not", "it", "this", "is", "in", "your", "you", "very", "but", "for", "are", "they", "time", "have", "no", "please", "with", "so", "that", "bad",
+    "app","will","ok","u","please","great","i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your" "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself",
+    "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these",
+    "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do",
+    "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
+    "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
+    "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
+    "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+
+    # Create TA Pipeline
+    tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
+    stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
+  
+    pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
+    TA_pipeline = pipeline.fit(df)
+
+    #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
+    df = TA_pipeline.transform(df)
+
     return df
 
 def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None, sparkRvDf = None):
@@ -373,7 +399,7 @@ def googleDataWrangling(spark, project_id, client):
     # print(sparkDf.show())
     print(ref_appid_sparkDf.count())
 
-    # Code section for cleaning googleMain data
+    # Code section for cleaning google review data
     def clean_data_googleReview(df):
 
         # Drop specific columns
@@ -420,7 +446,7 @@ def googleDataWrangling(spark, project_id, client):
         # df = df.withColumn("language_ployglot", detect_language_udf("content"))
 
 
-        # 2. Langdetect
+        # 2. Langdetect & Text analytics
         def detect_language_langdetect(text):
             try:
                 return detect(text)

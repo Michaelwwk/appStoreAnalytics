@@ -201,7 +201,7 @@ def clean_data_appleReview(spark, df, ref_appid_sparkDf):
     "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
     "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
     "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
-    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+    "too", "very", "s", "t", "can", "will", "just", "don", "should", "now","thank","sorry","could","you."]
 
     # Create TA Pipeline
     tokenizer = Tokenizer(inputCol="content", outputCol="tokens")

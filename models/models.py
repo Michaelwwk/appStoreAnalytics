@@ -44,14 +44,12 @@ def appleClassificationModel(spark, project_id, client):
 def googleClassificationModel(spark, project_id, client):
     return
 
-def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
+def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_tokens):
 
-    # Tokenize the text and store it in the "text_tokens" column
-    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
-    # Select only the "text_tokens" column and collect it into a list
+    # # Tokenize the text and store it in the "text_tokens" column
+    # sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
+    # # Select only the "text_tokens" column and collect it into a list
     # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect() # this one is too computationally extensive
-    exploded_df = sparkDf.select(explode("text_tokens").alias("text_token"))
-    text_tokens = exploded_df.rdd.flatMap(lambda row: row)
 
     # Load data into model
     print("Loading data into model ..")
@@ -175,16 +173,18 @@ def appleRecommendationModel(spark, project_id, client):
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     print("Apple sparkDf loaded.")
+    print(sparkDf.count())
 
-    # # for model training purposes only
-    # pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
-    # print("Apple pandasDf loaded.")
-    # pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']
-    # textonly = pandasDf['textonly'].fillna('')
-    # text_tokens = [word_tokenize(t.lower()) for t in textonly]
+    # for model training purposes only
+    pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
+    print("Apple pandasDf loaded.")
+    print(pandasDf.shape)
+    pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']
+    textonly = pandasDf['textonly'].fillna('')
+    text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
-    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')
+    df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens)
     
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)
@@ -194,9 +194,18 @@ def googleRecommendationModel(spark, project_id, client):
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     print("Google sparkDf loaded.")
+    print(sparkDf.count())
+
+    # for model training purposes only
+    pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False)
+    print("Google pandasDf loaded.")
+    print(pandasDf.shape)
+    pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + pandasDf['summary']
+    textonly = pandasDf['textonly'].fillna('')
+    text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
-    df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store')
+    df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens)
 
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, googleRecommendationModel_table_name)

@@ -197,13 +197,13 @@ def googleRecommendationModel(spark, project_id, client):
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
-    sparkDf = sparkDf.orderBy(col("appId")).drop("index")
+    # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Google sparkDf loaded.")
     print(sparkDf.count())
 
     # for model training purposes only
     pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False)
-    pandasDf.sort_values(by = 'appId').reset_index(drop = True)
+    # pandasDf.sort_values(by = 'appId').reset_index(drop = True)
     print("Google pandasDf loaded.")
     print(pandasDf.shape)
     pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + pandasDf['summary']

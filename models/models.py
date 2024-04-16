@@ -15,7 +15,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 nltk.download('punkt')
 
 # Hard-coded variables
-cleanDataset = "dev_cleanData"
+cleanDataset = "prod_cleanData"
 modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
@@ -45,18 +45,35 @@ def googleClassificationModel(spark, project_id, client):
 
 def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
 
-    # Read data from GCS & download to local
-    folder_path = os.getcwd().replace("\\", "/")
-    blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
-    path_dict = {}
-    index = 0
-    for blob in blobs:
-        filename = os.path.basename(blob.name)
-        recModelFile_path = os.path.join(folder_path, filename)
-        blob.download_to_filename(recModelFile_path)
-        print(f"Downloaded: {filename} to {recModelFile_path}")
-        path_dict[index] = recModelFile_path
-        index += 1
+    # Tokenize the text and store it in the "text_tokens" column
+    sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
+    # Select only the "text_tokens" column and collect it into a list
+    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
+
+    # Load data into model
+    print("Loading data into model ..")
+    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
+    model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
+    model.build_vocab(tagged_data)
+    print("Data loaded into model.")
+
+    # Train the model using our data
+    print("Training model ..")
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
+    print("Model trained.")
+
+    # # Read data from GCS & download to local
+    # folder_path = os.getcwd().replace("\\", "/")
+    # blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
+    # path_dict = {}
+    # index = 0
+    # for blob in blobs:
+    #     filename = os.path.basename(blob.name)
+    #     recModelFile_path = os.path.join(folder_path, filename)
+    #     blob.download_to_filename(recModelFile_path)
+    #     print(f"Downloaded: {filename} to {recModelFile_path}")
+    #     path_dict[index] = recModelFile_path
+    #     index += 1
 
     # Filter for relevant rows in new applications dataset
     newApplications_df = spark.createDataFrame(data)
@@ -102,13 +119,13 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
     newApplications_df = tokenizer.transform(newApplications_df)
 
-    # Load saved doc2vec model
-    model = Doc2Vec.load(path_dict[0])
+    # # Load saved doc2vec model
+    # model = Doc2Vec.load(path_dict[0])
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():
         test_vec = model.infer_vector(row["text_tokens"])
-        results = model.docvecs.most_similar(positive=[test_vec], topn=5)
+        results = model.docvecs.most_similar(positive=[test_vec], topn=10)
         print("[Original]\n")
         print(f"Genre: {row[appGenre]}")
         print(f"App Name: {row[appName]}")
@@ -144,9 +161,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     # Filter out the empty row
     df = df.filter(df.newApp.isNotNull())
 
-    # Remove paths in local storage
-    for path in path_dict.values():
-        os.remove(path)
+    # # Remove paths in local storage
+    # for path in path_dict.values():
+    #     os.remove(path)
 
     return df
 
@@ -155,6 +172,13 @@ def appleRecommendationModel(spark, project_id, client):
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     print("Apple sparkDf loaded.")
+
+    # # for model training purposes only
+    # pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
+    # print("Apple pandasDf loaded.")
+    # pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']
+    # textonly = pandasDf['textonly'].fillna('')
+    # text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
     sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store')

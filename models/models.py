@@ -6,6 +6,7 @@ from common import read_gbq, to_gbq, googleAPI_json_path, bucket_name
 from dataWrangling.dataWrangling import cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
 from google.cloud import storage
+from pyspark.sql.functions import explode
 import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
@@ -48,7 +49,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     # Tokenize the text and store it in the "text_tokens" column
     sparkDf = sparkDf.withColumn("text_tokens", split(lower("text"), "\s+"))
     # Select only the "text_tokens" column and collect it into a list
-    text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect()
+    # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect() # this one is too computationally extensive
+    exploded_df = sparkDf.select(explode("text_tokens").alias("text_token"))
+    text_tokens = exploded_df.select("text_token").rdd.flatMap(lambda x: x).collect()
 
     # Load data into model
     print("Loading data into model ..")

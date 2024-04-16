@@ -173,13 +173,13 @@ def appleRecommendationModel(spark, project_id, client):
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
 
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
-    sparkDf = sparkDf.orderBy(col("appId")).drop("index")
+    # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Apple sparkDf loaded.")
     print(sparkDf.count())
 
     # for model training purposes only
     pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
-    pandasDf.sort_values(by = 'appId').reset_index(drop = True)
+    # pandasDf.sort_values(by = 'appId').reset_index(drop = True)
     print("Apple pandasDf loaded.")
     print(pandasDf.shape)
     pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']

@@ -51,7 +51,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store):
     # Select only the "text_tokens" column and collect it into a list
     # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect() # this one is too computationally extensive
     exploded_df = sparkDf.select(explode("text_tokens").alias("text_token"))
-    text_tokens = exploded_df.select("text_token").rdd.flatMap(lambda x: x).collect()
+    text_tokens = exploded_df.rdd.flatMap(lambda row: row)
 
     # Load data into model
     print("Loading data into model ..")

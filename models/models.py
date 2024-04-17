@@ -140,7 +140,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
         for i, (doc_id, similarity_score) in enumerate(results):
 
             w = Window().orderBy(lit('A'))
-            googleMain_sparkDF = googleMain_sparkDF.withColumn('indexing', row_number().over(w))
+            sparkDf = sparkDf.withColumn('indexing', row_number().over(w))
             row = sparkDf.where(col('indexing').isin(doc_id+1))
 
             genre = row.select("genre").collect()[0][0]

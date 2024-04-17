@@ -131,25 +131,30 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
         print(f"Genre: {row[appGenre]}")
         print(f"App Name: {row[appName]}")
         print(f"Description: {row[appDescription]}")
-        # if apple_google == 'google':
-        #     print(f"Summary: {row[appSummary]}")
+        if apple_google == 'google':
+            print(f"Summary: {row[appSummary]}")
         print("-" * 50)
         
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
 
-            genre = sparkDf.select("genre").collect()[doc_id][0]
-            title = sparkDf.select("title").collect()[doc_id][0]
-            # description = sparkDf.select("description").collect()[doc_id][0]
-            # summary = sparkDf.select("summary").collect()[doc_id][0]
-            id = sparkDf.select("appId").collect()[doc_id][0]
+            # genre = sparkDf.select("genre").collect()[doc_id][0]
+            # title = sparkDf.select("title").collect()[doc_id][0]
+            # # description = sparkDf.select("description").collect()[doc_id][0]
 
+            id = sparkDf.rdd.lookup(doc_id)[0]["appId"]
+            genre = sparkDf.rdd.lookup(doc_id)[0]["genre"]  # Access row using index
+            title = sparkDf.rdd.lookup(doc_id)[0]["title"]
+            description = sparkDf.rdd.lookup(doc_id)[0]["description"]
+            if apple_google == 'google':
+                summary = sparkDf.rdd.lookup(doc_id)[0]["summary"]
+            
             print(f"[Result {i+1}]\n")
             print(f"Genre:\n{genre}\n")
             print(f"App Name:\n{title}\n")
-            # print(f"Description:\n{description}\n")
-            # if apple_google == 'google':
-            #     print(f"Summary:\n{summary}\n")
+            print(f"Description:\n{description}\n")
+            if apple_google == 'google':
+                print(f"Summary:\n{summary}\n")
             print(f"Score:\n{similarity_score}\n")
             print("-" * 50)
             
@@ -175,20 +180,17 @@ def appleRecommendationModel(spark, project_id, client):
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
     # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Apple sparkDf loaded.")
-    print(sparkDf.count())
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
 
     # for model training purposes only
     pandasDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name, sparkDf = False)
     # pandasDf.sort_values(by = 'appId').reset_index(drop = True)
     print("Apple pandasDf loaded.")
-    print(pandasDf.shape)
     pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']
     textonly = pandasDf['textonly'].fillna('')
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
-    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens)
-    
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)
 
@@ -199,19 +201,16 @@ def googleRecommendationModel(spark, project_id, client):
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
     # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Google sparkDf loaded.")
-    print(sparkDf.count())
+    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
 
     # for model training purposes only
     pandasDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name, sparkDf = False)
     # pandasDf.sort_values(by = 'appId').reset_index(drop = True)
     print("Google pandasDf loaded.")
-    print(pandasDf.shape)
     pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + pandasDf['summary']
     textonly = pandasDf['textonly'].fillna('')
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
-    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
     df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens)
-
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, googleRecommendationModel_table_name)

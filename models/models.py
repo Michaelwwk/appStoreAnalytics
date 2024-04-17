@@ -16,7 +16,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 nltk.download('punkt')
 
 # Hard-coded variables
-cleanDataset = "prod_cleanData"
+cleanDataset = "dev_cleanData"
 modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'

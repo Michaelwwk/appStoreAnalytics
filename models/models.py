@@ -99,22 +99,22 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
 
     # Concatenate the columns into a single column "text"
 
-    if apple_google == 'google':
-        newApplications_df = newApplications_df.withColumn(
-            "text",
-            concat_ws(" ", 
-                    lower(col(appName)), 
-                    lower(col(f"`{appDescription}`")), 
-                    lower(col(f"`{appSummary}`")))
-        )
-    else:
-        newApplications_df = newApplications_df.withColumn(
-            "text",
-            concat_ws(" ", 
-                    lower(col(appName)), 
-                    lower(col(f"`{appDescription}`")) 
-                    )
-        )
+    # if apple_google == 'google':
+    #     newApplications_df = newApplications_df.withColumn(
+    #         "text",
+    #         concat_ws(" ", 
+    #                 lower(col(appName)), 
+    #                 lower(col(f"`{appDescription}`")), 
+    #                 lower(col(f"`{appSummary}`")))
+    #     )
+    # else:
+    newApplications_df = newApplications_df.withColumn(
+        "text",
+        concat_ws(" ", 
+                lower(col(appName)), 
+                lower(col(f"`{appDescription}`")) 
+                )
+    )
 
     # Tokenize the text column
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
@@ -203,7 +203,8 @@ def googleRecommendationModel(spark, project_id, client):
     # pandasDf.sort_values(by = 'appId').reset_index(drop = True)
     print("Google pandasDf loaded.")
     print(pandasDf.shape)
-    pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + pandasDf['summary']
+    # pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description'] + pandasDf['summary']
+    pandasDf['textonly'] = pandasDf['title'] + ' ' + pandasDf['description']
     textonly = pandasDf['textonly'].fillna('')
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 

@@ -170,9 +170,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
 
 def appleRecommendationModel(spark, project_id, client):
 
-    recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
-
     sparkDf = read_gbq(spark, cleanDataset, cleanAppleMainScraped_table_name)
+    # sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Apple sparkDf loaded.")
     print(sparkDf.count())
@@ -186,17 +185,15 @@ def appleRecommendationModel(spark, project_id, client):
     textonly = pandasDf['textonly'].fillna('')
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
-    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description')))
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens)
-    
+    recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)
 
 def googleRecommendationModel(spark, project_id, client):
-
-    recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     
     sparkDf = read_gbq(spark, cleanDataset, cleanGoogleMainScraped_table_name)
+    # sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
     # sparkDf = sparkDf.orderBy(col("appId")).drop("index")
     print("Google sparkDf loaded.")
     print(sparkDf.count())
@@ -210,8 +207,7 @@ def googleRecommendationModel(spark, project_id, client):
     textonly = pandasDf['textonly'].fillna('')
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
-    sparkDf = sparkDf.withColumn('text', concat(col('title'), lit(' '), col('description'), lit(' '), col('summary')))
     df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens)
-
+    recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, googleRecommendationModel_table_name)

@@ -6,7 +6,8 @@ from common import read_gbq, to_gbq, googleAPI_json_path, bucket_name
 from dataWrangling.dataWrangling import cleanGoogleMainScraped_table_name, cleanAppleMainScraped_table_name
 from google.cloud import bigquery
 from google.cloud import storage
-from pyspark.sql.functions import explode
+from pyspark.sql.functions import row_number,lit
+from pyspark.sql.window import Window
 import pygsheets
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from nltk.tokenize import word_tokenize
@@ -138,7 +139,10 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
 
-            row = sparkDf.where(col('_c0').isin(doc_id))
+            w = Window().orderBy(lit('A'))
+            googleMain_sparkDF = googleMain_sparkDF.withColumn('indexing', row_number().over(w))
+            row = sparkDf.where(col('indexing').isin(doc_id+1))
+
             genre = row.select("genre").collect()[0][0]
             title = row.select("title").collect()[0][0]
             description = row.select("description").collect()[0][0]

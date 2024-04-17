@@ -51,30 +51,30 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     # # Select only the "text_tokens" column and collect it into a list
     # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect() # this one is too computationally extensive
 
-    # Load data into model
-    print("Loading data into model ..")
-    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
-    model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
-    model.build_vocab(tagged_data)
-    print("Data loaded into model.")
+    # # Load data into model
+    # print("Loading data into model ..")
+    # tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
+    # model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
+    # model.build_vocab(tagged_data)
+    # print("Data loaded into model.")
 
-    # Train the model using our data
-    print("Training model ..")
-    model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
-    print("Model trained.")
+    # # Train the model using our data
+    # print("Training model ..")
+    # model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
+    # print("Model trained.")
 
-    # # Read data from GCS & download to local
-    # folder_path = os.getcwd().replace("\\", "/")
-    # blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
-    # path_dict = {}
-    # index = 0
-    # for blob in blobs:
-    #     filename = os.path.basename(blob.name)
-    #     recModelFile_path = os.path.join(folder_path, filename)
-    #     blob.download_to_filename(recModelFile_path)
-    #     print(f"Downloaded: {filename} to {recModelFile_path}")
-    #     path_dict[index] = recModelFile_path
-    #     index += 1
+    # Read data from GCS & download to local
+    folder_path = os.getcwd().replace("\\", "/")
+    blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
+    path_dict = {}
+    index = 0
+    for blob in blobs:
+        filename = os.path.basename(blob.name)
+        recModelFile_path = os.path.join(folder_path, filename)
+        blob.download_to_filename(recModelFile_path)
+        print(f"Downloaded: {filename} to {recModelFile_path}")
+        path_dict[index] = recModelFile_path
+        index += 1
 
     # Filter for relevant rows in new applications dataset
     newApplications_df = spark.createDataFrame(data)
@@ -120,8 +120,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
     newApplications_df = tokenizer.transform(newApplications_df)
 
-    # # Load saved doc2vec model
-    # model = Doc2Vec.load(path_dict[0])
+    # Load saved doc2vec model
+    model = Doc2Vec.load(path_dict[0])
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():
@@ -138,16 +138,25 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
         # Iterate over the results and append rows to the DataFrame
         for i, (doc_id, similarity_score) in enumerate(results):
 
+            filtered_row = sparkDf.filter(sparkDf.index == doc_id).first()
+            if filtered_row:
+                id = filtered_row["appId"]
+                genre = filtered_row["genre"]
+                title = filtered_row["title"]
+                description = filtered_row["description"]
+                if apple_google == 'google':
+                    summary = filtered_row["summary"]
+
             # genre = sparkDf.select("genre").collect()[doc_id][0]
             # title = sparkDf.select("title").collect()[doc_id][0]
             # # description = sparkDf.select("description").collect()[doc_id][0]
 
-            id = sparkDf.rdd.lookup(doc_id)[0]["appId"]
-            genre = sparkDf.rdd.lookup(doc_id)[0]["genre"]  # Access row using index
-            title = sparkDf.rdd.lookup(doc_id)[0]["title"]
-            description = sparkDf.rdd.lookup(doc_id)[0]["description"]
-            if apple_google == 'google':
-                summary = sparkDf.rdd.lookup(doc_id)[0]["summary"]
+            # id = sparkDf.rdd.lookup(doc_id)[0]["appId"]
+            # genre = sparkDf.rdd.lookup(doc_id)[0]["genre"]  # Access row using index
+            # title = sparkDf.rdd.lookup(doc_id)[0]["title"]
+            # description = sparkDf.rdd.lookup(doc_id)[0]["description"]
+            # if apple_google == 'google':
+            #     summary = sparkDf.rdd.lookup(doc_id)[0]["summary"]
             
             print(f"[Result {i+1}]\n")
             print(f"Genre:\n{genre}\n")
@@ -167,9 +176,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     # Filter out the empty row
     df = df.filter(df.newApp.isNotNull())
 
-    # # Remove paths in local storage
-    # for path in path_dict.values():
-    #     os.remove(path)
+    # Remove paths in local storage
+    for path in path_dict.values():
+        os.remove(path)
 
     return df
 

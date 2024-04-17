@@ -17,7 +17,7 @@ nltk.download('punkt')
 
 # Hard-coded variables
 cleanDataset = "dev_cleanData"
-modelDataset = "dev_modelData"
+modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"

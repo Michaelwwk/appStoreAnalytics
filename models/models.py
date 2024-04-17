@@ -141,12 +141,12 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
 
             w = Window().orderBy(lit('A'))
             sparkDf = sparkDf.withColumn('indexing', row_number().over(w))
-            row = sparkDf.where(col('indexing').isin(doc_id+1))
+            singleRow = sparkDf.where(col('indexing').isin(doc_id+1))
 
-            genre = row.select("genre").collect()[0][0]
-            title = row.select("title").collect()[0][0]
-            description = row.select("description").collect()[0][0]
-            id = row.select("appId").collect()[0][0]
+            genre = singleRow.select("genre").collect()[0][0]
+            title = singleRow.select("title").collect()[0][0]
+            description = singleRow.select("description").collect()[0][0]
+            id = singleRow.select("appId").collect()[0][0]
 
             # genre = sparkDf.select("genre").collect()[doc_id][0]
             # title = sparkDf.select("title").collect()[doc_id][0]

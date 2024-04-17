@@ -14,6 +14,8 @@ from nltk.tokenize import word_tokenize
 from pyspark.sql.functions import split, lower, concat, concat_ws, col, lit
 from pyspark.ml.feature import Tokenizer
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+import warnings
+warnings.filterwarnings("ignore")
 nltk.download('punkt')
 
 # Hard-coded variables
@@ -52,30 +54,30 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     # # Select only the "text_tokens" column and collect it into a list
     # text_tokens = sparkDf.select("text_tokens").rdd.flatMap(lambda x: x).collect() # this one is too computationally extensive
 
-    # # Load data into model
-    # print("Loading data into model ..")
-    # tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
-    # model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
-    # model.build_vocab(tagged_data)
-    # print("Data loaded into model.")
+    # Load data into model
+    print("Loading data into model ..")
+    tagged_data = [TaggedDocument(d, [i]) for i, d in enumerate(text_tokens)]
+    model = Doc2Vec(vector_size=64, min_count=2, epochs=40)
+    model.build_vocab(tagged_data)
+    print("Data loaded into model.")
 
-    # # Train the model using our data
-    # print("Training model ..")
-    # model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
-    # print("Model trained.")
+    # Train the model using our data
+    print("Training model ..")
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=40)
+    print("Model trained.")
 
-    # Read data from GCS & download to local
-    folder_path = os.getcwd().replace("\\", "/")
-    blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
-    path_dict = {}
-    index = 0
-    for blob in blobs:
-        filename = os.path.basename(blob.name)
-        recModelFile_path = os.path.join(folder_path, filename)
-        blob.download_to_filename(recModelFile_path)
-        print(f"Downloaded: {filename} to {recModelFile_path}")
-        path_dict[index] = recModelFile_path
-        index += 1
+    # # Read data from GCS & download to local
+    # folder_path = os.getcwd().replace("\\", "/")
+    # blobs = storage.Client().bucket(bucket_name).list_blobs(prefix=f"{apple_google}RecModel.model")
+    # path_dict = {}
+    # index = 0
+    # for blob in blobs:
+    #     filename = os.path.basename(blob.name)
+    #     recModelFile_path = os.path.join(folder_path, filename)
+    #     blob.download_to_filename(recModelFile_path)
+    #     print(f"Downloaded: {filename} to {recModelFile_path}")
+    #     path_dict[index] = recModelFile_path
+    #     index += 1
 
     # Filter for relevant rows in new applications dataset
     newApplications_df = spark.createDataFrame(data)
@@ -121,8 +123,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     tokenizer = Tokenizer(inputCol="text", outputCol="text_tokens")
     newApplications_df = tokenizer.transform(newApplications_df)
 
-    # Load saved doc2vec model
-    model = Doc2Vec.load(path_dict[0])
+    # # Load saved doc2vec model
+    # model = Doc2Vec.load(path_dict[0])
 
     # Iterate over each row and compute similarity scores
     for row in newApplications_df.collect():
@@ -172,9 +174,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     # Filter out the empty row
     df = df.filter(df.newApp.isNotNull())
 
-    # Remove paths in local storage
-    for path in path_dict.values():
-        os.remove(path)
+    # # Remove paths in local storage
+    # for path in path_dict.values():
+    #     os.remove(path)
 
     return df
 

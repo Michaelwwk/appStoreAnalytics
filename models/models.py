@@ -210,7 +210,7 @@ def appleRecommendationModel(spark, project_id, client):
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
-    to_gbq(df, modelDataset, appleRecommendationModel_table_name)
+    to_gbq(df, modelDataset, appleRecommendationModel_table_name, sparkDf = False)
 
 def googleRecommendationModel(spark, project_id, client):
     
@@ -233,4 +233,4 @@ def googleRecommendationModel(spark, project_id, client):
     df = recommendationModel(spark, sparkDf, apple_google = 'google', apple_google_store = 'Google Play Store', text_tokens = text_tokens)
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{googleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
-    to_gbq(df, modelDataset, googleRecommendationModel_table_name)
+    to_gbq(df, modelDataset, googleRecommendationModel_table_name, sparkDf = False)

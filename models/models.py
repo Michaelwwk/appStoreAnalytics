@@ -206,6 +206,7 @@ def appleRecommendationModel(spark, project_id, client):
 
     print('After rec model results generation:')
     print(df.show())
+    # TODO NEED TO ADD IN DROP TABLE SQL STATEMENT!! GOOGLE'S STILL WRONG ... maybe need to put into a tuple so that it is immutable?????
 
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)

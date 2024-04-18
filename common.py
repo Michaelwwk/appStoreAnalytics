@@ -106,6 +106,9 @@ def to_gbq(dataframe, GBQdataset, GBQtable, sparkDf = True, client = client,
         dataframe.write.parquet(local_file_path, mode="overwrite")
         df = pd.read_parquet(local_file_path)
 
+        print("Within to_gbq() function:")
+        print(df)
+
         try:
             shutil.rmtree(local_file_path)
         except:

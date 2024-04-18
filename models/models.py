@@ -203,6 +203,10 @@ def appleRecommendationModel(spark, project_id, client):
     text_tokens = [word_tokenize(t.lower()) for t in textonly]
 
     df = recommendationModel(spark, sparkDf, apple_google = 'apple', apple_google_store = 'Apple App Store', text_tokens = text_tokens)
+
+    print('After rec model results generation:')
+    print(df.show())
+
     recommendationModel_table_name_db_path = f"{project_id}.{modelDataset}.{appleRecommendationModel_table_name}"
     client.create_table(bigquery.Table(recommendationModel_table_name_db_path), exists_ok = True)
     to_gbq(df, modelDataset, appleRecommendationModel_table_name)

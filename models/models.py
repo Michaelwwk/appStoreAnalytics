@@ -162,6 +162,7 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
             print(f"[Result {i+1}]\n")
             print(f"Genre:\n{genre}\n")
             print(f"App Name:\n{title}\n")
+            print(f"App ID:\n{id}\n")
             print(f"Description:\n{description}\n")
             # if apple_google == 'google':
             #     print(f"Summary:\n{summary}\n")

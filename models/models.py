@@ -144,6 +144,9 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
             w = Window().orderBy(lit('A'))
             sparkDf = sparkDf.withColumn('indexing', row_number().over(w))
             singleRow = sparkDf.where(col('indexing').isin(doc_id+1))
+            
+            print(similarity_score)
+            print(singleRow)
 
             genre = singleRow.select("genre").collect()[0][0]
             title = singleRow.select("title").collect()[0][0]
@@ -177,6 +180,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
     # # Remove paths in local storage
     # for path in path_dict.values():
     #     os.remove(path)
+
+    print(df.show())
 
     return df
 

@@ -19,8 +19,8 @@ warnings.filterwarnings("ignore")
 nltk.download('punkt')
 
 # Hard-coded variables
-cleanDataset = "dev_cleanData"
-modelDataset = "dev_modelData"
+cleanDataset = "prod_cleanData"
+modelDataset = "prod_modelData"
 appleRecommendationModel_table_name = 'modelAppleRecommendation'
 googleRecommendationModel_table_name = 'modelGoogleRecommendation'
 googleSheetURL = "https://docs.google.com/spreadsheets/d/1zo96WvtgcfznAmSjlQJpnbKIX_NfSIMpsdLcrJOYctw/edit#gid=0"
@@ -144,9 +144,6 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
             w = Window().orderBy(lit('A'))
             sparkDf = sparkDf.withColumn('indexing', row_number().over(w))
             singleRow = sparkDf.where(col('indexing').isin(doc_id+1))
-            
-            print(results)
-            print(singleRow.collect())
 
             genre = singleRow.select("genre").collect()[0][0]
             title = singleRow.select("title").collect()[0][0]
@@ -160,6 +157,8 @@ def recommendationModel(spark, sparkDf, apple_google, apple_google_store, text_t
             # id = sparkDf.select("appId").collect()[doc_id][0]
 
             print(f"[Result {i+1}]\n")
+            print(results)
+            print(singleRow.collect())
             print(f"Genre:\n{genre}\n")
             print(f"App Name:\n{title}\n")
             print(f"App ID:\n{id}\n")

@@ -94,48 +94,22 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         # Remove &amp; in applicationCategory
         df = df.withColumn('applicationCategory', regexp_replace('applicationCategory', r"&amp;", "&"))
         
-        # Add new columns that aligns with googleMain
-        df = df.withColumn('summary', lit(None).cast(StringType())) \
-            .withColumn('installs', lit(None).cast(StringType())) \
-                .withColumn('minInstalls', lit(None).cast(StringType())) \
-                    .withColumn('realInstalls', lit(None).cast(StringType())) \
-                        .withColumn('ratings', lit(None).cast(StringType())) \
-                            .withColumn('free', lit(None).cast(StringType())) \
-                                .withColumn('offersIAP', lit(None).cast(StringType())) \
-                                    .withColumn('inAppProductPrice', lit(None).cast(StringType())) \
-                                        .withColumn('genreId', lit(None).cast(StringType())) \
-                                            .withColumn('contentRating', lit(None).cast(StringType())) \
-                                                .withColumn('contentRatingDescription', lit(None).cast(StringType())) \
-                                                    .withColumn('adSupported', lit(None).cast(StringType())) \
-                                                        .withColumn('lastUpdatedOn', lit(None).cast(StringType())) \
-                                                            .withColumn('version', lit(None).cast(StringType())) \
-                                                                .withColumn('categories_list', lit(None).cast(StringType())) \
-                                                                    .withColumn('min_inAppProductPrice', lit(None).cast(StringType())) \
-                                                                        .withColumn('max_inAppProductPrice', lit(None).cast(StringType()))
-        
-        # Change and arrange column names to align with googleMain
+        # Change column names to align with googleMain
         df = df.selectExpr('name as title', 
-                        'description', 
-                        'summary', 'installs', 'minInstalls', 'realInstalls', 
-                        'ratingValue as score', 
-                        'ratings', 
-                        'reviewCount as reviews', 
-                        'price', 
-                        'free', 
-                        'priceCurrency as currency', 
-                        'offersIAP', 'inAppProductPrice', 
-                        'authorname as developer', 
-                        'applicationCategory as genre', 
-                        'genreId', 'contentRating', 'contentRatingDescription', 'adSupported', 
-                        'datePublished as released', 
-                        'lastUpdatedOn', 'version', 
-                        'appId', 
-                        'categories_list', 'min_inAppProductPrice', 'max_inAppProductPrice', 
-                        '1starrating_no', 
-                        '2starrating_no', 
-                        '3starrating_no', 
-                        '4starrating_no', 
-                        '5starrating_no')
+                            'description', 
+                            'applicationCategory as genre', 
+                            'datePublished as released', 
+                            'authorname as developer', 
+                            'ratingValue as score', 
+                            'reviewCount as reviews', 
+                            'price', 
+                            'priceCurrency as currency', 
+                            'appId', 
+                            '1starrating_no', 
+                            '2starrating_no', 
+                            '3starrating_no', 
+                            '4starrating_no', 
+                            '5starrating_no')
         
         # Drop records where 'ratingValue' column has a value of nan
         df = df.filter((col("ratingValue") != 'nan'))
@@ -502,4 +476,3 @@ TODO For both Apple & Google Reviews table, need to sort by appId, user ID, comm
 TODO Since review tables are cumulative and main tables are latest (both Apple & Google), ensure that review tables only contain appIds that are in main tables!
 (Actually is it even a good idea for review tables to be cumulative though? Scared it may exceed the 10GB free tier limit as it's few 100k rows each pull and we doing it daily.)
 """
-

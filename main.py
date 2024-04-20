@@ -1,5 +1,4 @@
 import sys
-import time
 import os
 import shutil
 from pyspark.sql import SparkSession
@@ -13,7 +12,7 @@ from models.models import appleClassificationModel, googleClassificationModel, a
 from dateTime import dateTime
 from common import client, project_id, googleAPI_json_path, folder_path, read_gbq, to_gbq
 
-# Hard-coded variables (impt!)
+# Hard-coded variables
 appleMaxSlice = 26 # No. of parts to slice Apple df into
 googleMaxSlice = 14 # No. of parts to slice Google df into
 appleWrangling_actionNo = 41
@@ -71,19 +70,15 @@ def wranglingMLDateTime_devRawData(devRawData = False, appleWrangling = False, g
             googleDataWrangling(spark, project_id, client)
             print('Google Data wrangling step completed. Clean tables updated.')
         if appleClassModel == True:
-            time.sleep(30)
             appleClassificationModel(spark, project_id, client)
             print('Apple Classification Model step completed. Apple Classification Model tables updated.')
         if googleClassModel == True:
-            time.sleep(30)
             googleClassificationModel(spark, project_id, client)
             print('Google Classification Model step completed. Google Classification Model tables updated.')
         if appleRecModel == True:
-            time.sleep(30)
             appleRecommendationModel(spark, project_id, client)
             print('Apple Recommender Model step completed. Apple Recommender Model tables updated.')
         if googleRecModel == True:
-            time.sleep(30)
             googleRecommendationModel(spark, project_id, client)
             print('Google Recommender Model step completed. Google Recommender Model tables updated.')
         if dateAndTime == True:

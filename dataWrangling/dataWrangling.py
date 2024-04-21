@@ -10,6 +10,7 @@ from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF
 from pyspark.sql.functions import col, udf
 from pyspark.ml import Pipeline
 from langdetect import detect
+import re
 
 # Hard-coded variables
 cleanDataset = "prod_cleanData" # Schema/Dataset
@@ -158,7 +159,7 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         df = df.filter(df['language_langdetect'] == 'en')
 
         #TA
-        custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
+        custom_stopwords = ["didn", "don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
         "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
         "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
         "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
@@ -171,7 +172,10 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
         "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
         "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
-        "too", "very", "s", "t", "can", "will", "just", "don", "should", "now","thank","sorry","could","you."]
+        "too", "very", "s", "t", "can", "will", "just", "don", "should", "now","thank","sorry","could","you.",
+        "could", "app", "said", "II", "also", "isn", "you", "re", "up", "in", "ain", "go", "got", "all", "don", 
+        "that", "didn", "d", "this", "there", "ve", "1", "2", "3", "4", "5", "10", "thank", "couldn", "t", "s", "it", "i",
+        "t", "ve", "s", "d", "it", "1", "2", "5", "3", "4", "10", "99", "6", "go", "didn", "let", "really", "haven", "much", "also", "able", "II", "iL", "in", "ll", "isn", "one", "now", "us", "and", "end", "this", "aren", "big", "long", "never", "me", "else", "again", "yet", "up", "re", "tried", "trying", "two", "good", "couldn", "games", "game", "app", "say", "too", "five", "all", "got", "them", "always", "must"]
 
         # Create TA Pipeline
         tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
@@ -182,6 +186,16 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
 
         #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
         df = TA_pipeline.transform(df)
+
+        emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               "]+", flags=re.UNICODE)
+
+        remove_emojis_udf = udf(lambda x: emoji_pattern.sub(r'', x), StringType())
+        df = df.withColumn("content", remove_emojis_udf(col("content")))
 
         return df
 
@@ -429,7 +443,7 @@ def googleDataWrangling(spark, project_id, client):
     ########################### Wudi to insert text#################################
     ########################### TA - Start [Wudi]#################################
         #Remove stopwords
-        custom_stopwords = ["don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
+        custom_stopwords = ["didn", "don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
         "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
         "want", "game", "don't", "even", "can't", "doesn't", "worst", "it's",
         "one", "open", "work", "get", "people", "like", "good",  "nothing", "every", "would", "words",
@@ -442,7 +456,10 @@ def googleDataWrangling(spark, project_id, client):
         "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
         "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
         "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
-        "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+        "too", "very", "s", "t", "can", "will", "just", "don", "should", "now","thank","sorry","could","you.",
+        "could", "app", "said", "II", "also", "isn", "you", "re", "up", "in", "ain", "go", "got", "all", "don", 
+        "that", "didn", "d", "this", "there", "ve", "1", "2", "3", "4", "5", "10", "thank", "couldn", "t", "s", "it", "i",
+        "t", "ve", "s", "d", "it", "1", "2", "5", "3", "4", "10", "99", "6", "go", "didn", "let", "really", "haven", "much", "also", "able", "II", "iL", "in", "ll", "isn", "one", "now", "us", "and", "end", "this", "aren", "big", "long", "never", "me", "else", "again", "yet", "up", "re", "tried", "trying", "two", "good", "couldn", "games", "game", "app", "say", "too", "five", "all", "got", "them", "always", "must"]
 
         # Create TA Pipeline
         tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
@@ -456,6 +473,16 @@ def googleDataWrangling(spark, project_id, client):
         #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
         df = TA_pipeline.transform(df)
         
+          # Remove emojis
+        emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               "]+", flags=re.UNICODE)
+
+        remove_emojis_udf = udf(lambda x: emoji_pattern.sub(r'', x), StringType())
+        df = df.withColumn("content", remove_emojis_udf(col("content")))
+
     ########################### TA - End #################################
         return df
 

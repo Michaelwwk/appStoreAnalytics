@@ -182,8 +182,8 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
         
         # Remove punctuation and commas
-        remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
-        df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
+       # remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
+       # df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
 
         pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
         TA_pipeline = pipeline.fit(df)
@@ -470,8 +470,8 @@ def googleDataWrangling(spark, project_id, client):
         stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
 
         # Remove punctuation and commas
-        remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
-        df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
+       # remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
+    #    df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
 
         pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
         TA_pipeline = pipeline.fit(df)

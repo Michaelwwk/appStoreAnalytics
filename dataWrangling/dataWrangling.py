@@ -157,7 +157,7 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
 
         # Filter only language_langdetect = 'en'
         df = df.filter(df['language_langdetect'] == 'en')
-
+        
         #TA
         custom_stopwords = ["didn", "don", "should", "now", "need", "working", "without", "doge", "screen", "app.",
         "first", "cant", "completely", "won't", "make", "still", "definitions",  "i'm", "many",
@@ -177,25 +177,33 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
         "that", "didn", "d", "this", "there", "ve", "1", "2", "3", "4", "5", "10", "thank", "couldn", "t", "s", "it", "i",
         "t", "ve", "s", "d", "it", "1", "2", "5", "3", "4", "10", "99", "6", "go", "didn", "let", "really", "haven", "much", "also", "able", "II", "iL", "in", "ll", "isn", "one", "now", "us", "and", "end", "this", "aren", "big", "long", "never", "me", "else", "again", "yet", "up", "re", "tried", "trying", "two", "good", "couldn", "games", "game", "app", "say", "too", "five", "all", "got", "them", "always", "must"]
 
-        # Create TA Pipeline
-        tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
-        stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
-    
-        pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
-        TA_pipeline = pipeline.fit(df)
-
-        #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
-        df = TA_pipeline.transform(df)
-
-        emoji_pattern = re.compile("["
+    # Function to remove emojis from a string
+        def remove_emojis(text):
+            emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
                                u"\U0001F300-\U0001F5FF"  # symbols & pictographs
                                u"\U0001F680-\U0001F6FF"  # transport & map symbols
                                u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                                "]+", flags=re.UNICODE)
-
-        remove_emojis_udf = udf(lambda x: emoji_pattern.sub(r'', x), StringType())
+            
+            return emoji_pattern.sub(r'', text)
+        
+        remove_emojis_udf = udf(remove_emojis, StringType())
         df = df.withColumn("content", remove_emojis_udf(col("content")))
+
+        # Create TA Pipeline
+        tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
+        stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
+        
+        # Remove punctuation and commas
+        remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
+        df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
+
+        pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
+        TA_pipeline = pipeline.fit(df)
+
+        #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
+        df = TA_pipeline.transform(df)
 
         return df
 
@@ -460,12 +468,27 @@ def googleDataWrangling(spark, project_id, client):
         "could", "app", "said", "II", "also", "isn", "you", "re", "up", "in", "ain", "go", "got", "all", "don", 
         "that", "didn", "d", "this", "there", "ve", "1", "2", "3", "4", "5", "10", "thank", "couldn", "t", "s", "it", "i",
         "t", "ve", "s", "d", "it", "1", "2", "5", "3", "4", "10", "99", "6", "go", "didn", "let", "really", "haven", "much", "also", "able", "II", "iL", "in", "ll", "isn", "one", "now", "us", "and", "end", "this", "aren", "big", "long", "never", "me", "else", "again", "yet", "up", "re", "tried", "trying", "two", "good", "couldn", "games", "game", "app", "say", "too", "five", "all", "got", "them", "always", "must"]
+   
+   # Function to remove emojis from a string
+        def remove_emojis(text):
+            emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               "]+", flags=re.UNICODE)
+            
+            return emoji_pattern.sub(r'', text)
+        
+        remove_emojis_udf = udf(remove_emojis, StringType())
+        df = df.withColumn("content", remove_emojis_udf(col("content")))
 
         # Create TA Pipeline
         tokenizer = Tokenizer(inputCol="content", outputCol="tokens")
         stopwords_remover = StopWordsRemover(inputCol=tokenizer.getOutputCol(), outputCol="filtered_tokens", stopWords=custom_stopwords)
-       #hashingTF = HashingTF(inputCol=stopwords_remover.getOutputCol())
-       #idf= IDF(inputCol=hashingTF.getOutputCol())
+
+        # Remove punctuation and commas
+        remove_punctuation_udf = udf(lambda s: re.sub(r'[^\w\s]', '', s).replace(',', ''), StringType())
+        df = df.withColumn("filtered_tokens", remove_punctuation_udf(col("filtered_tokens")))
 
         pipeline = Pipeline(stages=[tokenizer, stopwords_remover])
         TA_pipeline = pipeline.fit(df)
@@ -473,15 +496,6 @@ def googleDataWrangling(spark, project_id, client):
         #transformed_df holds the result of applying this pipeline to original df, performing tokenization, stop word removal
         df = TA_pipeline.transform(df)
         
-          # Remove emojis
-        emoji_pattern = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               "]+", flags=re.UNICODE)
-
-        remove_emojis_udf = udf(lambda x: emoji_pattern.sub(r'', x), StringType())
-        df = df.withColumn("content", remove_emojis_udf(col("content")))
 
     ########################### TA - End #################################
         return df

@@ -227,7 +227,7 @@ def appleDataWrangling(spark, project_id, client, local = False, sparkDf = None,
 
     # print('Table created successfully')
 
-    to_gbq(cleaned_sparkDf, cleanDataset, cleanAppleReviewScraped_table_name)  # reinstate at production
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanAppleReviewScraped_table_name, allDataTypes = False)  # reinstate at production
 
     # print('Table sent to GBQ successfully')
 
@@ -465,6 +465,6 @@ def googleDataWrangling(spark, project_id, client):
 
     # print('Table created successfully')
 
-    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name)
+    to_gbq(cleaned_sparkDf, cleanDataset, cleanGoogleReviewScraped_table_name, allDataTypes = False)
 
     # print('Table sent to GBQ successfully')

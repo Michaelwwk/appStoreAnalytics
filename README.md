@@ -1,4 +1,4 @@
-![Image description](https://github.com/Michaelwwk/appStoreAnalytics/blob/main/images/appleAppsStoreLogo.png)
+<img src="https://github.com/Michaelwwk/appStoreAnalytics/blob/main/images/appleAppsStoreLogo.png" width="20" height="20">
 
 # Background
 In today's fiercely competitive landscape of mobile applications, specialists within the industry are confronted with the perpetual challenge of deciphering evolving user preferences amidst a vast sea of options. With a combined total of approximately 7.5 million apps available across the Google and Apple app stores as of 2022, the task of standing out becomes increasingly daunting. 

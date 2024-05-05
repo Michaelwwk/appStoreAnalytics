@@ -1,4 +1,4 @@
-<img src="https://github.com/Michaelwwk/appStoreAnalytics/blob/main/images/appleAppsStoreLogo.png" width="20" height="20">
+<img src="https://github.com/Michaelwwk/appStoreAnalytics/blob/main/images/allLogosCombined.png" width="470" height="170">
 
 # Background
 In today's fiercely competitive landscape of mobile applications, specialists within the industry are confronted with the perpetual challenge of deciphering evolving user preferences amidst a vast sea of options. With a combined total of approximately 7.5 million apps available across the Google and Apple app stores as of 2022, the task of standing out becomes increasingly daunting. 
@@ -13,14 +13,14 @@ The folders in this repository are described as follows:
 - Workflows (.github/workflows)
   - This folder include all .yml files which interacts with GitHub Actions to activate the respective workflows.
 - Data Sources (dataSources)
-  - Data sources are obtained from point 1 & 2 in reference list below.
+  - Data sources are obtained from point 1 & 2 in the reference list below.
 - Data Wrangling (dataWrangling)
   - Scripts in this folder carried out steps such as data cleaning (e.g. null values and non-English words removal), data prepatory work for text analytics, and exploratory data analysis.
 - Data Modelling (models)
   - Analytical techniques explored includes: Decision Tree, Random Forest, and Content-Based Recommender System.
-- Dashboard
-  - Contains the Power BI file for data visualisation.
-- Images
+- Dashboard (dashboard)
+  - Contains the Power BI file for data visualization.
+- Images (images)
   - Contains Apple App Store, Google Play Store, and our group logos.
 
 # References

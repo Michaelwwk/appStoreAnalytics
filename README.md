@@ -34,9 +34,9 @@ The folders in this repository are described as follows:
 5. Ong Wee Yang
 
 # References
-1. https://github.com/gauthamp10/apple-appstore-apps
-2. https://github.com/gauthamp10/Google_Play_App_Info
-4. https://github.com/glennfang/apple-app-reviews-scraper/blob/main/src/apple_app_reviews_scraper.py
-5. https://pypi.org/project/google-play-scraper
-7. https://community.cloudera.com/t5/Community-Articles/Spark-Text-Analytics-Uncovering-Data-Driven-Topics/ta-p/244377
-8. https://www.python-engineer.com/posts/run-python-github-actions
+1. [Application ID list for Apple App Store](https://github.com/gauthamp10/apple-appstore-apps)
+2. [Application ID list for Google Play Store](https://github.com/gauthamp10/Google_Play_App_Info)
+4. [Web Scrapping Codes for Apple App Store Reviews](https://github.com/glennfang/apple-app-reviews-scraper/blob/main/src/apple_app_reviews_scraper.py)
+5. [Google Play Store API guide](https://pypi.org/project/google-play-scraper)
+7. [Text Analytics using Spark](https://community.cloudera.com/t5/Community-Articles/Spark-Text-Analytics-Uncovering-Data-Driven-Topics/ta-p/244377)
+8. [RUnning Python on GitHub Actions](https://www.python-engineer.com/posts/run-python-github-actions)

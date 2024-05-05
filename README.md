@@ -38,4 +38,4 @@ The folders in this repository are described as follows:
 2. [Application ID list for Google Play Store](https://github.com/gauthamp10/Google_Play_App_Info)
 4. [Web Scrapping Codes for Apple App Store Reviews](https://github.com/glennfang/apple-app-reviews-scraper/blob/main/src/apple_app_reviews_scraper.py)
 5. [Google Play Store API guide](https://pypi.org/project/google-play-scraper)
-8. [RUnning Python on GitHub Actions](https://www.python-engineer.com/posts/run-python-github-actions)
+8. [Running Python on GitHub Actions](https://www.python-engineer.com/posts/run-python-github-actions)

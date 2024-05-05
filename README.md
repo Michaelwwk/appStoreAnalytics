@@ -9,7 +9,7 @@ In this project, we delve into the methodologies and findings derived from our c
 
 # Directory
 
-Please refer to this link for a high level [summary](https://github.com/Michaelwwk/appStoreAnalytics/blob/main/projectSummary.pdf) of the project.
+Please refer to this link for a high-level [summary](https://github.com/Michaelwwk/appStoreAnalytics/blob/main/projectSummary.pdf) of the project.
 
 The folders in this repository are described as follows:
 

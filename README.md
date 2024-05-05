@@ -26,7 +26,7 @@ The folders in this repository are described as follows:
 - Images (images)
   - Contains Apple App Store, Google Play Store, and our group logos.
  
-# Authors
+# Contributors
 1. Ang Mei Chi
 2. Lee Kuan Teng Roy
 3. Liu Wudi

@@ -1,3 +1,5 @@
+![[Image description]]([images//appleAppsStoreLogo.png])
+
 # Background
 In today's fiercely competitive landscape of mobile applications, specialists within the industry are confronted with the perpetual challenge of deciphering evolving user preferences amidst a vast sea of options. With a combined total of approximately 7.5 million apps available across the Google and Apple app stores as of 2022, the task of standing out becomes increasingly daunting. 
 
@@ -19,7 +21,7 @@ The folders in this repository are described as follows:
 - Dashboard
   - Contains the Power BI file for data visualisation.
 - Images
-  - Contains the Apple App Store & Google Play Store logos.
+  - Contains Apple App Store, Google Play Store, and our group logos.
 
 # References
 1. https://github.com/gauthamp10/Google_Play_App_Info 

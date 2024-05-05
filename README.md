@@ -25,6 +25,13 @@ The folders in this repository are described as follows:
   - Contains the Power BI file for data visualization.
 - Images (images)
   - Contains Apple App Store, Google Play Store, and our group logos.
+ 
+# Authors
+1. Ang Mei Chi
+2. Lee Kuan Teng Roy
+3. Liu Wudi
+4. Michael Wong Wai Kit
+5. Ong Wee Yang
 
 # References
 1. https://github.com/gauthamp10/Google_Play_App_Info 

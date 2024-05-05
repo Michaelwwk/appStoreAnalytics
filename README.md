@@ -8,6 +8,9 @@ The pressure to craft engaging experiences is further intensified by the stagger
 In this project, we delve into the methodologies and findings derived from our comprehensive analysis of big app data, aiming to uncover actionable insights that can drive strategic direction and foster innovation within the mobile app industry. 
 
 # Directory
+
+Please refer to [projectSummary.pdf](https://github.com/Michaelwwk/appStoreAnalytics/blob/main/projectSummary.pdf) for a high level overview of the project.
+
 The folders in this repository are described as follows:
 
 - Workflows (.github/workflows)

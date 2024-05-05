@@ -34,10 +34,9 @@ The folders in this repository are described as follows:
 5. Ong Wee Yang
 
 # References
-1. https://github.com/gauthamp10/Google_Play_App_Info 
-2. https://github.com/gauthamp10/apple-appstore-apps
-3. https://github.com/glennfang/apple-app-reviews-scraper/blob/main/src/apple_app_reviews_scraper.py
-4. https://www.kaggle.com/datasets/dahlia25/metacritic-video-game-comments](https://www.youtube.com/watch?v=NB8OceGZGjA
-5. https://pypi.org/project/google-play-scraper/
-6. https://www.python-engineer.com/posts/run-python-github-actions/
-7. https://www.python-engineer.com/posts/run-python-github-actions/](https://community.cloudera.com/t5/Community-Articles/Spark-Text-Analytics-Uncovering-Data-Driven-Topics/ta-p/244377
+1. https://github.com/gauthamp10/apple-appstore-apps
+2. https://github.com/gauthamp10/Google_Play_App_Info
+4. https://github.com/glennfang/apple-app-reviews-scraper/blob/main/src/apple_app_reviews_scraper.py
+5. https://pypi.org/project/google-play-scraper
+7. https://community.cloudera.com/t5/Community-Articles/Spark-Text-Analytics-Uncovering-Data-Driven-Topics/ta-p/244377
+8. https://www.python-engineer.com/posts/run-python-github-actions

@@ -8,12 +8,18 @@ In this project, we delve into the methodologies and findings derived from our c
 # Directory
 The folders in this repository are described as follows:
 
+- Workflows (.github/workflows)
+  - This folder include all .yml files which interacts with GitHub Actions to activate the respective workflows.
 - Data Sources (dataSources)
   - Data sources are obtained from point 1 & 2 in reference list below.
 - Data Wrangling (dataWrangling)
-  - This folder includes steps such as data cleaning (e.g. null values and non-English words removal), data prepatory work for text analytics, and exploratory data analysis.
-- Data Modelling (Modelling)
+  - Scripts in this folder carried out steps such as data cleaning (e.g. null values and non-English words removal), data prepatory work for text analytics, and exploratory data analysis.
+- Data Modelling (models)
   - Analytical techniques explored includes: Decision Tree, Random Forest, and Content-Based Recommender System.
+- Dashboard
+  - Contains the Power BI file for data visualisation.
+- Images
+  - Contains the Apple App Store & Google Play Store logos.
 
 # References
 1. https://github.com/gauthamp10/Google_Play_App_Info 

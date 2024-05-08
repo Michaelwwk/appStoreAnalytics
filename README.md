@@ -21,8 +21,6 @@ The folders in this repository are described as follows:
   - Scripts in this folder carried out steps such as data cleaning (e.g. null values and non-English words removal), data prepatory work for text analytics, and exploratory data analysis.
 - Data Modelling (models)
   - Analytical techniques explored includes Decision Tree, Random Forest, and Content-Based Recommender System.
-- Dashboard (dashboard)
-  - Contains the Power BI file for data visualization.
 - Images (images)
   - Contains Apple App Store, Google Play Store, and our group logos.
  
